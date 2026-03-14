@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>EVENTURA — Eventos Incríveis</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="css/style.css"/>
+</head>
+<body>
+
+<div id="cursor"></div>
+<div id="cursor-ring"></div>
+
+<!-- NAV -->
+<nav>
+  <div class="logo">EVENT<span>URA</span></div>
+  <ul>
+    <li><a href="#eventos">Eventos</a></li>
+    <li><a href="#categorias">Categorias</a></li>
+    <li><a href="#destaque">Destaque</a></li>
+    <li><a href="criar.evento.html" class="nav-cta">Criar Evento</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-grid"></div>
+  <div class="hero-eyebrow">A plataforma de eventos do Brasil</div>
+  <h1>
+    VIVA<br>
+    <span class="line2">CADA</span><br>
+    <span class="accent-word">MOMENTO</span>
+  </h1>
+  <p class="hero-sub">Descubra os melhores shows, festivais, conferências e muito mais. Ingresso garantido, memória para sempre.</p>
+  <div class="hero-actions">
+    <button class="btn-primary" onclick="document.getElementById('eventos').scrollIntoView({behavior:'smooth'})">Explorar Eventos</button>
+    <a href="#" class="btn-ghost">→ Como funciona</a>
+  </div>
+  <div class="hero-stats">
+    <div class="stat">
+      <div class="stat-number">840+</div>
+      <div class="stat-label">Eventos ativos</div>
+    </div>
+    <div class="stat">
+      <div class="stat-number">12K</div>
+      <div class="stat-label">Participantes</div>
+    </div>
+    <div class="stat">
+      <div class="stat-number">98%</div>
+      <div class="stat-label">Satisfação</div>
+    </div>
+  </div>
+  <div class="hero-ticker">↓ Role para explorar ↓</div>
+</section>
+
+<!-- MARQUEE -->
+<div class="marquee-bar">
+  <div class="marquee-track" id="marqueeTrack">
+    <span class="marquee-item">Shows ao Vivo <span class="marquee-dot"></span></span>
+    <span class="marquee-item">Festivais <span class="marquee-dot"></span></span>
+    <span class="marquee-item">Conferências <span class="marquee-dot"></span></span>
+    <span class="marquee-item">Exposições <span class="marquee-dot"></span></span>
+    <span class="marquee-item">Teatro <span class="marquee-dot"></span></span>
+    <span class="marquee-item">Esportes <span class="marquee-dot"></span></span>
+    <span class="marquee-item">Gastronomia <span class="marquee-dot"></span></span>
+    <span class="marquee-item">Arte & Cultura <span class="marquee-dot"></span></span>
+    <span class="marquee-item">Shows ao Vivo <span class="marquee-dot"></span></span>
+    <span class="marquee-item">Festivais <span class="marquee-dot"></span></span>
+    <span class="marquee-item">Conferências <span class="marquee-dot"></span></span>
+    <span class="marquee-item">Exposições <span class="marquee-dot"></span></span>
+    <span class="marquee-item">Teatro <span class="marquee-dot"></span></span>
+    <span class="marquee-item">Esportes <span class="marquee-dot"></span></span>
+    <span class="marquee-item">Gastronomia <span class="marquee-dot"></span></span>
+    <span class="marquee-item">Arte & Cultura <span class="marquee-dot"></span></span>
+  </div>
+</div>
+
+<!-- SEARCH -->
+<div class="search-section" style="padding-top:60px">
+  <div class="search-wrap">
+    <span>🔍</span>
+    <input type="text" id="searchInput" placeholder="Buscar eventos, artistas, locais..." oninput="filterEvents()"/>
+    <div class="search-divider"></div>
+    <select id="stateFilter" onchange="onStateChange()">
+      <option value="">Estado</option>
+      <option value="AC">AC — Acre</option>
+      <option value="AL">AL — Alagoas</option>
+      <option value="AM">AM — Amazonas</option>
+      <option value="AP">AP — Amapá</option>
+      <option value="BA">BA — Bahia</option>
+      <option value="CE">CE — Ceará</option>
+      <option value="DF">DF — Distrito Federal</option>
+      <option value="ES">ES — Espírito Santo</option>
+      <option value="GO">GO — Goiás</option>
+      <option value="MA">MA — Maranhão</option>
+      <option value="MG">MG — Minas Gerais</option>
+      <option value="MS">MS — Mato Grosso do Sul</option>
+      <option value="MT">MT — Mato Grosso</option>
+      <option value="PA">PA — Pará</option>
+      <option value="PB">PB — Paraíba</option>
+      <option value="PE">PE — Pernambuco</option>
+      <option value="PI">PI — Piauí</option>
+      <option value="PR">PR — Paraná</option>
+      <option value="RJ">RJ — Rio de Janeiro</option>
+      <option value="RN">RN — Rio Grande do Norte</option>
+      <option value="RO">RO — Rondônia</option>
+      <option value="RR">RR — Roraima</option>
+      <option value="RS">RS — Rio Grande do Sul</option>
+      <option value="SC">SC — Santa Catarina</option>
+      <option value="SE">SE — Sergipe</option>
+      <option value="SP">SP — São Paulo</option>
+      <option value="TO">TO — Tocantins</option>
+    </select>
+    <div class="search-divider"></div>
+    <select id="cityFilter" onchange="filterEvents()" disabled>
+      <option value="">Cidade</option>
+    </select>
+    <button onclick="filterEvents()">Buscar</button>
+  </div>
+</div>
+
+<!-- EVENTS -->
+<section id="eventos">
+  <div class="section-label">Agenda</div>
+  <h2 class="section-title">PRÓXIMOS EVENTOS</h2>
+  <div class="filter-bar" id="filterBar">
+    <button class="filter-btn active" onclick="setFilter(this, 'todos')">Todos</button>
+    <button class="filter-btn" onclick="setFilter(this, 'musica')">🎵 Música</button>
+    <button class="filter-btn" onclick="setFilter(this, 'tech')">💻 Tech</button>
+    <button class="filter-btn" onclick="setFilter(this, 'arte')">🎨 Arte</button>
+    <button class="filter-btn" onclick="setFilter(this, 'gastronomia')">🍽️ Gastronomia</button>
+    <button class="filter-btn" onclick="setFilter(this, 'esporte')">⚽ Esporte</button>
+  </div>
+  <div class="events-grid" id="eventsGrid"></div>
+</section>
+
+<!-- FEATURED -->
+<section id="destaque" class="featured-section">
+  <div class="section-label">Em destaque</div>
+  <h2 class="section-title">EVENTO DO MÊS</h2>
+  <div class="featured-wrap fade-up">
+    <div class="featured-img">
+      <div class="featured-badge">⭐ Destaque</div>
+      <img src="https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=800&q=80" alt="Festival de Música"/>
+    </div>
+    <div class="featured-content">
+      <div class="section-label" style="margin-bottom:8px">Música & Festival</div>
+      <h2>FESTIVAL SONS DO BRASIL 2025</h2>
+      <p>O maior festival de música brasileira do ano reúne mais de 40 artistas em 3 palcos simultâneos durante dois dias inesquecíveis.</p>
+      <div class="featured-details">
+        <div class="detail-row">
+          <div class="detail-icon">📅</div>
+          <div>
+            <div class="detail-label">Data</div>
+            <div class="detail-val">15 e 16 de Novembro, 2025</div>
+          </div>
+        </div>
+        <div class="detail-row">
+          <div class="detail-icon">📍</div>
+          <div>
+            <div class="detail-label">Local</div>
+            <div class="detail-val">Parque Villa-Lobos, São Paulo</div>
+          </div>
+        </div>
+        <div class="detail-row">
+          <div class="detail-icon">🎟️</div>
+          <div>
+            <div class="detail-label">Ingressos</div>
+            <div class="detail-val">A partir de R$ 180 — Lote 2</div>
+          </div>
+        </div>
+      </div>
+      <button class="btn-primary" onclick="openModal('Festival Sons do Brasil 2025')">Garantir Ingresso</button>
+    </div>
+  </div>
+</section>
+
+<!-- CATEGORIES -->
+<section id="categorias">
+  <div class="section-label">Navegue por</div>
+  <h2 class="section-title">CATEGORIAS</h2>
+  <div class="categories-grid">
+    <div class="cat-card fade-up">
+      <div class="cat-icon">🎵</div>
+      <div class="cat-name">Música</div>
+      <div class="cat-count">234 eventos</div>
+      <div class="cat-arrow">↗</div>
+    </div>
+    <div class="cat-card fade-up" style="transition-delay:0.1s">
+      <div class="cat-icon">💻</div>
+      <div class="cat-name">Tecnologia</div>
+      <div class="cat-count">89 eventos</div>
+      <div class="cat-arrow">↗</div>
+    </div>
+    <div class="cat-card fade-up" style="transition-delay:0.2s">
+      <div class="cat-icon">🎨</div>
+      <div class="cat-name">Arte & Cultura</div>
+      <div class="cat-count">156 eventos</div>
+      <div class="cat-arrow">↗</div>
+    </div>
+    <div class="cat-card fade-up" style="transition-delay:0.3s">
+      <div class="cat-icon">🍽️</div>
+      <div class="cat-name">Gastronomia</div>
+      <div class="cat-count">112 eventos</div>
+      <div class="cat-arrow">↗</div>
+    </div>
+  </div>
+</section>
+
+<!-- NEWSLETTER -->
+<div class="newsletter-section">
+  <div>
+    <h2>FIQUE POR<br><span>DENTRO DE</span><br>TUDO</h2>
+  </div>
+  <div class="newsletter-form">
+    <input type="email" placeholder="seu@email.com" id="newsletterEmail"/>
+    <button onclick="subscribeNewsletter()">Me avisar</button>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-top">
+    <div class="footer-brand">
+      <div class="logo">EVENT<span style="color:var(--accent)">URA</span></div>
+      <p>A plataforma definitiva para descobrir e participar dos melhores eventos do Brasil.</p>
+    </div>
+    <div class="footer-col">
+      <h4>Eventos</h4>
+      <ul>
+        <li><a href="#">Música</a></li>
+        <li><a href="#">Tecnologia</a></li>
+        <li><a href="#">Arte</a></li>
+        <li><a href="#">Gastronomia</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Empresa</h4>
+      <ul>
+        <li><a href="#">Sobre nós</a></li>
+        <li><a href="#">Blog</a></li>
+        <li><a href="#">Parceiros</a></li>
+        <li><a href="#">Contato</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Suporte</h4>
+      <ul>
+        <li><a href="#">FAQ</a></li>
+        <li><a href="#">Meus ingressos</a></li>
+        <li><a href="#">Reembolsos</a></li>
+        <li><a href="#">Privacidade</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <p>© 2025 EVENTURA. Todos os direitos reservados.</p>
+    <div class="socials">
+      <a href="#" class="social-btn">𝕏</a>
+      <a href="#" class="social-btn">in</a>
+      <a href="#" class="social-btn">ig</a>
+      <a href="#" class="social-btn">yt</a>
+    </div>
+  </div>
+</footer>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeModalOutside(event)">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <div id="modalForm">
+      <h3>RESERVAR INGRESSO</h3>
+      <div class="modal-event-name" id="modalEventName"></div>
+      <label>Nome completo</label>
+      <input type="text" id="modalName" placeholder="Seu nome"/>
+      <label>E-mail</label>
+      <input type="email" id="modalEmail" placeholder="seu@email.com"/>
+      <label>Tipo de ingresso</label>
+      <select id="modalTicket">
+        <option>Pista — R$ 80</option>
+        <option>Área VIP — R$ 180</option>
+        <option>Camarote — R$ 350</option>
+      </select>
+      <label>Quantidade</label>
+      <select id="modalQty">
+        <option>1 ingresso</option>
+        <option>2 ingressos</option>
+        <option>3 ingressos</option>
+        <option>4 ingressos</option>
+      </select>
+      <button class="modal-submit" onclick="submitReserva()">Confirmar Reserva</button>
+    </div>
+    <div class="modal-success" id="modalSuccess">
+      <span class="check">✅</span>
+      <h3>RESERVA CONFIRMADA!</h3>
+      <p>Enviamos os detalhes para o seu e-mail. Até o evento!</p>
+    </div>
+  </div>
+</div>
+
+<script src="js/script.js"></script>
+</body>
+</html>

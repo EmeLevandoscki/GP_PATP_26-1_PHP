@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SIMULACAO — Eventos Incríveis</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="css/style.css"/>
+  <style>
+    /* ── NAV USER STATE ── */
+    .nav-auth { display: flex; align-items: center; gap: 12px; }
+
+    /* Botões de login/cadastro (deslogado) */
+    .btn-nav-login {
+      color: var(--muted); text-decoration: none;
+      font-size: 0.82rem; font-weight: 500;
+      letter-spacing: 0.07em; text-transform: uppercase;
+      transition: color 0.2s;
+    }
+    .btn-nav-login:hover { color: var(--text); }
+
+    .btn-nav-register {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text); text-decoration: none;
+      font-size: 0.82rem; font-weight: 500;
+      letter-spacing: 0.07em; text-transform: uppercase;
+      padding: 8px 18px;
+      transition: all 0.2s;
+    }
+    .btn-nav-register:hover { border-color: var(--accent); color: var(--accent); }
+
+    /* Avatar dropdown */
+    .nav-user { position: relative; }
+
+    .nav-avatar {
+      display: flex; align-items: center; gap: 10px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      padding: 6px 14px 6px 8px;
+      cursor: none;
+      transition: border-color 0.2s;
+    }
+    .nav-avatar:hover { border-color: rgba(255,255,255,0.15); }
+
+    .avatar-circle {
+      width: 30px; height: 30px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.75rem; font-weight: 700;
+      flex-shrink: 0;
+    }
+    .avatar-circle.cliente      { background: rgba(0,229,255,0.15); color: var(--accent3); border: 1px solid rgba(0,229,255,0.3); }
+    .avatar-circle.organizador  { background: rgba(255,184,0,0.15); color: var(--accent2); border: 1px solid rgba(255,184,0,0.3); }
+
+    .avatar-info { display: flex; flex-direction: column; line-height: 1.2; }
+    .avatar-name { font-size: 0.82rem; font-weight: 500; }
+    .avatar-role {
+      font-size: 0.65rem; letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+    .avatar-role.cliente     { color: var(--accent3); }
+    .avatar-role.organizador { color: var(--accent2); }
+
+    .avatar-chevron { color: var(--muted); font-size: 0.7rem; margin-left: 4px; transition: transform 0.2s; }
+    .nav-user.open .avatar-chevron { transform: rotate(180deg); }
+
+    /* Dropdown menu */
+    .user-dropdown {
+      position: absolute; top: calc(100% + 8px); right: 0;
+      width: 220px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      z-index: 600;
+      opacity: 0; pointer-events: none;
+      transform: translateY(-8px);
+      transition: all 0.2s ease;
+    }
+    .nav-user.open .user-dropdown {
+      opacity: 1; pointer-events: all;
+      transform: translateY(0);
+    }
+
+    .dropdown-header {
+      padding: 14px 16px 12px;
+      border-bottom: 1px solid var(--border);
+    }
+    .dropdown-header .dh-name { font-weight: 500; font-size: 0.9rem; }
+    .dropdown-header .dh-email { font-size: 0.75rem; color: var(--muted); margin-top: 2px; }
+
+    .dropdown-badge {
+      display: inline-flex; align-items: center; gap: 5px;
+      margin-top: 8px; padding: 3px 10px;
+      font-size: 0.65rem; letter-spacing: 0.1em; text-transform: uppercase;
+    }
+    .dropdown-badge.cliente     { background: rgba(0,229,255,0.08); border: 1px solid rgba(0,229,255,0.2); color: var(--accent3); }
+    .dropdown-badge.organizador { background: rgba(255,184,0,0.08); border: 1px solid rgba(255,184,0,0.2); color: var(--accent2); }
+    .dropdown-badge-dot { width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
+
+    .dropdown-menu { padding: 6px 0; }
+    .dropdown-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 16px;
+      color: var(--muted); text-decoration: none;
+      font-size: 0.85rem; transition: all 0.15s;
+      cursor: none;
+    }
+    .dropdown-item:hover { color: var(--text); background: rgba(255,255,255,0.03); }
+    .dropdown-item .di-icon { font-size: 0.9rem; width: 18px; text-align: center; }
+
+    .dropdown-divider { height: 1px; background: var(--border); margin: 4px 0; }
+
+    .dropdown-item.danger { color: rgba(255,61,90,0.6); }
+    .dropdown-item.danger:hover { color: var(--accent); background: rgba(255,61,90,0.04); }
+
+    /* Org-only badge na nav */
+    .nav-org-btn {
+      background: var(--accent);
+      color: #fff; text-decoration: none;
+      font-size: 0.78rem; font-weight: 500;
+      letter-spacing: 0.07em; text-transform: uppercase;
+      padding: 8px 18px;
+      clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px));
+      transition: background 0.2s;
+    }
+    .nav-org-btn:hover { background: #ff5c74; }
+
+    /* Notificação */
+    .nav-notif {
+      position: relative; cursor: none;
+      background: transparent; border: 1px solid var(--border);
+      width: 34px; height: 34px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.9rem; transition: border-color 0.2s;
+    }
+    .nav-notif:hover { border-color: rgba(255,255,255,0.2); }
+    .notif-dot {
+      position: absolute; top: 6px; right: 6px;
+      width: 7px; height: 7px;
+      background: var(--accent); border-radius: 50%;
+      border: 1.5px solid var(--bg);
+    }
+
+    /* Demo switcher (só para demonstração) */
+    .demo-bar {
+      position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+      z-index: 800;
+      display: flex; align-items: center; gap: 8px;
+      background: var(--card); border: 1px solid var(--border);
+      padding: 10px 16px; font-size: 0.75rem; color: var(--muted);
+    }
+    .demo-bar span { letter-spacing: 0.08em; text-transform: uppercase; }
+    .demo-btn {
+      padding: 5px 14px; border: 1px solid var(--border);
+      background: transparent; color: var(--muted);
+      font-family: 'DM Sans', sans-serif; font-size: 0.75rem;
+      cursor: none; transition: all 0.2s; letter-spacing: 0.05em;
+    }
+    .demo-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .demo-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+  </style>
+</head>
+<body>
+
+<div id="cursor"></div>
+<div id="cursor-ring"></div>
+
+<!-- NAV -->
+<nav>
+  <div class="logo">EVENT<span>URA</span></div>
+  <ul>
+    <li><a href="#eventos">Eventos</a></li>
+    <li><a href="#categorias">Categorias</a></li>
+    <li><a href="#destaque">Destaque</a></li>
+  </ul>
+
+  <!-- AUTH AREA — alterado via JS -->
+  <div class="nav-auth" id="navAuth">
+    <!-- Preenchido pelo JS conforme o estado do usuário -->
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-grid"></div>
+  <div class="hero-eyebrow">A plataforma de eventos do Brasil</div>
+  <h1>
+    VIVA<br>
+    <span class="line2">CADA</span><br>
+    <span class="accent-word">MOMENTO</span>
+  </h1>
+  <p class="hero-sub">Descubra os melhores shows, festivais, conferências e muito mais. Ingresso garantido, memória para sempre.</p>
+  <div class="hero-actions">
+    <button class="btn-primary" onclick="document.getElementById('eventos').scrollIntoView({behavior:'smooth'})">Explorar Eventos</button>
+    <a href="#" class="btn-ghost">→ Como funciona</a>
+  </div>
+  <div class="hero-stats">
+    <div class="stat"><div class="stat-number">840+</div><div class="stat-label">Eventos ativos</div></div>
+    <div class="stat"><div class="stat-number">12K</div><div class="stat-label">Participantes</div></div>
+    <div class="stat"><div class="stat-number">98%</div><div class="stat-label">Satisfação</div></div>
+  </div>
+  <div class="hero-ticker">↓ Role para explorar ↓</div>
+</section>
+
+<!-- MARQUEE -->
+<div class="marquee-bar">
+  <div class="marquee-track" id="marqueeTrack">
+    <span class="marquee-item">Shows ao Vivo <span class="marquee-dot"></span></span>
+    <span class="marquee-item">Festivais <span class="marquee-dot"></span></span>
+    <span class="marquee-item">Conferências <span class="marquee-dot"></span></span>
+    <span class="marquee-item">Exposições <span class="marquee-dot"></span></span>
+    <span class="marquee-item">Teatro <span class="marquee-dot"></span></span>
+    <span class="marquee-item">Esportes <span class="marquee-dot"></span></span>
+    <span class="marquee-item">Gastronomia <span class="marquee-dot"></span></span>
+    <span class="marquee-item">Arte & Cultura <span class="marquee-dot"></span></span>
+    <span class="marquee-item">Shows ao Vivo <span class="marquee-dot"></span></span>
+    <span class="marquee-item">Festivais <span class="marquee-dot"></span></span>
+    <span class="marquee-item">Conferências <span class="marquee-dot"></span></span>
+    <span class="marquee-item">Exposições <span class="marquee-dot"></span></span>
+    <span class="marquee-item">Teatro <span class="marquee-dot"></span></span>
+    <span class="marquee-item">Esportes <span class="marquee-dot"></span></span>
+    <span class="marquee-item">Gastronomia <span class="marquee-dot"></span></span>
+    <span class="marquee-item">Arte & Cultura <span class="marquee-dot"></span></span>
+  </div>
+</div>
+
+<!-- SEARCH -->
+<div class="search-section" style="padding-top:60px">
+  <div class="search-wrap">
+    <span>🔍</span>
+    <input type="text" id="searchInput" placeholder="Buscar eventos, artistas, locais..." oninput="filterEvents()"/>
+    <div class="search-divider"></div>
+    <select id="stateFilter" onchange="onStateChange()">
+      <option value="">Estado</option>
+      <option value="AC">AC — Acre</option><option value="AL">AL — Alagoas</option>
+      <option value="AM">AM — Amazonas</option><option value="AP">AP — Amapá</option>
+      <option value="BA">BA — Bahia</option><option value="CE">CE — Ceará</option>
+      <option value="DF">DF — Distrito Federal</option><option value="ES">ES — Espírito Santo</option>
+      <option value="GO">GO — Goiás</option><option value="MA">MA — Maranhão</option>
+      <option value="MG">MG — Minas Gerais</option><option value="MS">MS — Mato Grosso do Sul</option>
+      <option value="MT">MT — Mato Grosso</option><option value="PA">PA — Pará</option>
+      <option value="PB">PB — Paraíba</option><option value="PE">PE — Pernambuco</option>
+      <option value="PI">PI — Piauí</option><option value="PR">PR — Paraná</option>
+      <option value="RJ">RJ — Rio de Janeiro</option><option value="RN">RN — Rio Grande do Norte</option>
+      <option value="RO">RO — Rondônia</option><option value="RR">RR — Roraima</option>
+      <option value="RS">RS — Rio Grande do Sul</option><option value="SC">SC — Santa Catarina</option>
+      <option value="SE">SE — Sergipe</option><option value="SP">SP — São Paulo</option>
+      <option value="TO">TO — Tocantins</option>
+    </select>
+    <div class="search-divider"></div>
+    <select id="cityFilter" onchange="filterEvents()" disabled>
+      <option value="">Cidade</option>
+    </select>
+    <button onclick="filterEvents()">Buscar</button>
+  </div>
+</div>
+
+<!-- EVENTS -->
+<section id="eventos">
+  <div class="section-label">Agenda</div>
+  <h2 class="section-title">PRÓXIMOS EVENTOS</h2>
+  <div class="filter-bar" id="filterBar">
+    <button class="filter-btn active" onclick="setFilter(this, 'todos')">Todos</button>
+    <button class="filter-btn" onclick="setFilter(this, 'musica')">🎵 Música</button>
+    <button class="filter-btn" onclick="setFilter(this, 'tech')">💻 Tech</button>
+    <button class="filter-btn" onclick="setFilter(this, 'arte')">🎨 Arte</button>
+    <button class="filter-btn" onclick="setFilter(this, 'gastronomia')">🍽️ Gastronomia</button>
+    <button class="filter-btn" onclick="setFilter(this, 'esporte')">⚽ Esporte</button>
+  </div>
+  <div class="events-grid" id="eventsGrid"></div>
+</section>
+
+<!-- FEATURED -->
+<section id="destaque" class="featured-section">
+  <div class="section-label">Em destaque</div>
+  <h2 class="section-title">EVENTO DO MÊS</h2>
+  <div class="featured-wrap fade-up">
+    <div class="featured-img">
+      <div class="featured-badge">⭐ Destaque</div>
+      <img src="https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=800&q=80" alt="Festival de Música"/>
+    </div>
+    <div class="featured-content">
+      <div class="section-label" style="margin-bottom:8px">Música & Festival</div>
+      <h2>FESTIVAL SONS DO BRASIL 2025</h2>
+      <p>O maior festival de música brasileira do ano reúne mais de 40 artistas em 3 palcos simultâneos durante dois dias inesquecíveis.</p>
+      <div class="featured-details">
+        <div class="detail-row"><div class="detail-icon">📅</div><div><div class="detail-label">Data</div><div class="detail-val">15 e 16 de Novembro, 2025</div></div></div>
+        <div class="detail-row"><div class="detail-icon">📍</div><div><div class="detail-label">Local</div><div class="detail-val">Parque Villa-Lobos, São Paulo</div></div></div>
+        <div class="detail-row"><div class="detail-icon">🎟️</div><div><div class="detail-label">Ingressos</div><div class="detail-val">A partir de R$ 180 — Lote 2</div></div></div>
+      </div>
+      <button class="btn-primary" onclick="openModal('Festival Sons do Brasil 2025')">Garantir Ingresso</button>
+    </div>
+  </div>
+</section>
+
+<!-- CATEGORIES -->
+<section id="categorias">
+  <div class="section-label">Navegue por</div>
+  <h2 class="section-title">CATEGORIAS</h2>
+  <div class="categories-grid">
+    <div class="cat-card fade-up"><div class="cat-icon">🎵</div><div class="cat-name">Música</div><div class="cat-count">234 eventos</div><div class="cat-arrow">↗</div></div>
+    <div class="cat-card fade-up" style="transition-delay:0.1s"><div class="cat-icon">💻</div><div class="cat-name">Tecnologia</div><div class="cat-count">89 eventos</div><div class="cat-arrow">↗</div></div>
+    <div class="cat-card fade-up" style="transition-delay:0.2s"><div class="cat-icon">🎨</div><div class="cat-name">Arte & Cultura</div><div class="cat-count">156 eventos</div><div class="cat-arrow">↗</div></div>
+    <div class="cat-card fade-up" style="transition-delay:0.3s"><div class="cat-icon">🍽️</div><div class="cat-name">Gastronomia</div><div class="cat-count">112 eventos</div><div class="cat-arrow">↗</div></div>
+  </div>
+</section>
+
+<!-- NEWSLETTER -->
+<div class="newsletter-section">
+  <div><h2>FIQUE POR<br><span>DENTRO DE</span><br>TUDO</h2></div>
+  <div class="newsletter-form">
+    <input type="email" placeholder="seu@email.com" id="newsletterEmail"/>
+    <button onclick="subscribeNewsletter()">Me avisar</button>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-top">
+    <div class="footer-brand">
+      <div class="logo">EVENT<span style="color:var(--accent)">URA</span></div>
+      <p>A plataforma definitiva para descobrir e participar dos melhores eventos do Brasil.</p>
+    </div>
+    <div class="footer-col"><h4>Eventos</h4><ul><li><a href="#">Música</a></li><li><a href="#">Tecnologia</a></li><li><a href="#">Arte</a></li><li><a href="#">Gastronomia</a></li></ul></div>
+    <div class="footer-col"><h4>Empresa</h4><ul><li><a href="#">Sobre nós</a></li><li><a href="#">Blog</a></li><li><a href="#">Parceiros</a></li><li><a href="#">Contato</a></li></ul></div>
+    <div class="footer-col"><h4>Suporte</h4><ul><li><a href="#">FAQ</a></li><li><a href="#">Meus ingressos</a></li><li><a href="#">Reembolsos</a></li><li><a href="#">Privacidade</a></li></ul></div>
+  </div>
+  <div class="footer-bottom">
+    <p>© 2025 EVENTURA. Todos os direitos reservados.</p>
+    <div class="socials">
+      <a href="#" class="social-btn">𝕏</a><a href="#" class="social-btn">in</a>
+      <a href="#" class="social-btn">ig</a><a href="#" class="social-btn">yt</a>
+    </div>
+  </div>
+</footer>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeModalOutside(event)">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <div id="modalForm">
+      <h3>RESERVAR INGRESSO</h3>
+      <div class="modal-event-name" id="modalEventName"></div>
+      <label>Nome completo</label><input type="text" id="modalName" placeholder="Seu nome"/>
+      <label>E-mail</label><input type="email" id="modalEmail" placeholder="seu@email.com"/>
+      <label>Tipo de ingresso</label>
+      <select id="modalTicket"><option>Pista — R$ 80</option><option>Área VIP — R$ 180</option><option>Camarote — R$ 350</option></select>
+      <label>Quantidade</label>
+      <select id="modalQty"><option>1 ingresso</option><option>2 ingressos</option><option>3 ingressos</option><option>4 ingressos</option></select>
+      <button class="modal-submit" onclick="submitReserva()">Confirmar Reserva</button>
+    </div>
+    <div class="modal-success" id="modalSuccess">
+      <span class="check">✅</span>
+      <h3>RESERVA CONFIRMADA!</h3>
+      <p>Enviamos os detalhes para o seu e-mail. Até o evento!</p>
+    </div>
+  </div>
+</div>
+
+<!-- DEMO SWITCHER -->
+<div class="demo-bar">
+  <span>🎭 Simular perfil:</span>
+  <button class="demo-btn active" id="demoDeslogado" onclick="setUserState('deslogado')">Deslogado</button>
+  <button class="demo-btn" id="demoCliente" onclick="setUserState('cliente')">👤 Cliente</button>
+  <button class="demo-btn" id="demoOrg" onclick="setUserState('organizador')">🏢 Organizador</button>
+</div>
+
+<script src="js/script.js"></script>
+<script>
+// ── NAV AUTH STATES ──
+
+const users = {
+  deslogado: null,
+  cliente: {
+    name: 'Ana Souza',
+    initials: 'AS',
+    email: 'ana@email.com',
+    role: 'cliente',
+    roleLabel: 'Cliente',
+  },
+  organizador: {
+    name: 'Mariana Costa',
+    initials: 'MC',
+    email: 'mariana@somecia.com',
+    role: 'organizador',
+    roleLabel: 'Organizador',
+    org: 'Som & Cia Produções',
+  },
+};
+
+let currentState = 'deslogado';
+
+function renderNav(state) {
+  const auth = document.getElementById('navAuth');
+  const user = users[state];
+
+  if (!user) {
+    // ── DESLOGADO ──
+    auth.innerHTML = `
+      <a href="login.html" class="btn-nav-login">Entrar</a>
+      <a href="login.html" class="btn-nav-register">Cadastrar</a>
+    `;
+    return;
+  }
+
+  if (user.role === 'cliente') {
+    // ── CLIENTE ──
+    auth.innerHTML = `
+      <button class="nav-notif" title="Notificações">
+        🔔 <span class="notif-dot"></span>
+      </button>
+      <div class="nav-user" id="navUser">
+        <div class="nav-avatar" onclick="toggleDropdown()">
+          <div class="avatar-circle cliente">${user.initials}</div>
+          <div class="avatar-info">
+            <span class="avatar-name">${user.name}</span>
+            <span class="avatar-role cliente">${user.roleLabel}</span>
+          </div>
+          <span class="avatar-chevron">▾</span>
+        </div>
+        <div class="user-dropdown">
+          <div class="dropdown-header">
+            <div class="dh-name">${user.name}</div>
+            <div class="dh-email">${user.email}</div>
+            <div class="dropdown-badge cliente">
+              <span class="dropdown-badge-dot"></span> Cliente
+            </div>
+          </div>
+          <div class="dropdown-menu">
+            <a href="#" class="dropdown-item"><span class="di-icon">🎟️</span> Meus Ingressos</a>
+            <a href="#" class="dropdown-item"><span class="di-icon">❤️</span> Eventos Salvos</a>
+            <a href="#" class="dropdown-item"><span class="di-icon">🔔</span> Notificações</a>
+            <a href="#" class="dropdown-item"><span class="di-icon">⚙️</span> Configurações</a>
+            <div class="dropdown-divider"></div>
+            <a href="#" class="dropdown-item danger" onclick="setUserState('deslogado')"><span class="di-icon">🚪</span> Sair</a>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  if (user.role === 'organizador') {
+    // ── ORGANIZADOR ──
+    auth.innerHTML = `
+      <a href="criar.evento.html" class="nav-org-btn">+ Criar Evento</a>
+      <button class="nav-notif" title="Notificações">
+        🔔 <span class="notif-dot"></span>
+      </button>
+      <div class="nav-user" id="navUser">
+        <div class="nav-avatar" onclick="toggleDropdown()">
+          <div class="avatar-circle organizador">${user.initials}</div>
+          <div class="avatar-info">
+            <span class="avatar-name">${user.name}</span>
+            <span class="avatar-role organizador">${user.roleLabel}</span>
+          </div>
+          <span class="avatar-chevron">▾</span>
+        </div>
+        <div class="user-dropdown">
+          <div class="dropdown-header">
+            <div class="dh-name">${user.name}</div>
+            <div class="dh-email">${user.email}</div>
+            <div class="dropdown-badge organizador">
+              <span class="dropdown-badge-dot"></span> Organizador · ${user.org}
+            </div>
+          </div>
+          <div class="dropdown-menu">
+            <a href="criar-evento.html" class="dropdown-item"><span class="di-icon">➕</span> Criar Evento</a>
+            <a href="#" class="dropdown-item"><span class="di-icon">📋</span> Meus Eventos</a>
+            <a href="#" class="dropdown-item"><span class="di-icon">📊</span> Relatórios</a>
+            <a href="#" class="dropdown-item"><span class="di-icon">🎟️</span> Gestão de Ingressos</a>
+            <div class="dropdown-divider"></div>
+            <a href="#" class="dropdown-item"><span class="di-icon">⚙️</span> Configurações</a>
+            <a href="#" class="dropdown-item danger" onclick="setUserState('deslogado')"><span class="di-icon">🚪</span> Sair</a>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+}
+
+function toggleDropdown() {
+  const navUser = document.getElementById('navUser');
+  if (navUser) navUser.classList.toggle('open');
+}
+
+// Fechar dropdown ao clicar fora
+document.addEventListener('click', e => {
+  const navUser = document.getElementById('navUser');
+  if (navUser && !navUser.contains(e.target)) navUser.classList.remove('open');
+});
+
+function setUserState(state) {
+  currentState = state;
+  renderNav(state);
+
+  // Update demo buttons
+  ['demoDeslogado','demoCliente','demoOrg'].forEach(id => {
+    document.getElementById(id)?.classList.remove('active');
+  });
+  const map = { deslogado: 'demoDeslogado', cliente: 'demoCliente', organizador: 'demoOrg' };
+  document.getElementById(map[state])?.classList.add('active');
+}
+
+// Init
+renderNav('deslogado');
+</script>
+</body>
+</html>

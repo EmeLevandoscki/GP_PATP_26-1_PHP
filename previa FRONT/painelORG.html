@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>EVENTURA — Painel Organizador</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet"/>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+  <style>
+    *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+    :root{--bg:#0a0a0f;--surface:#12121a;--card:#16161f;--accent:#ff3d5a;--accent2:#ffb800;--accent3:#00e5ff;--text:#f0eeea;--muted:#6b6a75;--border:rgba(255,255,255,0.07);--sw:250px}
+    body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;cursor:none}
+    #cursor{width:10px;height:10px;background:var(--accent2);border-radius:50%;position:fixed;top:0;left:0;pointer-events:none;z-index:9999;mix-blend-mode:screen}
+    #cursor-ring{width:30px;height:30px;border:1.5px solid rgba(255,184,0,.4);border-radius:50%;position:fixed;top:0;left:0;pointer-events:none;z-index:9998;transition:left .1s,top .1s}
+    /* SIDEBAR */
+    .sidebar{width:var(--sw);background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;left:0;top:0;bottom:0;z-index:100}
+    .sb-logo{padding:28px 24px 24px;border-bottom:1px solid var(--border);font-family:'Bebas Neue',sans-serif;font-size:1.4rem;letter-spacing:.1em}
+    .sb-logo span{color:var(--accent2)}
+    .sb-logo a{color:var(--muted);text-decoration:none;font-size:.65rem;font-family:'DM Sans',sans-serif;display:block;margin-top:4px;transition:color .2s}
+    .sb-logo a:hover{color:var(--text)}
+    .sb-user{padding:18px 24px;border-bottom:1px solid var(--border)}
+    .sb-user-row{display:flex;align-items:center;gap:12px}
+    .sb-av{width:38px;height:38px;border-radius:50%;background:rgba(255,184,0,.15);border:1px solid rgba(255,184,0,.3);display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:700;color:var(--accent2);flex-shrink:0}
+    .sb-uname{font-size:.88rem;font-weight:500}
+    .sb-badge{display:inline-flex;align-items:center;gap:4px;font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;color:var(--accent2);margin-top:2px}
+    .sb-dot{width:5px;height:5px;border-radius:50%;background:var(--accent2)}
+    .sb-org{font-size:.72rem;color:var(--muted);margin-top:10px;padding-top:10px;border-top:1px solid var(--border)}
+    .sb-org span{color:var(--text)}
+    .sb-nav{flex:1;padding:16px 0;overflow-y:auto}
+    .sb-sec{font-size:.6rem;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);padding:12px 24px 6px}
+    .nav-item{display:flex;align-items:center;gap:10px;padding:10px 24px;color:var(--muted);text-decoration:none;font-size:.85rem;transition:all .15s;cursor:none;border-left:2px solid transparent}
+    .nav-item:hover{color:var(--text);background:rgba(255,255,255,.02)}
+    .nav-item.active{color:var(--accent2);border-left-color:var(--accent2);background:rgba(255,184,0,.04)}
+    .nav-ico{font-size:.95rem;width:20px;text-align:center}
+    .nav-badge{margin-left:auto;background:var(--accent);color:#fff;font-size:.6rem;font-weight:700;padding:2px 7px;border-radius:20px}
+    .sb-foot{padding:16px 24px;border-top:1px solid var(--border)}
+    .sb-foot a{display:flex;align-items:center;gap:8px;color:var(--muted);text-decoration:none;font-size:.82rem;transition:color .15s;cursor:none}
+    .sb-foot a:hover{color:var(--accent)}
+    /* MAIN */
+    .main{margin-left:var(--sw);flex:1;display:flex;flex-direction:column;min-height:100vh}
+    .topbar{padding:20px 40px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--bg);position:sticky;top:0;z-index:50}
+    .topbar-title{font-family:'Bebas Neue',sans-serif;font-size:1.3rem;letter-spacing:.1em}
+    .tb-actions{display:flex;align-items:center;gap:10px}
+    .btn-criar{background:var(--accent);color:#fff;text-decoration:none;font-size:.78rem;font-weight:500;letter-spacing:.07em;text-transform:uppercase;padding:9px 20px;transition:background .2s;cursor:none;border:none}
+    .btn-criar:hover{background:#ff5c74}
+    .notif-btn{position:relative;background:var(--surface);border:1px solid var(--border);width:36px;height:36px;display:flex;align-items:center;justify-content:center;font-size:.9rem;cursor:none;transition:border-color .2s}
+    .ndot{position:absolute;top:7px;right:7px;width:7px;height:7px;background:var(--accent);border-radius:50%;border:1.5px solid var(--bg)}
+    /* PAGES */
+    .page{padding:36px 40px;display:none}
+    .page.active{display:block}
+    .ph-eye{font-size:.7rem;letter-spacing:.15em;text-transform:uppercase;color:var(--accent2);margin-bottom:6px}
+    .ph-title{font-family:'Bebas Neue',sans-serif;font-size:2rem;letter-spacing:.08em}
+    .ph-sub{color:var(--muted);font-size:.88rem;margin-top:4px;margin-bottom:32px}
+    /* STATS */
+    .stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:28px}
+    .sc{background:var(--card);border:1px solid var(--border);padding:20px;position:relative;overflow:hidden;transition:border-color .2s}
+    .sc:hover{border-color:rgba(255,184,0,.2)}
+    .sc::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:var(--accent2);transform:scaleX(0);transform-origin:left;transition:transform .3s}
+    .sc:hover::after{transform:scaleX(1)}
+    .sc-icon{font-size:1.3rem;margin-bottom:12px}
+    .sc-val{font-family:'Bebas Neue',sans-serif;font-size:2rem;letter-spacing:.06em}
+    .sc-label{font-size:.75rem;color:var(--muted);letter-spacing:.05em;text-transform:uppercase;margin-top:2px}
+    .sc-change{font-size:.72rem;margin-top:6px}
+    .sc-change.up{color:#4caf50}
+    .sc-change.down{color:var(--accent)}
+    /* BLOCK */
+    .block{background:var(--card);border:1px solid var(--border);margin-bottom:24px}
+    .block-head{padding:16px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+    .block-title{font-family:'Bebas Neue',sans-serif;font-size:1rem;letter-spacing:.1em}
+    .block-act{font-size:.75rem;color:var(--accent2);cursor:none;background:none;border:none;transition:opacity .2s}
+    .block-act:hover{opacity:.7}
+    .block-body{padding:24px}
+    /* CHARTS ROW */
+    .charts-row{display:grid;grid-template-columns:2fr 1fr;gap:20px;margin-bottom:24px}
+    .chart-wrap{background:var(--card);border:1px solid var(--border);padding:20px}
+    .chart-title{font-family:'Bebas Neue',sans-serif;font-size:.95rem;letter-spacing:.1em;margin-bottom:16px;color:var(--muted)}
+    .chart-canvas-wrap{position:relative;height:200px;width:100%}
+    .chart-canvas-wrap canvas{display:block;margin:0 auto}
+    /* EVENTOS TABLE */
+    .et{width:100%;border-collapse:collapse}
+    .et thead tr{border-bottom:1px solid var(--border)}
+    .et th{text-align:left;padding:10px 16px;font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:400}
+    .et td{padding:14px 16px;font-size:.85rem;border-bottom:1px solid var(--border)}
+    .et tr:last-child td{border-bottom:none}
+    .et tr:hover td{background:rgba(255,255,255,.01)}
+    .ev-name{font-weight:500}
+    .ev-date{font-size:.75rem;color:var(--muted);margin-top:2px}
+    .ev-status{padding:3px 10px;font-size:.62rem;letter-spacing:.1em;text-transform:uppercase}
+    .ev-status.publicado{background:rgba(76,175,80,.1);border:1px solid rgba(76,175,80,.3);color:#4caf50}
+    .ev-status.rascunho{background:rgba(107,106,117,.1);border:1px solid var(--border);color:var(--muted)}
+    .ev-status.pendente{background:rgba(255,184,0,.1);border:1px solid rgba(255,184,0,.3);color:var(--accent2)}
+    .ev-status.encerrado{background:rgba(255,61,90,.08);border:1px solid rgba(255,61,90,.2);color:var(--accent)}
+    .prog-bar{height:6px;background:rgba(255,255,255,.06);margin-top:6px;width:100%;min-width:100px}
+    .prog-fill{height:100%;background:var(--accent2);transition:width .5s}
+    .ev-actions{display:flex;gap:6px}
+    .ev-btn{background:transparent;border:1px solid var(--border);color:var(--muted);padding:5px 10px;font-size:.7rem;cursor:none;transition:all .15s}
+    .ev-btn:hover{border-color:var(--accent2);color:var(--accent2)}
+    .ev-btn.danger:hover{border-color:var(--accent);color:var(--accent)}
+    /* INGRESSOS TABLE */
+    .it{width:100%;border-collapse:collapse}
+    .it thead tr{border-bottom:1px solid var(--border)}
+    .it th{text-align:left;padding:10px 16px;font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:400}
+    .it td{padding:12px 16px;font-size:.84rem;border-bottom:1px solid var(--border)}
+    .it tr:last-child td{border-bottom:none}
+    .it tr:hover td{background:rgba(255,255,255,.01)}
+    /* NOTIFS */
+    .nlist{display:flex;flex-direction:column}
+    .ni{padding:18px 20px;border-bottom:1px solid var(--border);display:flex;gap:14px;align-items:flex-start;transition:background .15s;cursor:none}
+    .ni:hover{background:rgba(255,255,255,.01)}
+    .ni.unread{background:rgba(255,184,0,.02);border-left:2px solid var(--accent2)}
+    .ni-ico{font-size:1.1rem;flex-shrink:0;margin-top:2px}
+    .ni-text{font-size:.86rem;line-height:1.4}
+    .ni-text strong{color:var(--text)}
+    .ni-time{font-size:.72rem;color:var(--muted);margin-top:4px}
+    .ni-dot{width:8px;height:8px;border-radius:50%;background:var(--accent2);flex-shrink:0;margin-top:6px}
+    /* PENDENTES */
+    .pend-list{display:flex;flex-direction:column;gap:12px}
+    .pend-card{background:var(--card2,#1a1a26);border:1px solid var(--border);padding:18px 20px;display:flex;align-items:center;justify-content:space-between;gap:20px}
+    .pend-card:hover{border-color:rgba(255,184,0,.15)}
+    .pend-name{font-weight:500;font-size:.9rem;margin-bottom:4px}
+    .pend-meta{font-size:.75rem;color:var(--muted)}
+    .pend-tag{display:inline-flex;align-items:center;gap:4px;padding:2px 10px;font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;background:rgba(255,184,0,.08);border:1px solid rgba(255,184,0,.2);color:var(--accent2);margin-top:6px}
+    .pend-actions{display:flex;gap:8px;flex-shrink:0}
+    .btn-approve{background:rgba(76,175,80,.1);border:1px solid rgba(76,175,80,.3);color:#4caf50;padding:7px 16px;font-size:.75rem;cursor:none;transition:all .2s}
+    .btn-approve:hover{background:rgba(76,175,80,.2)}
+    .btn-reject{background:transparent;border:1px solid var(--border);color:var(--muted);padding:7px 16px;font-size:.75rem;cursor:none;transition:all .2s}
+    .btn-reject:hover{border-color:var(--accent);color:var(--accent)}
+    /* RELATORIOS */
+    .rel-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:24px}
+    .rel-block{background:var(--card);border:1px solid var(--border);padding:20px}
+    .rel-title{font-family:'Bebas Neue',sans-serif;font-size:.95rem;letter-spacing:.1em;margin-bottom:16px;color:var(--muted)}
+    .top-ev-list{display:flex;flex-direction:column;gap:10px}
+    .top-ev-item{display:flex;align-items:center;justify-content:space-between;gap:12px}
+    .tei-name{font-size:.84rem;flex:1}
+    .tei-bar-wrap{width:120px;height:6px;background:rgba(255,255,255,.06)}
+    .tei-bar{height:100%;background:var(--accent2)}
+    .tei-val{font-size:.8rem;font-weight:500;min-width:60px;text-align:right}
+    .cat-dist{display:flex;flex-direction:column;gap:8px}
+    .cat-item{display:flex;align-items:center;gap:10px;font-size:.82rem}
+    .cat-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+    .cat-name-r{flex:1}
+    .cat-pct{color:var(--muted);font-size:.75rem}
+
+    /* ==============================
+       RESPONSIVE
+       ============================== */
+
+    .hamburger {
+      display: none;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      width: 38px; height: 38px;
+      align-items: center; justify-content: center;
+      font-size: 1.1rem; cursor: none; flex-shrink: 0;
+    }
+
+    .sidebar-overlay {
+      display: none;
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,.6);
+      z-index: 99;
+    }
+    .sidebar-overlay.active { display: block; }
+
+    /* ---- TABLET (≤ 1100px) ---- */
+    @media (max-width: 1100px) {
+      :root { --sw: 220px; }
+      .stats-row { grid-template-columns: repeat(2, 1fr); }
+      .charts-row { grid-template-columns: 1fr; }
+      .rel-grid { grid-template-columns: 1fr; }
+      .page { padding: 28px 24px; }
+      .topbar { padding: 16px 24px; }
+    }
+
+    /* ---- MOBILE (≤ 768px) ---- */
+    @media (max-width: 768px) {
+      body { display: block; }
+
+      .hamburger { display: flex; }
+
+      .sidebar {
+        transform: translateX(-100%);
+        transition: transform 0.28s ease;
+        z-index: 200;
+        width: 260px;
+      }
+      .sidebar.open { transform: translateX(0); }
+
+      .main { margin-left: 0; }
+
+      .topbar { padding: 14px 16px; gap: 8px; flex-wrap: wrap; }
+      .topbar-title { font-size: 1rem; flex: 1; }
+      .tb-actions { gap: 8px; }
+      .btn-criar { font-size: .7rem; padding: 7px 14px; }
+
+      .page { padding: 20px 16px; }
+      .ph-title { font-size: 1.5rem; }
+
+      .stats-row { grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 20px; }
+      .sc { padding: 14px; }
+      .sc-val { font-size: 1.4rem; }
+
+      .charts-row { grid-template-columns: 1fr; gap: 14px; }
+      .rel-grid { grid-template-columns: 1fr; }
+      .chart-wrap { padding: 16px; }
+      /* Bar chart full width, doughnut centered and smaller */
+      #salesChart { width: 100% !important; }
+      #typeChart  { max-width: 220px; margin: 0 auto; display: block; }
+      #receitaChart { width: 100% !important; }
+      #catChart   { width: 100% !important; }
+      .chart-canvas-wrap { height: 180px; display: flex; align-items: center; justify-content: center; }
+
+      /* Tables: hide less critical cols on mobile */
+      .et th:nth-child(2), .et td:nth-child(2) { display: none; }
+      .et th:nth-child(6), .et td:nth-child(6) { display: none; }
+      .it th:nth-child(2), .it td:nth-child(2) { display: none; }
+      .it th:nth-child(5), .it td:nth-child(5) { display: none; }
+
+      .block-body { padding: 16px; }
+      .block-head { padding: 14px 16px; }
+
+      .pend-card { flex-direction: column; align-items: flex-start; gap: 14px; }
+      .pend-actions { width: 100%; }
+      .btn-approve, .btn-reject { flex: 1; text-align: center; }
+    }
+
+    /* ---- SMALL MOBILE (≤ 420px) ---- */
+    @media (max-width: 420px) {
+      .stats-row { grid-template-columns: 1fr 1fr; }
+      .et th:nth-child(4), .et td:nth-child(4) { display: none; }
+      .it th:nth-child(3), .it td:nth-child(3) { display: none; }
+      .tb-actions .btn-criar { display: none; }
+    }
+  </style>
+</head>
+<body>
+<div id="cursor"></div>
+<div id="cursor-ring"></div>
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+
+<aside class="sidebar">
+  <div class="sb-logo">EVENT<span>URA</span><a href="index.html">← Voltar ao site</a></div>
+  <div class="sb-user">
+    <div class="sb-user-row">
+      <div class="sb-av">MC</div>
+      <div>
+        <div class="sb-uname">Mariana Costa</div>
+        <div class="sb-badge"><span class="sb-dot"></span>Organizador</div>
+      </div>
+    </div>
+    <div class="sb-org">🏢 <span>Som & Cia Produções</span></div>
+  </div>
+  <nav class="sb-nav">
+    <div class="sb-sec">Painel</div>
+    <a href="#" class="nav-item active" data-page="overview" onclick="goTo('overview',this);return false"><span class="nav-ico">🏠</span>Visão Geral</a>
+    <a href="#" class="nav-item" data-page="eventos" onclick="goTo('eventos',this);return false"><span class="nav-ico">📋</span>Meus Eventos</a>
+    <a href="#" class="nav-item" data-page="ingressos" onclick="goTo('ingressos',this);return false"><span class="nav-ico">🎟️</span>Gestão de Ingressos</a>
+    <a href="#" class="nav-item" data-page="relatorios" onclick="goTo('relatorios',this);return false"><span class="nav-ico">📊</span>Relatórios</a>
+    <div class="sb-sec">Administração</div>
+    <a href="#" class="nav-item" data-page="pendentes" onclick="goTo('pendentes',this);return false"><span class="nav-ico">⏳</span>Aprovações Pendentes<span class="nav-badge">2</span></a>
+    <a href="#" class="nav-item" data-page="notificacoes" onclick="goTo('notificacoes',this);return false"><span class="nav-ico">🔔</span>Notificações<span class="nav-badge">3</span></a>
+    <a href="#" class="nav-item"><span class="nav-ico">⚙️</span>Configurações</a>
+  </nav>
+  <div class="sb-foot"><a href="index.html"><span>🚪</span>Sair da conta</a></div>
+</aside>
+
+<main class="main">
+  <div class="topbar">
+    <button class="hamburger" id="hamburger" onclick="toggleSidebar()" aria-label="Menu">☰</button>
+    <div class="topbar-title" id="topbarTitle">Visão Geral</div>
+    <div class="tb-actions">
+      <a href="criar-evento.html" class="btn-criar">+ Criar Evento</a>
+      <button class="notif-btn" onclick="goTo('notificacoes',null)">🔔<span class="ndot"></span></button>
+    </div>
+  </div>
+
+  <!-- OVERVIEW -->
+  <div class="page active" id="page-overview">
+    <div class="ph-eye">Bem-vinda, Mariana</div>
+    <div class="ph-title">VISÃO GERAL 📊</div>
+    <div class="ph-sub">Som & Cia Produções · Resumo dos seus eventos</div>
+    <div class="stats-row">
+      <div class="sc"><div class="sc-icon">📋</div><div class="sc-val">8</div><div class="sc-label">Eventos Ativos</div><div class="sc-change up">↑ +2 este mês</div></div>
+      <div class="sc"><div class="sc-icon">🎟️</div><div class="sc-val">1.247</div><div class="sc-label">Ingressos Vendidos</div><div class="sc-change up">↑ +84 esta semana</div></div>
+      <div class="sc"><div class="sc-icon">💰</div><div class="sc-val">R$94K</div><div class="sc-label">Receita Total</div><div class="sc-change up">↑ +12% vs mês ant.</div></div>
+      <div class="sc"><div class="sc-icon">⭐</div><div class="sc-val">4.8</div><div class="sc-label">Avaliação Média</div><div class="sc-change up">↑ 0.2 pontos</div></div>
+    </div>
+    <div class="charts-row">
+      <div class="chart-wrap">
+        <div class="chart-title">VENDAS DOS ÚLTIMOS 6 MESES</div>
+        <div class="chart-canvas-wrap"><canvas id="salesChart"></canvas></div>
+      </div>
+      <div class="chart-wrap">
+        <div class="chart-title">INGRESSOS POR TIPO</div>
+        <div class="chart-canvas-wrap"><canvas id="typeChart"></canvas></div>
+      </div>
+    </div>
+    <div class="block">
+      <div class="block-head"><div class="block-title">PRÓXIMOS EVENTOS</div><button class="block-act" onclick="goTo('eventos',null)">Ver todos →</button></div>
+      <div class="block-body" style="padding:0"><table class="et" id="ovEvTable"><thead><tr><th>Evento</th><th>Data</th><th>Ingressos</th><th>Receita</th><th>Status</th></tr></thead><tbody id="ovEvBody"></tbody></table></div>
+    </div>
+  </div>
+
+  <!-- EVENTOS -->
+  <div class="page" id="page-eventos">
+    <div class="ph-eye">Gerenciamento</div>
+    <div class="ph-title">MEUS EVENTOS</div>
+    <div class="ph-sub">8 eventos · 3 publicados · 2 rascunhos · 2 encerrados · 1 pendente</div>
+    <div class="block"><div class="block-body" style="padding:0">
+      <table class="et"><thead><tr><th>Evento</th><th>Data</th><th>Vendas</th><th>Receita</th><th>Status</th><th>Ações</th></tr></thead>
+      <tbody id="allEvBody"></tbody></table>
+    </div></div>
+  </div>
+
+  <!-- INGRESSOS -->
+  <div class="page" id="page-ingressos">
+    <div class="ph-eye">Gestão</div>
+    <div class="ph-title">INGRESSOS VENDIDOS</div>
+    <div class="ph-sub">1.247 ingressos · R$ 94.320 em receita</div>
+    <div class="stats-row" style="grid-template-columns:repeat(3,1fr)">
+      <div class="sc"><div class="sc-icon">🟢</div><div class="sc-val">1.018</div><div class="sc-label">Utilizados</div></div>
+      <div class="sc"><div class="sc-icon">🟡</div><div class="sc-val">229</div><div class="sc-label">Aguardando Uso</div></div>
+      <div class="sc"><div class="sc-icon">🔴</div><div class="sc-val">14</div><div class="sc-label">Cancelados</div></div>
+    </div>
+    <div class="block"><div class="block-body" style="padding:0">
+      <table class="it"><thead><tr><th>Comprador</th><th>Evento</th><th>Tipo</th><th>Valor</th><th>Data compra</th><th>Status</th></tr></thead>
+      <tbody id="ingBody"></tbody></table>
+    </div></div>
+  </div>
+
+  <!-- RELATÓRIOS -->
+  <div class="page" id="page-relatorios">
+    <div class="ph-eye">Analytics</div>
+    <div class="ph-title">RELATÓRIOS</div>
+    <div class="ph-sub">Desempenho dos seus eventos</div>
+    <div class="charts-row" style="margin-bottom:24px">
+      <div class="chart-wrap">
+        <div class="chart-title">RECEITA MENSAL (R$)</div>
+        <div class="chart-canvas-wrap"><canvas id="receitaChart"></canvas></div>
+      </div>
+      <div class="chart-wrap">
+        <div class="chart-title">PARTICIPANTES POR CATEGORIA</div>
+        <div class="chart-canvas-wrap"><canvas id="catChart"></canvas></div>
+      </div>
+    </div>
+    <div class="rel-grid">
+      <div class="rel-block">
+        <div class="rel-title">TOP EVENTOS POR RECEITA</div>
+        <div class="top-ev-list" id="topEvList"></div>
+      </div>
+      <div class="rel-block">
+        <div class="rel-title">DISTRIBUIÇÃO POR CATEGORIA</div>
+        <div class="cat-dist" id="catDist"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PENDENTES -->
+  <div class="page" id="page-pendentes">
+    <div class="ph-eye">Aprovações</div>
+    <div class="ph-title">SOLICITAÇÕES PENDENTES</div>
+    <div class="ph-sub">2 organizadores aguardando aprovação</div>
+    <div class="pend-list" id="pendList"></div>
+  </div>
+
+  <!-- NOTIFICAÇÕES -->
+  <div class="page" id="page-notificacoes">
+    <div class="ph-eye">Avisos</div>
+    <div class="ph-title">NOTIFICAÇÕES</div>
+    <div class="ph-sub">3 não lidas</div>
+    <div class="block"><div class="nlist" id="allNotifs"></div></div>
+  </div>
+</main>
+
+<script>
+// CURSOR
+const cur=document.getElementById('cursor'),ring=document.getElementById('cursor-ring');
+let mx=0,my=0,rx=0,ry=0;
+document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;cur.style.left=mx-5+'px';cur.style.top=my-5+'px'});
+(function anim(){rx+=(mx-rx-15)*.12;ry+=(my-ry-15)*.12;ring.style.left=rx+'px';ring.style.top=ry+'px';requestAnimationFrame(anim)})();
+
+// DATA
+const eventos=[
+  {name:'Festival Sons do Brasil 2025',date:'15-16 Nov 2025',sold:480,total:600,receita:'R$ 72.000',status:'publicado'},
+  {name:'Tech Summit São Paulo',date:'22 Nov 2025',sold:210,total:300,receita:'R$ 16.800',status:'publicado'},
+  {name:'Noite de Jazz & Bossa Nova',date:'30 Nov 2025',sold:95,total:150,receita:'R$ 5.700',status:'publicado'},
+  {name:'Workshop de Fotografia',date:'08 Dez 2025',sold:28,total:40,receita:'R$ 2.800',status:'pendente'},
+  {name:'Festival de Verão 2026',date:'Jan 2026',sold:0,total:800,receita:'R$ 0',status:'rascunho'},
+  {name:'Feira Gastronômica',date:'Mar 2026',sold:0,total:500,receita:'R$ 0',status:'rascunho'},
+  {name:'The Town 2024',date:'Set 2024',sold:900,total:900,receita:'R$ 180.000',status:'encerrado'},
+  {name:'Carnaval Cultural 2025',date:'Fev 2025',sold:650,total:700,receita:'R$ 45.500',status:'encerrado'},
+];
+
+const ingressos=[
+  {buyer:'Carlos Mendes',email:'carlos@email.com',evento:'Festival Sons do Brasil',tipo:'VIP',val:'R$ 180',date:'10 Out 2025',st:'ativo'},
+  {buyer:'Fernanda Lima',email:'fe@email.com',evento:'Tech Summit SP',tipo:'Pista',val:'R$ 80',date:'09 Out 2025',st:'ativo'},
+  {buyer:'Rafael Torres',email:'rafa@email.com',evento:'Festival Sons do Brasil',tipo:'Camarote',val:'R$ 350',date:'08 Out 2025',st:'ativo'},
+  {buyer:'Ana Souza',email:'ana@email.com',evento:'Tech Summit SP',tipo:'Pista',val:'R$ 80',date:'08 Out 2025',st:'ativo'},
+  {buyer:'João Paulo',email:'jp@email.com',evento:'Noite de Jazz',tipo:'Inteira',val:'R$ 60',date:'05 Out 2025',st:'ativo'},
+  {buyer:'Beatriz Santos',email:'bi@email.com',evento:'Festival Sons do Brasil',tipo:'Pista',val:'R$ 120',date:'04 Out 2025',st:'cancelado'},
+  {buyer:'Marcos Oliveira',email:'mar@email.com',evento:'Noite de Jazz',tipo:'Meia',val:'R$ 30',date:'02 Out 2025',st:'ativo'},
+  {buyer:'Luisa Ferreira',email:'lu@email.com',evento:'Tech Summit SP',tipo:'VIP',val:'R$ 160',date:'01 Out 2025',st:'ativo'},
+];
+
+const pendentes=[
+  {name:'Bruno Carvalho',email:'bruno@produtora.com',org:'BRC Eventos',tipo:'Música e Shows',data:'Há 2 dias'},
+  {name:'Sofia Almeida',email:'sofia@cultura.com',org:'Cultura Viva Produções',tipo:'Arte e Cultura',data:'Há 4 dias'},
+];
+
+const notifs=[
+  {ico:'💰',text:'<strong>84 ingressos</strong> vendidos para o Festival Sons do Brasil esta semana. Meta 80% atingida!',time:'Há 1 hora',unread:true},
+  {ico:'⭐',text:'Nova avaliação 5 estrelas recebida no <strong>Tech Summit São Paulo</strong>.',time:'Há 3 horas',unread:true},
+  {ico:'⏳',text:'<strong>Bruno Carvalho</strong> solicitou cadastro como organizador. Aguarda sua aprovação.',time:'Há 2 dias',unread:true},
+  {ico:'📊',text:'Relatório mensal de <strong>Setembro 2025</strong> disponível para download.',time:'Há 3 dias',unread:false},
+  {ico:'🎟️',text:'Lote 1 do <strong>Festival de Verão 2026</strong> esgotado em 2h. Lote 2 ativado automaticamente.',time:'Há 5 dias',unread:false},
+];
+
+// RENDER TABLES
+function statusBadge(s){return`<span class="ev-status ${s}">${s.charAt(0).toUpperCase()+s.slice(1)}</span>`}
+
+function evRow(e,showActions=false){
+  const pct=e.total>0?Math.round(e.sold/e.total*100):0;
+  return`<tr>
+    <td><div class="ev-name">${e.name}</div><div class="ev-date">📅 ${e.date}</div></td>
+    <td style="color:var(--muted)">${e.date}</td>
+    <td><div style="font-size:.85rem">${e.sold}/${e.total}</div><div class="prog-bar"><div class="prog-fill" style="width:${pct}%"></div></div><div style="font-size:.7rem;color:var(--muted);margin-top:3px">${pct}% vendido</div></td>
+    <td><strong>${e.receita}</strong></td>
+    <td>${statusBadge(e.status)}</td>
+    ${showActions?`<td><div class="ev-actions"><button class="ev-btn">✏️ Editar</button><button class="ev-btn">📊 Stats</button><button class="ev-btn danger">🗑️</button></div></td>`:''}
+  </tr>`;
+}
+
+document.getElementById('ovEvBody').innerHTML=eventos.filter(e=>e.status==='publicado'||e.status==='pendente').map(e=>evRow(e)).join('');
+document.getElementById('allEvBody').innerHTML=eventos.map(e=>evRow(e,true)).join('');
+
+document.getElementById('ingBody').innerHTML=ingressos.map(i=>`<tr>
+  <td><strong>${i.buyer}</strong><div style="font-size:.72rem;color:var(--muted)">${i.email}</div></td>
+  <td style="color:var(--muted);font-size:.8rem">${i.evento}</td>
+  <td style="color:var(--muted)">${i.tipo}</td>
+  <td><strong>${i.val}</strong></td>
+  <td style="color:var(--muted);font-size:.8rem">${i.date}</td>
+  <td><span class="ev-status ${i.st==='ativo'?'publicado':'encerrado'}">${i.st==='ativo'?'Ativo':'Cancelado'}</span></td>
+</tr>`).join('');
+
+// PENDENTES
+let pendList=document.getElementById('pendList');
+function renderPend(){
+  pendList.innerHTML=pendentes.map((p,i)=>`<div class="pend-card">
+    <div>
+      <div class="pend-name">${p.name}</div>
+      <div class="pend-meta">${p.email} · <strong style="color:var(--text)">${p.org}</strong></div>
+      <div><span class="pend-tag">🎵 ${p.tipo}</span></div>
+      <div style="font-size:.72rem;color:var(--muted);margin-top:6px">Solicitado ${p.data}</div>
+    </div>
+    <div class="pend-actions">
+      <button class="btn-approve" onclick="approvePend(${i})">✓ Aprovar</button>
+      <button class="btn-reject" onclick="rejectPend(${i})">✕ Rejeitar</button>
+    </div>
+  </div>`).join('') || '<div style="padding:32px;text-align:center;color:var(--muted);font-size:.9rem">Nenhuma solicitação pendente ✓</div>';
+}
+renderPend();
+
+function approvePend(i){ pendentes.splice(i,1); renderPend(); }
+function rejectPend(i){ pendentes.splice(i,1); renderPend(); }
+
+// NOTIFS
+document.getElementById('allNotifs').innerHTML=notifs.map(n=>`<div class="ni ${n.unread?'unread':''}">
+  <div class="ni-ico">${n.ico}</div>
+  <div style="flex:1"><div class="ni-text">${n.text}</div><div class="ni-time">${n.time}</div></div>
+  ${n.unread?'<div class="ni-dot"></div>':''}
+</div>`).join('');
+
+// RELATÓRIOS
+const topEvs=[
+  {name:'The Town 2024',val:'R$ 180.000',pct:100},
+  {name:'Carnaval Cultural 2025',val:'R$ 45.500',pct:25},
+  {name:'Festival Sons do Brasil',val:'R$ 72.000',pct:40},
+  {name:'Tech Summit SP',val:'R$ 16.800',pct:9},
+  {name:'Noite de Jazz',val:'R$ 5.700',pct:3},
+];
+document.getElementById('topEvList').innerHTML=topEvs.map(e=>`<div class="top-ev-item">
+  <div class="tei-name">${e.name}</div>
+  <div class="tei-bar-wrap"><div class="tei-bar" style="width:${e.pct}%"></div></div>
+  <div class="tei-val">${e.val}</div>
+</div>`).join('');
+
+const cats=[
+  {name:'Música',pct:58,color:'#ff3d5a'},
+  {name:'Tecnologia',pct:22,color:'#00e5ff'},
+  {name:'Arte & Cultura',pct:12,color:'#ffb800'},
+  {name:'Outros',pct:8,color:'#6b6a75'},
+];
+document.getElementById('catDist').innerHTML=cats.map(c=>`<div class="cat-item">
+  <span class="cat-dot" style="background:${c.color}"></span>
+  <span class="cat-name-r">${c.name}</span>
+  <span class="cat-pct">${c.pct}%</span>
+  <div style="width:80px;height:4px;background:rgba(255,255,255,.06)"><div style="height:100%;background:${c.color};width:${c.pct}%"></div></div>
+</div>`).join('');
+
+// CHARTS
+const chartDefaults={color:'rgba(255,255,255,.6)',borderColor:'rgba(255,255,255,.1)'};
+Chart.defaults.color='rgba(255,255,255,.5)';
+Chart.defaults.borderColor='rgba(255,255,255,.06)';
+Chart.defaults.font.family='DM Sans';
+Chart.defaults.font.size=11;
+
+// Track initialized charts to avoid re-creating
+const charts = {};
+
+function initOverviewCharts() {
+  if (charts.sales) return; // already initialized
+  charts.sales = new Chart(document.getElementById('salesChart'),{
+    type:'bar',
+    data:{
+      labels:['Mai','Jun','Jul','Ago','Set','Out'],
+      datasets:[{
+        label:'Ingressos vendidos',
+        data:[120,180,95,310,420,480],
+        backgroundColor:'rgba(255,184,0,.7)',
+        borderColor:'rgba(255,184,0,1)',
+        borderWidth:1,
+        borderRadius:2,
+      }]
+    },
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{grid:{color:'rgba(255,255,255,.04)'}},x:{grid:{display:false}}}}
+  });
+  charts.type = new Chart(document.getElementById('typeChart'),{
+    type:'doughnut',
+    data:{
+      labels:['Pista','VIP','Camarote','Meia'],
+      datasets:[{data:[52,28,12,8],backgroundColor:['rgba(255,184,0,.8)','rgba(0,229,255,.8)','rgba(255,61,90,.8)','rgba(107,106,117,.8)'],borderWidth:0,hoverOffset:4}]
+    },
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{padding:12,boxWidth:10}}},cutout:'65%'}
+  });
+}
+
+function initRelatorioCharts() {
+  if (charts.receita) return;
+  charts.receita = new Chart(document.getElementById('receitaChart'),{
+    type:'line',
+    data:{
+      labels:['Mai','Jun','Jul','Ago','Set','Out'],
+      datasets:[{
+        label:'Receita (R$)',
+        data:[8400,12600,6650,21700,29400,33600],
+        borderColor:'rgba(255,184,0,1)',
+        backgroundColor:'rgba(255,184,0,.08)',
+        fill:true,tension:.4,pointRadius:4,pointBackgroundColor:'rgba(255,184,0,1)',
+      }]
+    },
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{grid:{color:'rgba(255,255,255,.04)'},ticks:{callback:v=>'R$'+Math.round(v/1000)+'K'}},x:{grid:{display:false}}}}
+  });
+  charts.cat = new Chart(document.getElementById('catChart'),{
+    type:'bar',
+    data:{
+      labels:['Música','Tech','Arte','Gastro','Esporte'],
+      datasets:[{
+        data:[720,280,150,62,35],
+        backgroundColor:['rgba(255,61,90,.7)','rgba(0,229,255,.7)','rgba(255,184,0,.7)','rgba(76,175,80,.7)','rgba(156,39,176,.7)'],
+        borderRadius:2,borderWidth:0,
+      }]
+    },
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{grid:{color:'rgba(255,255,255,.04)'}},x:{grid:{display:false}}},indexAxis:'y'}
+  });
+}
+
+// Init overview charts on load (it's the default visible page)
+window.addEventListener('load', () => initOverviewCharts());
+
+// NAV
+const titles={overview:'Visão Geral',eventos:'Meus Eventos',ingressos:'Gestão de Ingressos',relatorios:'Relatórios',pendentes:'Aprovações Pendentes',notificacoes:'Notificações'};
+
+// RESPONSIVE SIDEBAR
+function toggleSidebar() {
+  document.querySelector('.sidebar').classList.toggle('open');
+  document.getElementById('sidebarOverlay').classList.toggle('active');
+}
+function closeSidebar() {
+  document.querySelector('.sidebar').classList.remove('open');
+  document.getElementById('sidebarOverlay').classList.remove('active');
+}
+document.querySelectorAll('.nav-item').forEach(el => {
+  el.addEventListener('click', () => {
+    if (window.innerWidth <= 768) closeSidebar();
+  });
+});
+
+function goTo(p,el){
+  document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(x=>x.classList.remove('active'));
+  document.getElementById('page-'+p).classList.add('active');
+  (el||document.querySelector(`[data-page="${p}"]`))?.classList.add('active');
+  document.getElementById('topbarTitle').textContent=titles[p]||p;
+  window.scrollTo(0,0);
+  // Init charts after page is visible
+  if (p === 'overview') setTimeout(initOverviewCharts, 50);
+  if (p === 'relatorios') setTimeout(initRelatorioCharts, 50);
+}
+</script>
+</body>
+</html>

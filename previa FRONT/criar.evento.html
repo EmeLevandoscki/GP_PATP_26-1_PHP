@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>EVENTURA — Criar Evento</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="css/criar.evento.css"/>
+</head>
+<body>
+
+  <div id="cursor"></div>
+  <div id="cursor-ring"></div>
+  <div class="bg-layer"></div>
+  <div class="bg-grid"></div>
+
+  <!-- NAV -->
+  <nav>
+    <a href="index.html" class="logo">EVENT<span>URA</span></a>
+    <div class="nav-right">
+      <div class="user-badge" id="userBadge">
+        <span class="badge-dot"></span>
+        <span id="userName">Organizador</span>
+        <span class="badge-role">Organizador aprovado</span>
+      </div>
+      <a href="index.html" class="btn-nav-ghost">← Voltar</a>
+    </div>
+  </nav>
+
+  <!-- ACCESS DENIED (mostrado se não for organizador) -->
+  <div class="access-denied" id="accessDenied" style="display:none">
+    <div class="denied-box">
+      <div class="denied-icon">🔒</div>
+      <h2>ACESSO RESTRITO</h2>
+      <p>Apenas <strong>organizadores aprovados</strong> podem criar eventos na plataforma.</p>
+      <p class="denied-sub">Quer se tornar um organizador? Solicite acesso e nossa equipe avaliará seu perfil.</p>
+      <div class="denied-actions">
+        <button class="btn-primary" onclick="requestAccess()">Solicitar acesso como organizador</button>
+        <a href="index.html" class="btn-ghost">Voltar ao início →</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN CONTENT -->
+  <main id="mainContent">
+
+    <div class="page-header">
+      <div class="page-eyebrow">Painel do Organizador</div>
+      <h1>CRIAR<br><span class="outline">NOVO</span><br><span class="acc">EVENTO</span></h1>
+      <p>Preencha os detalhes abaixo. Após envio, o evento será revisado e publicado em até 24h.</p>
+    </div>
+
+    <form id="eventForm" onsubmit="return false">
+
+      <!-- STEP INDICATOR -->
+      <div class="steps">
+        <div class="step active" id="step1Ind" onclick="goToStep(1)">
+          <div class="step-num">1</div>
+          <div class="step-label">Informações</div>
+        </div>
+        <div class="step-line"></div>
+        <div class="step" id="step2Ind" onclick="goToStep(2)">
+          <div class="step-num">2</div>
+          <div class="step-label">Local & Data</div>
+        </div>
+        <div class="step-line"></div>
+        <div class="step" id="step3Ind" onclick="goToStep(3)">
+          <div class="step-num">3</div>
+          <div class="step-label">Ingressos</div>
+        </div>
+        <div class="step-line"></div>
+        <div class="step" id="step4Ind" onclick="goToStep(4)">
+          <div class="step-num">4</div>
+          <div class="step-label">Revisão</div>
+        </div>
+      </div>
+
+      <!-- ── STEP 1: INFORMAÇÕES ── -->
+      <div class="form-step" id="step1">
+        <div class="step-title">
+          <div class="section-label">Passo 1 de 4</div>
+          <h2>INFORMAÇÕES BÁSICAS</h2>
+        </div>
+
+        <div class="fields">
+
+          <div class="field full">
+            <label>Nome do evento <span class="req">*</span></label>
+            <div class="input-wrap">
+              <input type="text" id="evtName" placeholder="Ex: Festival de Jazz de São Paulo 2025" maxlength="80" oninput="updatePreview(); charCount(this, 'nameCount', 80)"/>
+            </div>
+            <div class="field-footer"><div class="field-error" id="evtNameErr"></div><span class="char-count" id="nameCount">0/80</span></div>
+          </div>
+
+          <div class="field-row">
+            <div class="field">
+              <label>Categoria <span class="req">*</span></label>
+              <div class="input-wrap select-wrap">
+                <select id="evtCategory" onchange="updatePreview()">
+                  <option value="">Selecione...</option>
+                  <option value="musica">🎵 Música</option>
+                  <option value="tech">💻 Tecnologia</option>
+                  <option value="arte">🎨 Arte & Cultura</option>
+                  <option value="gastronomia">🍽️ Gastronomia</option>
+                  <option value="esporte">⚽ Esporte</option>
+                  <option value="negocios">💼 Negócios</option>
+                  <option value="educacao">📚 Educação</option>
+                  <option value="outro">✨ Outro</option>
+                </select>
+              </div>
+              <div class="field-error" id="evtCategoryErr"></div>
+            </div>
+
+            <div class="field">
+              <label>Classificação etária <span class="req">*</span></label>
+              <div class="input-wrap select-wrap">
+                <select id="evtAge">
+                  <option value="livre">Livre</option>
+                  <option value="10">10 anos+</option>
+                  <option value="12">12 anos+</option>
+                  <option value="14">14 anos+</option>
+                  <option value="16">16 anos+</option>
+                  <option value="18">18 anos+</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="field full">
+            <label>Descrição do evento <span class="req">*</span></label>
+            <div class="input-wrap">
+              <textarea id="evtDesc" rows="5" placeholder="Descreva o evento com detalhes: atrações, programação, diferenciais..." maxlength="600" oninput="charCount(this, 'descCount', 600)"></textarea>
+            </div>
+            <div class="field-footer"><div class="field-error" id="evtDescErr"></div><span class="char-count" id="descCount">0/600</span></div>
+          </div>
+
+          <div class="field full">
+            <label>Tags (separe por vírgula)</label>
+            <div class="input-wrap">
+              <input type="text" id="evtTags" placeholder="Ex: jazz, ao vivo, família, gratuito"/>
+            </div>
+            <div class="tags-preview" id="tagsPreview"></div>
+          </div>
+
+          <div class="field full">
+            <label>Imagem de capa <span class="req">*</span></label>
+            <div class="upload-area" id="uploadArea" onclick="document.getElementById('evtImage').click()">
+              <input type="file" id="evtImage" accept="image/*" style="display:none" onchange="previewImage(this)"/>
+              <div class="upload-inner" id="uploadInner">
+                <div class="upload-icon">🖼️</div>
+                <div class="upload-text">Clique para fazer upload</div>
+                <div class="upload-sub">PNG, JPG ou WEBP — máx. 5MB — 1200×630px recomendado</div>
+              </div>
+              <img id="imagePreview" style="display:none; width:100%; height:100%; object-fit:cover; border-radius:0"/>
+            </div>
+            <div class="field-error" id="evtImageErr"></div>
+          </div>
+
+        </div>
+
+        <div class="step-actions">
+          <div></div>
+          <button class="btn-primary" onclick="nextStep(1)">Próximo: Local & Data →</button>
+        </div>
+      </div>
+
+      <!-- ── STEP 2: LOCAL & DATA ── -->
+      <div class="form-step hidden" id="step2">
+        <div class="step-title">
+          <div class="section-label">Passo 2 de 4</div>
+          <h2>LOCAL & DATA</h2>
+        </div>
+
+        <div class="fields">
+
+          <div class="field-row">
+            <div class="field">
+              <label>Modalidade <span class="req">*</span></label>
+              <div class="radio-group">
+                <label class="radio-option">
+                  <input type="radio" name="modality" value="presencial" checked onchange="toggleOnline(false)"/>
+                  <span class="radio-box"></span> Presencial
+                </label>
+                <label class="radio-option">
+                  <input type="radio" name="modality" value="online" onchange="toggleOnline(true)"/>
+                  <span class="radio-box"></span> Online
+                </label>
+                <label class="radio-option">
+                  <input type="radio" name="modality" value="hibrido" onchange="toggleOnline(false)"/>
+                  <span class="radio-box"></span> Híbrido
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <div id="onlineFields" style="display:none" class="field full">
+            <label>Link do evento online <span class="req">*</span></label>
+            <div class="input-wrap">
+              <input type="url" id="evtLink" placeholder="https://..."/>
+            </div>
+          </div>
+
+          <div id="presencialFields">
+            <div class="fields">
+              <div class="field full">
+                <label>Nome do local / venue <span class="req">*</span></label>
+                <div class="input-wrap">
+                  <input type="text" id="evtVenue" placeholder="Ex: Parque Villa-Lobos" oninput="updatePreview()"/>
+                </div>
+                <div class="field-error" id="evtVenueErr"></div>
+              </div>
+
+              <div class="field-row">
+                <div class="field">
+                  <label>Endereço <span class="req">*</span></label>
+                  <div class="input-wrap">
+                    <input type="text" id="evtAddress" placeholder="Rua, número"/>
+                  </div>
+                </div>
+                <div class="field">
+                  <label>Bairro</label>
+                  <div class="input-wrap">
+                    <input type="text" id="evtNeighborhood" placeholder="Bairro"/>
+                  </div>
+                </div>
+              </div>
+
+              <div class="field-row">
+                <div class="field">
+                  <label>Cidade <span class="req">*</span></label>
+                  <div class="input-wrap select-wrap">
+                    <select id="evtCity" onchange="updatePreview()">
+                      <option value="">Selecione...</option>
+                      <option>São Paulo</option>
+                      <option>Rio de Janeiro</option>
+                      <option>Curitiba</option>
+                      <option>Belo Horizonte</option>
+                      <option>Porto Alegre</option>
+                      <option>Salvador</option>
+                      <option>Recife</option>
+                      <option>Fortaleza</option>
+                      <option>Brasília</option>
+                      <option>Outro</option>
+                    </select>
+                  </div>
+                  <div class="field-error" id="evtCityErr"></div>
+                </div>
+                <div class="field">
+                  <label>CEP</label>
+                  <div class="input-wrap">
+                    <input type="text" id="evtCep" placeholder="00000-000" maxlength="9" oninput="maskCep(this)"/>
+                  </div>
+                </div>
+              </div>
+
+              <div class="field">
+                <label>Capacidade máxima</label>
+                <div class="input-wrap">
+                  <input type="number" id="evtCapacity" placeholder="Ex: 500" min="1"/>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="field-row">
+            <div class="field">
+              <label>Data de início <span class="req">*</span></label>
+              <div class="input-wrap">
+                <input type="date" id="evtStartDate" oninput="updatePreview()"/>
+              </div>
+              <div class="field-error" id="evtStartDateErr"></div>
+            </div>
+            <div class="field">
+              <label>Horário de início <span class="req">*</span></label>
+              <div class="input-wrap">
+                <input type="time" id="evtStartTime" oninput="updatePreview()"/>
+              </div>
+            </div>
+          </div>
+
+          <div class="field-row">
+            <div class="field">
+              <label>Data de encerramento</label>
+              <div class="input-wrap">
+                <input type="date" id="evtEndDate"/>
+              </div>
+            </div>
+            <div class="field">
+              <label>Horário de encerramento</label>
+              <div class="input-wrap">
+                <input type="time" id="evtEndTime"/>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="step-actions">
+          <button class="btn-ghost-btn" onclick="prevStep(2)">← Voltar</button>
+          <button class="btn-primary" onclick="nextStep(2)">Próximo: Ingressos →</button>
+        </div>
+      </div>
+
+      <!-- ── STEP 3: INGRESSOS ── -->
+      <div class="form-step hidden" id="step3">
+        <div class="step-title">
+          <div class="section-label">Passo 3 de 4</div>
+          <h2>INGRESSOS & PREÇOS</h2>
+        </div>
+
+        <div class="ticket-types" id="ticketTypes">
+          <!-- ingressos adicionados dinamicamente -->
+        </div>
+
+        <button class="btn-add-ticket" onclick="addTicket()">+ Adicionar tipo de ingresso</button>
+
+        <div class="fields" style="margin-top:32px">
+          <div class="field full">
+            <label>Data limite de vendas</label>
+            <div class="input-wrap">
+              <input type="date" id="evtSaleEnd"/>
+            </div>
+          </div>
+
+          <div class="field full">
+            <label class="checkbox-label" style="gap:12px">
+              <input type="checkbox" id="evtHalfPrice"/>
+              <span class="checkmark"></span>
+              Oferecer meia-entrada (estudantes, idosos, PCD)
+            </label>
+          </div>
+
+          <div class="field full">
+            <label class="checkbox-label" style="gap:12px">
+              <input type="checkbox" id="evtFree"/>
+              <span class="checkmark"></span>
+              Evento gratuito (sem cobrança de ingressos)
+            </label>
+          </div>
+        </div>
+
+        <div class="step-actions">
+          <button class="btn-ghost-btn" onclick="prevStep(3)">← Voltar</button>
+          <button class="btn-primary" onclick="nextStep(3)">Próximo: Revisão →</button>
+        </div>
+      </div>
+
+      <!-- ── STEP 4: REVISÃO ── -->
+      <div class="form-step hidden" id="step4">
+        <div class="step-title">
+          <div class="section-label">Passo 4 de 4</div>
+          <h2>REVISÃO FINAL</h2>
+        </div>
+
+        <div class="review-card" id="reviewCard">
+          <!-- preenchido via JS -->
+        </div>
+
+        <div class="publish-info">
+          <div class="info-item">
+            <span class="info-icon">⏱️</span>
+            <div>
+              <strong>Revisão em até 24h</strong>
+              <span>Nossa equipe analisa o evento antes de publicar.</span>
+            </div>
+          </div>
+          <div class="info-item">
+            <span class="info-icon">📧</span>
+            <div>
+              <strong>Notificação por e-mail</strong>
+              <span>Você será avisado sobre aprovação ou ajustes necessários.</span>
+            </div>
+          </div>
+          <div class="info-item">
+            <span class="info-icon">✏️</span>
+            <div>
+              <strong>Edição possível</strong>
+              <span>Após aprovação, você pode editar datas e ingressos.</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="field full" style="margin-top:24px">
+          <label class="checkbox-label" style="gap:12px">
+            <input type="checkbox" id="confirmTerms"/>
+            <span class="checkmark"></span>
+            Confirmo que as informações são verdadeiras e aceito os <a href="#">Termos para Organizadores</a>
+          </label>
+        </div>
+
+        <div class="step-actions" style="margin-top:32px">
+          <button class="btn-ghost-btn" onclick="prevStep(4)">← Voltar</button>
+          <button class="btn-primary btn-publish" onclick="publishEvent()">
+            <span id="publishBtnText">🚀 Enviar para aprovação</span>
+          </button>
+        </div>
+
+        <div class="form-success" id="publishSuccess" style="display:none">
+          <span>🎉</span>
+          <div>
+            <strong>Evento enviado com sucesso!</strong>
+            <span>Você receberá um e-mail em até 24h com a decisão da nossa equipe.</span>
+          </div>
+        </div>
+
+      </div>
+
+    </form>
+
+  </main>
+
+  <!-- LIVE PREVIEW -->
+  <aside class="preview-panel" id="previewPanel">
+    <div class="preview-label">Pré-visualização</div>
+    <div class="preview-card">
+      <div class="preview-img" id="previewImg">
+        <div class="preview-tag" id="previewTag">Categoria</div>
+        <div class="preview-date" id="previewDate">
+          <span class="pd-day">--</span>
+          <span class="pd-month">---</span>
+        </div>
+      </div>
+      <div class="preview-body">
+        <div class="preview-meta" id="previewMeta">🕐 --:-- &nbsp; 📍 ---</div>
+        <div class="preview-title" id="previewTitle">Nome do evento</div>
+        <div class="preview-price" id="previewPrice">R$ --</div>
+      </div>
+    </div>
+    <div class="preview-hint">Preencha os campos para visualizar o card do evento</div>
+  </aside>
+
+  <script src="js/criar.evento.js"></script>
+</body>
+</html>

@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>EVENTURA — Meu Painel</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet"/>
+  <style>
+    *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+    :root{--bg:#0a0a0f;--surface:#12121a;--card:#16161f;--accent:#ff3d5a;--accent2:#ffb800;--accent3:#00e5ff;--text:#f0eeea;--muted:#6b6a75;--border:rgba(255,255,255,0.07);--sw:240px}
+    html{scroll-behavior:smooth}
+    body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;cursor:none}
+    #cursor{width:10px;height:10px;background:var(--accent3);border-radius:50%;position:fixed;top:0;left:0;pointer-events:none;z-index:9999;mix-blend-mode:screen}
+    #cursor-ring{width:30px;height:30px;border:1.5px solid rgba(0,229,255,0.4);border-radius:50%;position:fixed;top:0;left:0;pointer-events:none;z-index:9998;transition:left .1s,top .1s}
+    /* SIDEBAR */
+    .sidebar{width:var(--sw);background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;left:0;top:0;bottom:0;z-index:100}
+    .sb-logo{padding:28px 24px 24px;border-bottom:1px solid var(--border);font-family:'Bebas Neue',sans-serif;font-size:1.4rem;letter-spacing:.1em}
+    .sb-logo span{color:var(--accent3)}
+    .sb-logo a{color:var(--muted);text-decoration:none;font-size:.65rem;font-family:'DM Sans',sans-serif;display:block;margin-top:4px;letter-spacing:.05em;transition:color .2s}
+    .sb-logo a:hover{color:var(--text)}
+    .sb-user{padding:18px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px}
+    .sb-av{width:38px;height:38px;border-radius:50%;background:rgba(0,229,255,.15);border:1px solid rgba(0,229,255,.3);display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:700;color:var(--accent3);flex-shrink:0}
+    .sb-uname{font-size:.88rem;font-weight:500}
+    .sb-badge{display:inline-flex;align-items:center;gap:4px;font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;color:var(--accent3);margin-top:2px}
+    .sb-dot{width:5px;height:5px;border-radius:50%;background:var(--accent3)}
+    .sb-nav{flex:1;padding:16px 0;overflow-y:auto}
+    .sb-sec{font-size:.6rem;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);padding:12px 24px 6px}
+    .nav-item{display:flex;align-items:center;gap:10px;padding:10px 24px;color:var(--muted);text-decoration:none;font-size:.85rem;transition:all .15s;cursor:none;border-left:2px solid transparent}
+    .nav-item:hover{color:var(--text);background:rgba(255,255,255,.02)}
+    .nav-item.active{color:var(--accent3);border-left-color:var(--accent3);background:rgba(0,229,255,.04)}
+    .nav-ico{font-size:.95rem;width:20px;text-align:center}
+    .nav-badge{margin-left:auto;background:var(--accent);color:#fff;font-size:.6rem;font-weight:700;padding:2px 7px;border-radius:20px}
+    .sb-foot{padding:16px 24px;border-top:1px solid var(--border)}
+    .sb-foot a{display:flex;align-items:center;gap:8px;color:var(--muted);text-decoration:none;font-size:.82rem;transition:color .15s;cursor:none}
+    .sb-foot a:hover{color:var(--accent)}
+    /* MAIN */
+    .main{margin-left:var(--sw);flex:1;display:flex;flex-direction:column;min-height:100vh}
+    .topbar{padding:20px 40px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--bg);position:sticky;top:0;z-index:50}
+    .topbar-title{font-family:'Bebas Neue',sans-serif;font-size:1.3rem;letter-spacing:.1em}
+    .notif-btn{position:relative;background:var(--surface);border:1px solid var(--border);width:36px;height:36px;display:flex;align-items:center;justify-content:center;font-size:.9rem;cursor:none;transition:border-color .2s}
+    .notif-btn:hover{border-color:rgba(255,255,255,.15)}
+    .ndot{position:absolute;top:7px;right:7px;width:7px;height:7px;background:var(--accent);border-radius:50%;border:1.5px solid var(--bg)}
+    /* PAGES */
+    .page{padding:36px 40px;display:none}
+    .page.active{display:block}
+    .ph-eye{font-size:.7rem;letter-spacing:.15em;text-transform:uppercase;color:var(--accent3);margin-bottom:6px}
+    .ph-title{font-family:'Bebas Neue',sans-serif;font-size:2rem;letter-spacing:.08em}
+    .ph-sub{color:var(--muted);font-size:.88rem;margin-top:4px;margin-bottom:32px}
+    /* STATS */
+    .stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:32px}
+    .sc{background:var(--card);border:1px solid var(--border);padding:20px;position:relative;overflow:hidden;transition:border-color .2s}
+    .sc:hover{border-color:rgba(0,229,255,.2)}
+    .sc::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:var(--accent3);transform:scaleX(0);transform-origin:left;transition:transform .3s}
+    .sc:hover::after{transform:scaleX(1)}
+    .sc-icon{font-size:1.3rem;margin-bottom:12px}
+    .sc-val{font-family:'Bebas Neue',sans-serif;font-size:2rem;letter-spacing:.06em}
+    .sc-label{font-size:.75rem;color:var(--muted);letter-spacing:.05em;text-transform:uppercase;margin-top:2px}
+    .sc-change{font-size:.72rem;color:#4caf50;margin-top:6px}
+    /* BLOCK */
+    .block{background:var(--card);border:1px solid var(--border);margin-bottom:24px}
+    .block-head{padding:16px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+    .block-title{font-family:'Bebas Neue',sans-serif;font-size:1rem;letter-spacing:.1em}
+    .block-act{font-size:.75rem;color:var(--accent3);cursor:none;background:none;border:none;transition:opacity .2s}
+    .block-act:hover{opacity:.7}
+    .block-body{padding:24px}
+    /* TICKETS */
+    .tlist{display:flex;flex-direction:column;gap:16px}
+    .tc{background:var(--card);border:1px solid var(--border);display:grid;grid-template-columns:auto 1fr auto auto;align-items:center;gap:20px;padding:20px 24px;transition:border-color .2s}
+    .tc:hover{border-color:rgba(0,229,255,.2)}
+    .tc-thumb{width:64px;height:64px;overflow:hidden;flex-shrink:0;background:var(--surface);display:flex;align-items:center;justify-content:center;font-size:1.4rem}
+    .tc-thumb img{width:100%;height:100%;object-fit:cover}
+    .tc-name{font-weight:500;font-size:.95rem;margin-bottom:4px}
+    .tc-date,.tc-loc{font-size:.78rem;color:var(--muted);margin-top:2px}
+    .tc-type{font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;color:var(--accent3);margin-bottom:4px}
+    .tc-price{font-family:'Bebas Neue',sans-serif;font-size:1.1rem;letter-spacing:.06em}
+    .ts{padding:4px 12px;font-size:.65rem;letter-spacing:.1em;text-transform:uppercase}
+    .ts.ativo{background:rgba(76,175,80,.1);border:1px solid rgba(76,175,80,.3);color:#4caf50}
+    .ts.usado{background:rgba(107,106,117,.1);border:1px solid var(--border);color:var(--muted)}
+    .qr-btn{background:transparent;border:1px solid var(--border);color:var(--muted);padding:6px 14px;font-size:.75rem;cursor:none;transition:all .2s;margin-top:6px;display:block;text-align:center}
+    .qr-btn:hover{border-color:var(--accent3);color:var(--accent3)}
+    /* SAVED */
+    .saved-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+    .saved-card{background:var(--card);border:1px solid var(--border);overflow:hidden;transition:border-color .2s;position:relative}
+    .saved-card:hover{border-color:rgba(0,229,255,.25)}
+    .sc-img{height:140px;overflow:hidden;background:var(--surface);display:flex;align-items:center;justify-content:center;font-size:2rem}
+    .sc-img img{width:100%;height:100%;object-fit:cover}
+    .sc-body{padding:16px}
+    .sc-cat{font-size:.65rem;letter-spacing:.12em;text-transform:uppercase;color:var(--accent3);margin-bottom:6px}
+    .sc-name{font-weight:500;font-size:.9rem;margin-bottom:6px;line-height:1.3}
+    .sc-date{font-size:.75rem;color:var(--muted)}
+    .sc-price{font-size:.8rem;color:var(--text);margin-top:8px;font-weight:500}
+    .sc-rm{position:absolute;top:10px;right:10px;background:rgba(10,10,15,.7);border:1px solid var(--border);color:var(--muted);width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-size:.75rem;cursor:none;transition:all .2s}
+    .sc-rm:hover{border-color:var(--accent);color:var(--accent)}
+    .sc-buy{margin:0 16px 16px;background:transparent;border:1px solid var(--border);color:var(--muted);padding:8px;font-size:.78rem;width:calc(100% - 32px);cursor:none;transition:all .2s;text-align:center}
+    .sc-buy:hover{border-color:var(--accent3);color:var(--accent3)}
+    /* HISTORY */
+    .ht{width:100%;border-collapse:collapse}
+    .ht thead tr{border-bottom:1px solid var(--border)}
+    .ht th{text-align:left;padding:10px 16px;font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:400}
+    .ht td{padding:14px 16px;font-size:.85rem;border-bottom:1px solid var(--border)}
+    .ht tr:last-child td{border-bottom:none}
+    .ht tr:hover td{background:rgba(255,255,255,.01)}
+    .hs{padding:3px 10px;font-size:.62rem;letter-spacing:.1em;text-transform:uppercase}
+    .hs.concluido{background:rgba(76,175,80,.1);border:1px solid rgba(76,175,80,.3);color:#4caf50}
+    .hs.cancelado{background:rgba(255,61,90,.1);border:1px solid rgba(255,61,90,.3);color:var(--accent)}
+    .hdl{color:var(--accent3);cursor:none;font-size:.75rem;text-decoration:none;background:none;border:none;transition:opacity .2s}
+    .hdl:hover{opacity:.7}
+    /* NOTIFS */
+    .nlist{display:flex;flex-direction:column}
+    .ni{padding:18px 20px;border-bottom:1px solid var(--border);display:flex;gap:14px;align-items:flex-start;transition:background .15s;cursor:none}
+    .ni:hover{background:rgba(255,255,255,.01)}
+    .ni.unread{background:rgba(0,229,255,.02);border-left:2px solid var(--accent3)}
+    .ni.unread:hover{background:rgba(0,229,255,.04)}
+    .ni-ico{font-size:1.1rem;flex-shrink:0;margin-top:2px}
+    .ni-text{font-size:.86rem;line-height:1.4}
+    .ni-text strong{color:var(--text)}
+    .ni-time{font-size:.72rem;color:var(--muted);margin-top:4px}
+    .ni-dot{width:8px;height:8px;border-radius:50%;background:var(--accent3);flex-shrink:0;margin-top:6px}
+    /* QR MODAL */
+    .qro{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:500;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .25s}
+    .qro.open{opacity:1;pointer-events:all}
+    .qrm{background:var(--card);border:1px solid var(--border);padding:36px;max-width:340px;width:90%;display:flex;flex-direction:column;align-items:center;gap:20px;transform:translateY(16px);transition:transform .25s}
+    .qro.open .qrm{transform:translateY(0)}
+    .qr-t{font-family:'Bebas Neue',sans-serif;font-size:1.2rem;letter-spacing:.1em}
+    .qr-ev{font-size:.8rem;color:var(--muted);text-align:center}
+    .qr-box{width:160px;height:160px;background:#fff;padding:10px;display:flex;align-items:center;justify-content:center}
+    .qr-box svg{width:100%;height:100%}
+    .qr-id{font-size:.75rem;color:var(--muted);letter-spacing:.1em;font-family:monospace}
+    .qr-tp{padding:4px 16px;font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;background:rgba(0,229,255,.1);border:1px solid rgba(0,229,255,.3);color:var(--accent3)}
+    .qr-cl{background:transparent;border:1px solid var(--border);color:var(--muted);padding:8px 24px;font-size:.8rem;cursor:none;transition:all .2s}
+    .qr-cl:hover{border-color:var(--accent);color:var(--accent)}
+
+    /* ==============================
+       RESPONSIVE
+       ============================== */
+
+    /* Hamburger button */
+    .hamburger {
+      display: none;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      width: 38px; height: 38px;
+      align-items: center; justify-content: center;
+      font-size: 1.1rem; cursor: none; flex-shrink: 0;
+    }
+
+    /* Overlay when sidebar open on mobile */
+    .sidebar-overlay {
+      display: none;
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,.6);
+      z-index: 99;
+    }
+    .sidebar-overlay.active { display: block; }
+
+    /* ---- TABLET (≤ 1024px) ---- */
+    @media (max-width: 1024px) {
+      :root { --sw: 220px; }
+      .stats-row { grid-template-columns: repeat(2, 1fr); }
+      .saved-grid { grid-template-columns: repeat(2, 1fr); }
+      .page { padding: 28px 28px; }
+      .topbar { padding: 16px 28px; }
+    }
+
+    /* ---- MOBILE (≤ 768px) ---- */
+    @media (max-width: 768px) {
+      body { display: block; }
+
+      .hamburger { display: flex; }
+
+      .sidebar {
+        transform: translateX(-100%);
+        transition: transform 0.28s ease;
+        z-index: 200;
+        width: 260px;
+      }
+      .sidebar.open { transform: translateX(0); }
+
+      .main { margin-left: 0; }
+
+      .topbar {
+        padding: 14px 18px;
+        gap: 10px;
+      }
+      .topbar-title { font-size: 1rem; }
+
+      .page { padding: 20px 18px; }
+
+      .ph-title { font-size: 1.5rem; }
+
+      .stats-row { grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 20px; }
+      .sc { padding: 16px; }
+      .sc-val { font-size: 1.5rem; }
+
+      /* Tickets stack vertically */
+      .tc {
+        grid-template-columns: auto 1fr;
+        grid-template-rows: auto auto;
+        gap: 12px;
+      }
+      .tc > div:nth-child(3),
+      .tc > div:nth-child(4) {
+        grid-column: 2;
+      }
+
+      .saved-grid { grid-template-columns: 1fr 1fr; gap: 12px; }
+      .sc-img { height: 100px; }
+      .sc-body { padding: 10px; }
+      .sc-name { font-size: .82rem; }
+      .sc-buy { margin: 0 10px 10px; width: calc(100% - 20px); }
+
+      /* History table: hide less important cols */
+      .ht th:nth-child(2),
+      .ht td:nth-child(2),
+      .ht th:nth-child(3),
+      .ht td:nth-child(3) { display: none; }
+
+      .block-body { padding: 16px; }
+      .block-head { padding: 14px 16px; }
+
+      /* QR modal full width */
+      .qrm { padding: 28px 20px; }
+    }
+
+    /* ---- SMALL MOBILE (≤ 420px) ---- */
+    @media (max-width: 420px) {
+      .stats-row { grid-template-columns: 1fr 1fr; }
+      .saved-grid { grid-template-columns: 1fr; }
+      .tc {
+        grid-template-columns: 1fr;
+      }
+      .tc-thumb { width: 100%; height: 120px; }
+      .tc-thumb img { width: 100%; height: 100%; object-fit: cover; }
+      .ht th:nth-child(5),
+      .ht td:nth-child(5) { display: none; }
+    }
+  </style>
+</head>
+<body>
+<div id="cursor"></div>
+<div id="cursor-ring"></div>
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+
+<aside class="sidebar">
+  <div class="sb-logo">EVENT<span>URA</span><a href="index.html">← Voltar ao site</a></div>
+  <div class="sb-user">
+    <div class="sb-av">AS</div>
+    <div>
+      <div class="sb-uname">Ana Souza</div>
+      <div class="sb-badge"><span class="sb-dot"></span>Cliente</div>
+    </div>
+  </div>
+  <nav class="sb-nav">
+    <div class="sb-sec">Principal</div>
+    <a href="#" class="nav-item active" data-page="overview" onclick="goTo('overview',this);return false"><span class="nav-ico">🏠</span>Visão Geral</a>
+    <a href="#" class="nav-item" data-page="ingressos" onclick="goTo('ingressos',this);return false"><span class="nav-ico">🎟️</span>Meus Ingressos<span class="nav-badge">3</span></a>
+    <a href="#" class="nav-item" data-page="salvos" onclick="goTo('salvos',this);return false"><span class="nav-ico">❤️</span>Eventos Salvos</a>
+    <a href="#" class="nav-item" data-page="historico" onclick="goTo('historico',this);return false"><span class="nav-ico">🕐</span>Histórico</a>
+    <div class="sb-sec">Conta</div>
+    <a href="#" class="nav-item" data-page="notificacoes" onclick="goTo('notificacoes',this);return false"><span class="nav-ico">🔔</span>Notificações<span class="nav-badge">4</span></a>
+    <a href="#" class="nav-item"><span class="nav-ico">⚙️</span>Configurações</a>
+  </nav>
+  <div class="sb-foot"><a href="index.html"><span>🚪</span>Sair da conta</a></div>
+</aside>
+
+<main class="main">
+  <div class="topbar">
+    <button class="hamburger" id="hamburger" onclick="toggleSidebar()" aria-label="Menu">☰</button>
+    <div class="topbar-title" id="topbarTitle">Visão Geral</div>
+    <button class="notif-btn" onclick="goTo('notificacoes',null)">🔔<span class="ndot"></span></button>
+  </div>
+
+  <!-- OVERVIEW -->
+  <div class="page active" id="page-overview">
+    <div class="ph-eye">Bem-vinda de volta</div>
+    <div class="ph-title">OLÁ, ANA 👋</div>
+    <div class="ph-sub">Aqui está um resumo da sua conta</div>
+    <div class="stats-row">
+      <div class="sc"><div class="sc-icon">🎟️</div><div class="sc-val">3</div><div class="sc-label">Ingressos Ativos</div></div>
+      <div class="sc"><div class="sc-icon">✅</div><div class="sc-val">12</div><div class="sc-label">Eventos Participados</div><div class="sc-change">↑ +2 este mês</div></div>
+      <div class="sc"><div class="sc-icon">❤️</div><div class="sc-val">6</div><div class="sc-label">Eventos Salvos</div></div>
+      <div class="sc"><div class="sc-icon">💸</div><div class="sc-val">R$640</div><div class="sc-label">Total Investido</div></div>
+    </div>
+    <div class="block">
+      <div class="block-head"><div class="block-title">PRÓXIMOS EVENTOS</div><button class="block-act" onclick="goTo('ingressos',null)">Ver todos →</button></div>
+      <div class="block-body"><div class="tlist" id="ovTickets"></div></div>
+    </div>
+    <div class="block">
+      <div class="block-head"><div class="block-title">NOTIFICAÇÕES RECENTES</div><button class="block-act" onclick="goTo('notificacoes',null)">Ver todas →</button></div>
+      <div class="nlist" id="ovNotifs"></div>
+    </div>
+  </div>
+
+  <!-- INGRESSOS -->
+  <div class="page" id="page-ingressos">
+    <div class="ph-eye">Minha carteira</div>
+    <div class="ph-title">MEUS INGRESSOS</div>
+    <div class="ph-sub">3 ingressos ativos · 1 utilizado</div>
+    <div class="tlist" id="allTickets"></div>
+  </div>
+
+  <!-- SALVOS -->
+  <div class="page" id="page-salvos">
+    <div class="ph-eye">Lista de desejos</div>
+    <div class="ph-title">EVENTOS SALVOS</div>
+    <div class="ph-sub">6 eventos na sua lista</div>
+    <div class="saved-grid" id="savedGrid"></div>
+  </div>
+
+  <!-- HISTÓRICO -->
+  <div class="page" id="page-historico">
+    <div class="ph-eye">Compras</div>
+    <div class="ph-title">HISTÓRICO DE COMPRAS</div>
+    <div class="ph-sub">6 transações</div>
+    <div class="block"><div class="block-body" style="padding:0">
+      <table class="ht"><thead><tr><th>Evento</th><th>Compra</th><th>Tipo</th><th>Valor</th><th>Status</th><th></th></tr></thead>
+      <tbody id="histBody"></tbody></table>
+    </div></div>
+  </div>
+
+  <!-- NOTIFICAÇÕES -->
+  <div class="page" id="page-notificacoes">
+    <div class="ph-eye">Avisos</div>
+    <div class="ph-title">NOTIFICAÇÕES</div>
+    <div class="ph-sub">4 não lidas</div>
+    <div class="block"><div class="nlist" id="allNotifs"></div></div>
+  </div>
+</main>
+
+<!-- QR MODAL -->
+<div class="qro" id="qro" onclick="closeQR(event)">
+  <div class="qrm">
+    <div class="qr-t">SEU INGRESSO</div>
+    <div class="qr-ev" id="qrEv"></div>
+    <div class="qr-box">
+      <svg viewBox="0 0 21 21" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges">
+        <rect width="21" height="21" fill="white"/>
+        <rect x="0" y="0" width="7" height="7" fill="black"/><rect x="1" y="1" width="5" height="5" fill="white"/><rect x="2" y="2" width="3" height="3" fill="black"/>
+        <rect x="14" y="0" width="7" height="7" fill="black"/><rect x="15" y="1" width="5" height="5" fill="white"/><rect x="16" y="2" width="3" height="3" fill="black"/>
+        <rect x="0" y="14" width="7" height="7" fill="black"/><rect x="1" y="15" width="5" height="5" fill="white"/><rect x="2" y="16" width="3" height="3" fill="black"/>
+        <rect x="8" y="0" width="1" height="1" fill="black"/><rect x="10" y="0" width="1" height="1" fill="black"/><rect x="12" y="0" width="1" height="1" fill="black"/>
+        <rect x="9" y="1" width="1" height="1" fill="black"/><rect x="11" y="1" width="1" height="1" fill="black"/>
+        <rect x="8" y="2" width="2" height="1" fill="black"/><rect x="11" y="2" width="2" height="1" fill="black"/>
+        <rect x="9" y="3" width="1" height="1" fill="black"/><rect x="8" y="4" width="1" height="1" fill="black"/><rect x="10" y="4" width="3" height="1" fill="black"/>
+        <rect x="0" y="8" width="1" height="1" fill="black"/><rect x="2" y="8" width="3" height="1" fill="black"/><rect x="7" y="8" width="2" height="1" fill="black"/>
+        <rect x="10" y="8" width="1" height="1" fill="black"/><rect x="12" y="8" width="3" height="1" fill="black"/><rect x="16" y="8" width="2" height="1" fill="black"/>
+        <rect x="1" y="9" width="1" height="1" fill="black"/><rect x="4" y="9" width="2" height="1" fill="black"/><rect x="8" y="9" width="1" height="1" fill="black"/>
+        <rect x="11" y="9" width="2" height="1" fill="black"/><rect x="15" y="9" width="1" height="1" fill="black"/>
+        <rect x="0" y="10" width="2" height="1" fill="black"/><rect x="3" y="10" width="1" height="1" fill="black"/><rect x="6" y="10" width="2" height="1" fill="black"/>
+        <rect x="9" y="10" width="3" height="1" fill="black"/><rect x="14" y="10" width="2" height="1" fill="black"/><rect x="17" y="10" width="3" height="1" fill="black"/>
+        <rect x="8" y="11" width="1" height="1" fill="black"/><rect x="10" y="11" width="1" height="1" fill="black"/><rect x="13" y="11" width="1" height="1" fill="black"/>
+        <rect x="9" y="12" width="2" height="1" fill="black"/><rect x="12" y="12" width="2" height="1" fill="black"/><rect x="15" y="12" width="2" height="1" fill="black"/>
+        <rect x="8" y="14" width="3" height="1" fill="black"/><rect x="13" y="14" width="1" height="1" fill="black"/><rect x="15" y="14" width="3" height="1" fill="black"/>
+        <rect x="8" y="15" width="1" height="1" fill="black"/><rect x="11" y="15" width="2" height="1" fill="black"/><rect x="14" y="15" width="1" height="1" fill="black"/>
+        <rect x="9" y="16" width="2" height="1" fill="black"/><rect x="12" y="16" width="3" height="1" fill="black"/><rect x="16" y="16" width="2" height="1" fill="black"/>
+        <rect x="8" y="17" width="1" height="1" fill="black"/><rect x="10" y="17" width="1" height="1" fill="black"/><rect x="13" y="17" width="2" height="1" fill="black"/>
+        <rect x="9" y="18" width="3" height="1" fill="black"/><rect x="14" y="18" width="1" height="1" fill="black"/><rect x="17" y="18" width="1" height="1" fill="black"/>
+      </svg>
+    </div>
+    <div class="qr-id" id="qrId"></div>
+    <div class="qr-tp" id="qrTp"></div>
+    <button class="qr-cl" onclick="closeQR()">Fechar</button>
+  </div>
+</div>
+
+<script>
+// CURSOR
+const cur=document.getElementById('cursor'),ring=document.getElementById('cursor-ring');
+let mx=0,my=0,rx=0,ry=0;
+document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;cur.style.left=mx-5+'px';cur.style.top=my-5+'px'});
+(function anim(){rx+=(mx-rx-15)*.12;ry+=(my-ry-15)*.12;ring.style.left=rx+'px';ring.style.top=ry+'px';requestAnimationFrame(anim)})();
+
+const tickets=[
+  {id:'EVT-2025-001847',name:'Festival Sons do Brasil 2025',date:'15-16 Nov 2025',loc:'Parque Villa-Lobos, SP',type:'VIP',price:'R$ 180',status:'ativo',img:'https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=200&q=80'},
+  {id:'EVT-2025-003291',name:'Tech Summit São Paulo',date:'22 Nov 2025',loc:'Expo Center Norte, SP',type:'Pista',price:'R$ 80',status:'ativo',img:'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=200&q=80'},
+  {id:'EVT-2025-004120',name:'Mostra de Arte Contemporânea',date:'05 Dez 2025',loc:'MASP, São Paulo',type:'Inteira',price:'R$ 45',status:'ativo',img:'https://images.unsplash.com/photo-1531058020387-3be344556be6?w=200&q=80'},
+  {id:'EVT-2025-000543',name:'Rock in Rio 2025',date:'03 Out 2025',loc:'Cidade do Rock, RJ',type:'Pista',price:'R$ 395',status:'usado',img:'https://images.unsplash.com/photo-1459749411175-04bf5292ceea?w=200&q=80'},
+];
+
+let saved=[
+  {name:'Lollapalooza Brasil 2026',cat:'Música',date:'Mar 2026',price:'A partir de R$ 250',img:'https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?w=400&q=80'},
+  {name:'Campus Party 2026',cat:'Tech',date:'Fev 2026',price:'A partir de R$ 60',img:'https://images.unsplash.com/photo-1504384308090-c894fdcc538d?w=400&q=80'},
+  {name:'Festival Gastronômico SP',cat:'Gastronomia',date:'Jan 2026',price:'A partir de R$ 120',img:'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=400&q=80'},
+  {name:'Bienal do Livro',cat:'Arte & Cultura',date:'Ago 2026',price:'A partir de R$ 30',img:'https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=400&q=80'},
+  {name:'Maratona de SP',cat:'Esporte',date:'Jun 2026',price:'A partir de R$ 180',img:'https://images.unsplash.com/photo-1452626038306-9aae5e071dd3?w=400&q=80'},
+  {name:'São Paulo Fashion Week',cat:'Moda',date:'Out 2025',price:'A partir de R$ 200',img:'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&q=80'},
+];
+
+const hist=[
+  {ev:'Mostra de Arte Contemporânea',date:'10 Out 2025',type:'Inteira',val:'R$ 45,00',st:'concluido'},
+  {ev:'Tech Summit São Paulo',date:'08 Out 2025',type:'Pista',val:'R$ 80,00',st:'concluido'},
+  {ev:'Festival Sons do Brasil',date:'02 Out 2025',type:'VIP',val:'R$ 180,00',st:'concluido'},
+  {ev:'Rock in Rio 2025',date:'15 Set 2025',type:'Pista',val:'R$ 395,00',st:'concluido'},
+  {ev:'The Town 2025',date:'01 Set 2025',type:'Camarote',val:'R$ 580,00',st:'concluido'},
+  {ev:'Comedy Festival',date:'20 Ago 2025',type:'Pista',val:'R$ 95,00',st:'cancelado'},
+];
+
+const notifs=[
+  {ico:'🎟️',text:'<strong>Seu ingresso para o Festival Sons do Brasil 2025</strong> está disponível. Apresente o QR Code na entrada.',time:'Há 2 horas',unread:true},
+  {ico:'🔥',text:'<strong>Lollapalooza 2026</strong> acabou de abrir o 1º lote! Preços sobem em 48h.',time:'Há 5 horas',unread:true},
+  {ico:'⏰',text:'Lembrete: <strong>Tech Summit São Paulo</strong> acontece em 12 dias.',time:'Há 1 dia',unread:true},
+  {ico:'✅',text:'Pagamento confirmado para <strong>Mostra de Arte Contemporânea</strong>.',time:'Há 2 dias',unread:true},
+  {ico:'💡',text:'Novos eventos de <strong>Música</strong> na sua região foram adicionados.',time:'Há 3 dias',unread:false},
+  {ico:'🎉',text:'Parabéns! Você completou <strong>10 eventos</strong>. Nível Fã confirmado!',time:'Há 1 semana',unread:false},
+];
+
+function tcHTML(t){
+  return`<div class="tc">
+    <div class="tc-thumb"><img src="${t.img}" onerror="this.parentElement.textContent='🎟️'"/></div>
+    <div><div class="tc-name">${t.name}</div><div class="tc-date">📅 ${t.date}</div><div class="tc-loc">📍 ${t.loc}</div></div>
+    <div><div class="tc-type">${t.type}</div><div class="tc-price">${t.price}</div></div>
+    <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">
+      <span class="ts ${t.status}">${t.status==='ativo'?'● Ativo':'● Utilizado'}</span>
+      ${t.status==='ativo'?`<button class="qr-btn" onclick="openQR('${t.id}','${t.name}','${t.type}')">📱 Ver QR Code</button>`:''}
+    </div>
+  </div>`;
+}
+
+function scHTML(s,i){
+  return`<div class="saved-card">
+    <button class="sc-rm" onclick="rmSaved(${i})">✕</button>
+    <div class="sc-img"><img src="${s.img}" onerror="this.parentElement.textContent='🎭'"/></div>
+    <div class="sc-body"><div class="sc-cat">${s.cat}</div><div class="sc-name">${s.name}</div><div class="sc-date">📅 ${s.date}</div><div class="sc-price">${s.price}</div></div>
+    <button class="sc-buy">Comprar Ingresso →</button>
+  </div>`;
+}
+
+function niHTML(n){
+  return`<div class="ni ${n.unread?'unread':''}">
+    <div class="ni-ico">${n.ico}</div>
+    <div style="flex:1"><div class="ni-text">${n.text}</div><div class="ni-time">${n.time}</div></div>
+    ${n.unread?'<div class="ni-dot"></div>':''}
+  </div>`;
+}
+
+function render(){
+  document.getElementById('ovTickets').innerHTML=tickets.filter(t=>t.status==='ativo').map(tcHTML).join('');
+  document.getElementById('allTickets').innerHTML=tickets.map(tcHTML).join('');
+  document.getElementById('ovNotifs').innerHTML=notifs.slice(0,3).map(niHTML).join('');
+  document.getElementById('allNotifs').innerHTML=notifs.map(niHTML).join('');
+  document.getElementById('savedGrid').innerHTML=saved.map((s,i)=>scHTML(s,i)).join('');
+  document.getElementById('histBody').innerHTML=hist.map(h=>`<tr>
+    <td><strong>${h.ev}</strong></td><td style="color:var(--muted)">${h.date}</td>
+    <td style="color:var(--muted)">${h.type}</td><td><strong>${h.val}</strong></td>
+    <td><span class="hs ${h.st}">${h.st==='concluido'?'Concluído':'Cancelado'}</span></td>
+    <td>${h.st==='concluido'?'<button class="hdl">↓ PDF</button>':'—'}</td>
+  </tr>`).join('');
+}
+render();
+
+const titles={overview:'Visão Geral',ingressos:'Meus Ingressos',salvos:'Eventos Salvos',historico:'Histórico',notificacoes:'Notificações'};
+function goTo(p,el){
+  document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(x=>x.classList.remove('active'));
+  document.getElementById('page-'+p).classList.add('active');
+  (el||document.querySelector(`[data-page="${p}"]`))?.classList.add('active');
+  document.getElementById('topbarTitle').textContent=titles[p]||p;
+  window.scrollTo(0,0);
+}
+
+function openQR(id,name,type){
+  document.getElementById('qrEv').textContent=name;
+  document.getElementById('qrId').textContent=id;
+  document.getElementById('qrTp').textContent=type.toUpperCase();
+  document.getElementById('qro').classList.add('open');
+}
+function closeQR(e){
+  if(!e||e.target===document.getElementById('qro')||e.currentTarget?.classList?.contains('qr-cl'))
+    document.getElementById('qro').classList.remove('open');
+}
+
+function rmSaved(i){ saved.splice(i,1); render(); }
+
+// RESPONSIVE SIDEBAR
+function toggleSidebar() {
+  document.querySelector('.sidebar').classList.toggle('open');
+  document.getElementById('sidebarOverlay').classList.toggle('active');
+}
+function closeSidebar() {
+  document.querySelector('.sidebar').classList.remove('open');
+  document.getElementById('sidebarOverlay').classList.remove('active');
+}
+// Close sidebar on nav click (mobile)
+document.querySelectorAll('.nav-item').forEach(el => {
+  el.addEventListener('click', () => {
+    if (window.innerWidth <= 768) closeSidebar();
+  });
+});
+
+</script>
+</body>
+</html> 
