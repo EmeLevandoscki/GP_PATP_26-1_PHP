@@ -1,10 +1,3 @@
-// ================================
-//   EVENTURA — script.js
-// ================================
-
-// --------------------------------
-// CUSTOM CURSOR
-// --------------------------------
 
 const cursor = document.getElementById('cursor');
 const ring = document.getElementById('cursor-ring');
@@ -42,10 +35,9 @@ document.querySelectorAll('button, a, .event-card, .cat-card, input, select').fo
   });
 });
 
-// --------------------------------
+// 
 // EVENTS DATA
-// --------------------------------
-
+// 
 const events = [
   {
     id: 1,
@@ -103,17 +95,17 @@ const events = [
   }
 ];
 
-// --------------------------------
+//
 // STATE
-// --------------------------------
+// 
 
 let activeFilter = 'todos';
 let searchTerm   = '';
 let cityFilter   = '';
 
-// --------------------------------
+//
 // RENDER EVENTS
-// --------------------------------
+// 
 
 function renderEvents() {
   const grid = document.getElementById('eventsGrid');
@@ -160,13 +152,13 @@ function renderEvents() {
     </div>
   `).join('');
 
-  // Re-observe new cards for animations
+  // 
   document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
 }
 
-// --------------------------------
+// 
 // FILTER & SEARCH
-// --------------------------------
+// 
 
 function setFilter(btn, filter) {
   activeFilter = filter;
@@ -181,9 +173,9 @@ function filterEvents() {
   renderEvents();
 }
 
-// --------------------------------
+// 
 // STATE → CITY CASCADING
-// --------------------------------
+// 
 
 const citiesByState = {
   AC: ["Rio Branco", "Cruzeiro do Sul", "Sena Madureira", "Tarauacá", "Feijó", "Brasiléia", "Senador Guiomard", "Plácido de Castro", "Mâncio Lima", "Porto Acre", "Xapuri", "Rodrigues alves", "Marechal Thaumaturgo", "Epitaciolândia", "Acrelândia", "Manoel urbano", "Capixaba", "Porto Walter", "Bujari", "Assis Brasil", "Jordão", "Santa Rosa do Rurus"],
@@ -241,9 +233,9 @@ function onStateChange() {
   renderEvents();
 }
 
-// --------------------------------
+//  
 // MODAL
-// --------------------------------
+//  
 
 function openModal(eventName) {
   document.getElementById('modalEventName').textContent = eventName;
@@ -275,9 +267,9 @@ function submitReserva() {
   setTimeout(closeModal, 3000);
 }
 
-// --------------------------------
+//  
 // NEWSLETTER
-// --------------------------------
+//  
 
 function subscribeNewsletter() {
   const input = document.getElementById('newsletterEmail');
@@ -292,9 +284,9 @@ function subscribeNewsletter() {
   }, 3000);
 }
 
-// --------------------------------
+// 
 // INTERSECTION OBSERVER (animations)
-// --------------------------------
+// 
 
 const observer = new IntersectionObserver(entries => {
   entries.forEach(e => {
@@ -302,17 +294,17 @@ const observer = new IntersectionObserver(entries => {
   });
 }, { threshold: 0.1 });
 
-// --------------------------------
+// 
 // KEYBOARD SHORTCUTS
-// --------------------------------
+// 
 
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape') closeModal();
 });
 
-// --------------------------------
+// 
 // INIT
-// --------------------------------
+// 
 
 renderEvents();
 document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));

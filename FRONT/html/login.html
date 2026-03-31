@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Entrar — IDEAU Eventos</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="css/style.css"/>
+  <link rel="stylesheet" href="css/login.css"/>
+</head>
+<body>
+
+<div id="cursor"></div>
+<div id="cursor-ring"></div>
+<button class="corner-toggle" id="themeToggle" onclick="toggleTheme()" title="Alternar tema">☀️</button>
+<div class="toast" id="toast"></div>
+
+<div class="login-layout">
+
+  <!-- PAINEL ESQUERDO -->
+  <div class="left-panel">
+    <a href="index.html" class="left-logo">
+      <img src="logo__ideau.png" alt="Logo IDEAU"/>
+      <div class="left-logo-text">
+        <span class="left-logo-title">IDEAU Eventos</span>
+        <span class="left-logo-sub">Faculdades IDEAU</span>
+      </div>
+    </a>
+
+    <div class="left-content">
+      <div class="left-eyebrow">Bem-vindo de volta</div>
+      <h1 class="left-heading">
+        ACESSE<br>
+        <span class="outline">SUA</span><br>
+        <span class="acc">CONTA</span>
+      </h1>
+      <p class="left-sub">Seus ingressos, histórico de eventos e preferências em um só lugar.</p>
+      <div class="left-stats">
+        <div class="ls-item">
+          <div class="ls-num">840<sup>+</sup></div>
+          <div class="ls-label">Eventos ativos</div>
+        </div>
+        <div class="ls-div"></div>
+        <div class="ls-item">
+          <div class="ls-num">12K</div>
+          <div class="ls-label">Usuários</div>
+        </div>
+        <div class="ls-div"></div>
+        <div class="ls-item">
+          <div class="ls-num">98<sup>%</sup></div>
+          <div class="ls-label">Satisfação</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="left-footer">
+      <div class="left-ticker">↓ Entre para explorar ↓</div>
+    </div>
+  </div>
+
+  <!-- PAINEL DIREITO — rola independentemente -->
+  <div class="right-panel" id="rightPanel">
+    <div class="auth-wrap">
+
+      <div class="form-eyebrow" id="formEyebrow">Acesso</div>
+      <div class="form-title" id="formTitle">ENTRAR</div>
+
+      <div class="auth-tabs">
+        <button class="auth-tab active" id="tabLogin"    onclick="switchTab('login')">Entrar</button>
+        <button class="auth-tab"        id="tabCadastro" onclick="switchTab('cadastro')">Cadastrar</button>
+      </div>
+
+      <!-- LOGIN -->
+      <div id="formLogin" class="auth-box">
+        <h3>BEM-VINDO DE VOLTA</h3>
+        <p class="auth-sub">Entre com seu e-mail e senha para acessar sua conta.</p>
+
+        <div class="social-btns">
+          <button class="social-login" onclick="socialLogin('Google')">
+            <svg width="18" height="18" viewBox="0 0 18 18"><path fill="#EA4335" d="M9 3.48c1.69 0 2.83.73 3.48 1.34l2.54-2.48C13.46.89 11.43 0 9 0 5.48 0 2.44 2.02.96 4.96l2.91 2.26C4.6 5.05 6.62 3.48 9 3.48z"/><path fill="#4285F4" d="M17.64 9.2c0-.74-.06-1.28-.19-1.84H9v3.34h4.96c-.1.83-.64 2.08-1.84 2.92l2.84 2.2c1.7-1.57 2.68-3.88 2.68-6.62z"/><path fill="#FBBC05" d="M3.88 10.78A5.54 5.54 0 0 1 3.58 9c0-.62.11-1.22.29-1.78L.96 4.96A9.008 9.008 0 0 0 0 9c0 1.45.35 2.82.96 4.04l2.92-2.26z"/><path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.84-2.2c-.76.53-1.78.9-3.12.9-2.38 0-4.4-1.57-5.12-3.74L.97 13.04C2.45 15.98 5.48 18 9 18z"/></svg>
+            Continuar com Google
+          </button>
+        </div>
+
+        <div class="auth-error" id="loginError"></div>
+        <div class="form-group">
+          <label>E-mail</label>
+          <input type="email" id="loginEmail" placeholder="seu@email.com"/>
+        </div>
+        <div class="form-group">
+          <label>Senha</label>
+          <input type="password" id="loginPass" placeholder="Sua senha"
+                 onkeydown="if(event.key==='Enter')doLogin()"/>
+        </div>
+        <button class="auth-submit" onclick="doLogin()">Entrar</button>
+        <p class="auth-alt">Não tem conta? <a href="#" onclick="switchTab('cadastro');return false;">Cadastre-se grátis →</a></p>
+      </div>
+
+      <!-- CADASTRO -->
+      <div id="formCadastro" class="auth-box" style="display:none">
+        <h3>CRIAR CONTA</h3>
+        <p class="auth-sub">Cadastre-se para se inscrever em eventos e receber novidades.</p>
+        <div class="auth-error" id="cadError"></div>
+        <div class="form-group">
+          <label>Nome completo</label>
+          <input type="text" id="cadNome" placeholder="Seu nome completo"/>
+        </div>
+        <div class="form-group">
+          <label>E-mail</label>
+          <input type="email" id="cadEmail" placeholder="seu@email.com"/>
+        </div>
+        <div class="form-group">
+          <label>Senha</label>
+          <input type="password" id="cadPass" placeholder="Mínimo 6 caracteres"/>
+        </div>
+        <div class="form-group" style="margin-bottom:8px"><label>Tipo de conta</label></div>
+        <div class="role-selector">
+          <div class="role-card selected" id="roleCliente" onclick="selectRole('cliente')">
+            <div class="role-icon">👤</div>
+            <div class="role-info"><span class="role-name">Participante</span><span class="role-desc">Comprar ingressos</span></div>
+            <div class="role-check">✓</div>
+          </div>
+          <div class="role-card" id="roleOrg" onclick="selectRole('organizador')">
+            <div class="role-icon">🏛️</div>
+            <div class="role-info"><span class="role-name">Organizador</span><span class="role-desc">Criar eventos</span></div>
+            <div class="role-check">✓</div>
+          </div>
+        </div>
+        <div class="form-group" id="orgFieldGroup" style="display:none">
+          <label>Nome da organização</label>
+          <input type="text" id="cadOrg" placeholder="Ex: IDEAU, empresa, entidade..."/>
+        </div>
+        <button class="auth-submit" onclick="doCadastro()">Criar conta</button>
+        <p class="auth-alt">Já tem conta? <a href="#" onclick="switchTab('login');return false;">Entrar →</a></p>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+/* ── CURSOR ── */
+(function(){
+  const cur  = document.getElementById('cursor');
+  const ring = document.getElementById('cursor-ring');
+  let mx=0, my=0, rx=0, ry=0;
+
+  document.addEventListener('mousemove', function bootstrap(e){
+    mx = rx = e.clientX; my = ry = e.clientY;
+    cur.style.transition  = 'none';
+    ring.style.transition = 'none';
+    cur.style.top  = '0'; cur.style.left  = '0';
+    ring.style.top = '0'; ring.style.left = '0';
+    cur.style.transform  = `translate(${mx-5}px,${my-5}px)`;
+    ring.style.transform = `translate(${rx-16}px,${ry-16}px)`;
+    requestAnimationFrame(()=>{
+      cur.style.transition  = 'background .3s';
+      ring.style.transition = 'all .25s ease';
+    });
+    document.removeEventListener('mousemove', bootstrap);
+    document.addEventListener('mousemove', e=>{ mx=e.clientX; my=e.clientY; });
+    loop();
+  });
+
+  function loop(){
+    rx += (mx-rx)*.18; ry += (my-ry)*.18;
+    cur.style.transform  = `translate(${mx-5}px,${my-5}px)`;
+    ring.style.transform = `translate(${rx-16}px,${ry-16}px)`;
+    requestAnimationFrame(loop);
+  }
+})();
+
+/* ── TEMA ── */
+function toggleTheme(){
+  const html = document.documentElement;
+  const isDark = html.getAttribute('data-theme')==='dark';
+  html.setAttribute('data-theme', isDark?'light':'dark');
+  document.getElementById('themeToggle').textContent = isDark?'🌙':'☀️';
+  localStorage.setItem('ideau-theme', isDark?'light':'dark');
+}
+(function(){
+  const s = localStorage.getItem('ideau-theme');
+  if(s){
+    document.documentElement.setAttribute('data-theme', s);
+    document.getElementById('themeToggle').textContent = s==='dark'?'☀️':'🌙';
+  }
+})();
+
+/* ── TOAST ── */
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 3200);
+}
+
+/* ── AUTH ── */
+let selectedRole = 'cliente';
+
+function switchTab(tab){
+  const isL = tab==='login';
+  document.getElementById('tabLogin').classList.toggle('active', isL);
+  document.getElementById('tabCadastro').classList.toggle('active', !isL);
+  document.getElementById('formLogin').style.display    = isL?'block':'none';
+  document.getElementById('formCadastro').style.display = isL?'none':'block';
+  document.getElementById('formEyebrow').textContent    = isL?'Acesso':'Novo cadastro';
+  document.getElementById('formTitle').textContent      = isL?'ENTRAR':'CRIAR CONTA';
+  /* volta ao topo do painel ao trocar de aba */
+  document.getElementById('rightPanel').scrollTop = 0;
+}
+
+function selectRole(role){
+  selectedRole = role;
+  document.getElementById('roleCliente').classList.toggle('selected', role==='cliente');
+  document.getElementById('roleOrg').classList.toggle('selected', role==='organizador');
+  document.getElementById('orgFieldGroup').style.display = role==='organizador'?'block':'none';
+}
+
+function showError(id, msg){
+  const el = document.getElementById(id);
+  el.textContent = msg; el.classList.add('show');
+  setTimeout(()=>el.classList.remove('show'), 4000);
+}
+
+function doLogin(){
+  const email = document.getElementById('loginEmail').value.trim();
+  const pass  = document.getElementById('loginPass').value;
+  if(!email||!pass){ showError('loginError','Preencha todos os campos.'); return; }
+  const users = JSON.parse(localStorage.getItem('ideau-users')||'[]');
+  const user  = users.find(u=>u.email===email&&u.pass===pass);
+  if(!user){ showError('loginError','E-mail ou senha incorretos.'); return; }
+  sessionStorage.setItem('ideau-session', JSON.stringify({
+    name:user.name, initials:user.initials, email:user.email,
+    role:user.role, roleLabel:user.roleLabel, org:user.org||''
+  }));
+  showToast('✅ Bem-vindo(a) de volta, '+user.name.split(' ')[0]+'!');
+  setTimeout(()=>{ window.location.href='index.html'; }, 1000);
+}
+
+function doCadastro(){
+  const nome  = document.getElementById('cadNome').value.trim();
+  const email = document.getElementById('cadEmail').value.trim();
+  const pass  = document.getElementById('cadPass').value;
+  const orgEl = document.getElementById('cadOrg');
+  const org   = orgEl ? orgEl.value.trim() : '';
+  if(!nome||!email||!pass){ showError('cadError','Preencha todos os campos.'); return; }
+  if(pass.length<6){ showError('cadError','A senha deve ter no mínimo 6 caracteres.'); return; }
+  const users = JSON.parse(localStorage.getItem('ideau-users')||'[]');
+  if(users.find(u=>u.email===email)){ showError('cadError','Este e-mail já está cadastrado.'); return; }
+  const initials = nome.split(' ').slice(0,2).map(w=>w[0].toUpperCase()).join('');
+  const newUser  = {
+    name:nome, initials, email, pass, role:selectedRole,
+    roleLabel: selectedRole==='cliente'?'Cliente':'Organizador',
+    org: selectedRole==='organizador'?org:''
+  };
+  users.push(newUser);
+  localStorage.setItem('ideau-users', JSON.stringify(users));
+  sessionStorage.setItem('ideau-session', JSON.stringify({
+    name:newUser.name, initials:newUser.initials, email:newUser.email,
+    role:newUser.role, roleLabel:newUser.roleLabel, org:newUser.org
+  }));
+  showToast('✅ Conta criada! Bem-vindo(a), '+nome.split(' ')[0]+'!');
+  setTimeout(()=>{ window.location.href='index.html'; }, 1000);
+}
+</script>
+</body>
+</html>
