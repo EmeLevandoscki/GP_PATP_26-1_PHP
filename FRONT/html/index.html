@@ -12,7 +12,6 @@
 <div id="cursor"></div>
 <div id="cursor-ring"></div>
 
-<!-- NAV -->
 <nav>
   <a href="index.html" class="nav-logo">
     <img src="logo__ideau.png" alt="Logo IDEAU"/>
@@ -21,20 +20,17 @@
       <span class="nav-logo-sub">Faculdades IDEAU</span>
     </div>
   </a>
-
   <ul>
     <li><a href="#eventos">Eventos</a></li>
     <li><a href="#categorias">Categorias</a></li>
     <li><a href="#destaque">Destaque</a></li>
   </ul>
-
   <div style="display:flex;align-items:center;gap:10px;">
     <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="Alternar tema">🌙</button>
     <div class="nav-auth" id="navAuth"></div>
   </div>
 </nav>
 
-<!-- HERO -->
 <section class="hero">
   <div class="hero-bg"></div>
   <div class="hero-grid"></div>
@@ -57,7 +53,6 @@
   <div class="hero-ticker">↓ Role para explorar ↓</div>
 </section>
 
-<!-- MARQUEE -->
 <div class="marquee-bar">
   <div class="marquee-track" id="marqueeTrack">
     <span class="marquee-item">Semanas Acadêmicas <span class="marquee-dot"></span></span>
@@ -71,7 +66,6 @@
   </div>
 </div>
 
-<!-- BUSCA -->
 <div class="search-section" style="padding-top:60px">
   <div class="search-wrap">
     <span>🔍</span>
@@ -91,7 +85,6 @@
   </div>
 </div>
 
-<!-- EVENTOS -->
 <section id="eventos">
   <div class="section-label">Agenda</div>
   <h2 class="section-title">PRÓXIMOS EVENTOS</h2>
@@ -106,7 +99,6 @@
   <div class="events-grid" id="eventsGrid"></div>
 </section>
 
-<!-- DESTAQUE -->
 <section id="destaque" class="featured-section">
   <div class="section-label">Em destaque</div>
   <h2 class="section-title">EVENTO DO SEMESTRE</h2>
@@ -126,7 +118,7 @@
         </div>
         <div class="detail-row">
           <div class="detail-icon">📍</div>
-          <div><div class="detail-label">Local</div><div class="detail-val">Campus IDEAU — Getúlio Vargas, RS</div></div>
+          <div><div class="detail-label">Local</div><div class="detail-val">Campus IDEAU — Passo Fundo, RS</div></div>
         </div>
         <div class="detail-row">
           <div class="detail-icon">🎟️</div>
@@ -138,7 +130,6 @@
   </div>
 </section>
 
-<!-- CATEGORIAS -->
 <section id="categorias">
   <div class="section-label">Navegue por</div>
   <h2 class="section-title">CATEGORIAS</h2>
@@ -149,19 +140,19 @@
       <div class="cat-count">Shows & festivais</div>
       <div class="cat-arrow">↗</div>
     </div>
-    <div class="cat-card fade-up" style="transition-delay:0.1s" onclick="setFilterByName('tech')" style="cursor:pointer">
+    <div class="cat-card fade-up" style="transition-delay:0.1s" onclick="setFilterByName('tech')">
       <div class="cat-icon">🎓</div>
       <div class="cat-name">Acadêmico</div>
       <div class="cat-count">Congressos & semanas</div>
       <div class="cat-arrow">↗</div>
     </div>
-    <div class="cat-card fade-up" style="transition-delay:0.2s" onclick="setFilterByName('arte')" style="cursor:pointer">
+    <div class="cat-card fade-up" style="transition-delay:0.2s" onclick="setFilterByName('arte')">
       <div class="cat-icon">🎨</div>
       <div class="cat-name">Arte & Cultura</div>
       <div class="cat-count">Exposições & mostras</div>
       <div class="cat-arrow">↗</div>
     </div>
-    <div class="cat-card fade-up" style="transition-delay:0.3s" onclick="setFilterByName('gastronomia')" style="cursor:pointer">
+    <div class="cat-card fade-up" style="transition-delay:0.3s" onclick="setFilterByName('gastronomia')">
       <div class="cat-icon">🍽️</div>
       <div class="cat-name">Gastronomia</div>
       <div class="cat-count">Feiras & degustações</div>
@@ -170,7 +161,6 @@
   </div>
 </section>
 
-<!-- NEWSLETTER -->
 <div class="newsletter-section">
   <div>
     <h2>FIQUE POR<br><span>DENTRO DE</span><br>TUDO</h2>
@@ -181,7 +171,6 @@
   </div>
 </div>
 
-<!-- FOOTER -->
 <footer>
   <div class="footer-top">
     <div class="footer-brand">
@@ -230,7 +219,6 @@
   </div>
 </footer>
 
-<!-- MODAL -->
 <div class="modal-overlay" id="modalOverlay" onclick="closeModalOutside(event)">
   <div class="modal">
     <button class="modal-close" onclick="closeModal()">✕</button>
@@ -264,7 +252,6 @@
 
 <script src="js/script.js"></script>
 <script>
-// Navegar para eventos ao clicar em categoria
 function setFilterByName(cat) {
   document.getElementById('eventos').scrollIntoView({ behavior: 'smooth' });
   setTimeout(() => {
