@@ -1,0 +1,11 @@
+{
+    "name": "ideau/gp_patp_26-1_php",
+    "autoload": {
+        "psr-4": {
+            "App\\": "src/"
+        }
+    },
+    "require": {
+        "robmorgan/phinx": "^0.16.11"
+    }
+}
