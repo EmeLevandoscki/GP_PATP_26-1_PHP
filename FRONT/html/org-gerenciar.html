@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Gerenciar Eventos &mdash; IDEAU</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+:root{--bg:#f4f6f0;--surface:#fff;--card:#fff;--card-hover:#f9fbf6;--green-dark:#0d4a0d;--green-mid:#1a6e1a;--gold:#d4a800;--gold-light:#f5c800;--red:#c41a1a;--text:#1a2210;--muted:#6b7a5a;--border:rgba(13,74,13,.12);--border-strong:rgba(13,74,13,.25);--nav-bg:rgba(244,246,240,.96)}
+[data-theme="dark"]{--bg:#0a0f08;--surface:#111a0e;--card:#141f10;--card-hover:#1a2916;--green-mid:#2ea82e;--green-light:#45c445;--gold:#f5c800;--gold-light:#ffd740;--red:#e02020;--text:#e8f0d8;--muted:#7a9460;--border:rgba(46,168,46,.12);--border-strong:rgba(46,168,46,.25);--nav-bg:rgba(10,15,8,.96)}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);overflow-x:hidden;cursor:none;transition:background .3s,color .3s}
+@media(max-width:768px){body{cursor:auto}}
+body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");pointer-events:none;z-index:1000;opacity:.3}
+#cursor{width:10px;height:10px;background:var(--gold);border-radius:50%;position:fixed;pointer-events:none;z-index:9999;mix-blend-mode:screen;opacity:0;transform:translate(-50%,-50%)}
+#cursor-ring{width:32px;height:32px;border:1.5px solid rgba(245,200,0,.5);border-radius:50%;position:fixed;pointer-events:none;z-index:9998;opacity:0;transform:translate(-50%,-50%);transition:left .08s ease,top .08s ease}
+nav{position:fixed;top:0;left:0;right:0;z-index:500;display:flex;align-items:center;justify-content:space-between;padding:14px 48px;background:var(--nav-bg);backdrop-filter:blur(12px);border-bottom:1px solid var(--border)}
+.nlo{display:flex;align-items:center;gap:10px;text-decoration:none}
+.nlo-ic{width:40px;height:40px;background:linear-gradient(135deg,var(--green-dark),var(--green-mid));display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',sans-serif;font-size:1.1rem;color:#fff}
+.nlo-t{display:flex;flex-direction:column;line-height:1.1}
+.nlo-ti{font-family:'Bebas Neue',sans-serif;font-size:1.3rem;letter-spacing:.12em;color:var(--green-light)}
+.nlo-su{font-size:.58rem;letter-spacing:.18em;text-transform:uppercase;color:var(--muted)}
+.nav-r{display:flex;align-items:center;gap:10px}
+.tgl{background:transparent;border:1px solid var(--border-strong);color:var(--muted);width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:none;font-size:1rem;border-radius:50%;transition:all .2s}
+.tgl:hover{border-color:var(--gold);color:var(--gold)}
+.btn-c{background:var(--gold);color:#1a2210;border:none;padding:8px 18px;font-family:'DM Sans',sans-serif;font-size:.78rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;cursor:none;transition:all .2s;text-decoration:none;display:flex;align-items:center;gap:6px;clip-path:polygon(0 0,calc(100% - 8px) 0,100% 8px,100% 100%,8px 100%,0 calc(100% - 8px))}
+.btn-c:hover{background:var(--gold-light)}
+.ham{display:none;background:transparent;border:1px solid var(--border-strong);width:36px;height:36px;flex-direction:column;align-items:center;justify-content:center;gap:5px;padding:8px;cursor:pointer;flex-shrink:0}
+.ham span{display:block;width:18px;height:2px;background:var(--muted);transition:all .3s}
+.ham.open span:nth-child(1){transform:rotate(45deg) translate(5px,5px)}
+.ham.open span:nth-child(2){opacity:0}
+.ham.open span:nth-child(3){transform:rotate(-45deg) translate(5px,-5px)}
+.mob{display:none;position:fixed;top:73px;left:0;right:0;background:var(--nav-bg);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);z-index:490;padding:16px 20px;flex-direction:column;gap:2px}
+.mob.open{display:flex}
+.ma{display:flex;align-items:center;gap:10px;padding:12px 14px;color:var(--muted);text-decoration:none;font-size:.86rem;font-weight:500;border-left:2px solid transparent;transition:all .2s}
+.ma:hover,.ma.on{color:var(--gold);border-left-color:var(--gold);background:rgba(245,200,0,.04)}
+.ma.hl{color:var(--gold);font-weight:700}
+.ma.red{color:rgba(224,32,32,.65)}
+.mhr{height:1px;background:var(--border);margin:4px 0}
+.layout{display:grid;grid-template-columns:240px 1fr;min-height:100vh;padding-top:73px}
+.sb{background:var(--surface);border-right:1px solid var(--border);padding:32px 0;position:sticky;top:73px;height:calc(100vh - 73px);overflow-y:auto}
+.sb-u{padding:24px 22px;border-bottom:1px solid var(--border);margin-bottom:12px}
+.sb-av{width:52px;height:52px;background:rgba(245,200,0,.12);border:2px solid rgba(245,200,0,.35);display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',sans-serif;font-size:1.3rem;color:var(--gold-light);margin-bottom:10px}
+.sb-nm{font-weight:500;font-size:.92rem;margin-bottom:2px}
+.sb-em{font-size:.72rem;color:var(--muted)}
+.sb-b{display:inline-flex;align-items:center;gap:5px;margin-top:8px;padding:3px 10px;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;background:rgba(245,200,0,.08);border:1px solid rgba(245,200,0,.25);color:var(--gold)}
+.sb-bd{width:5px;height:5px;border-radius:50%;background:currentColor}
+.sbn{padding:0 10px}
+.sa{display:flex;align-items:center;gap:12px;padding:11px 14px;color:var(--muted);text-decoration:none;font-size:.84rem;font-weight:500;transition:all .2s;border-left:2px solid transparent;margin-bottom:2px}
+.sa:hover{color:var(--text);background:rgba(245,200,0,.04);border-left-color:var(--border-strong)}
+.sa.on{color:var(--gold);background:rgba(245,200,0,.06);border-left-color:var(--gold)}
+.sa.hl{color:var(--gold);font-weight:700}
+.sa.dng{color:rgba(224,32,32,.6)}
+.sa.dng:hover{color:var(--red);background:rgba(224,32,32,.05);border-left-color:var(--red)}
+.sai{font-size:1rem;width:20px;text-align:center}
+.sahr{height:1px;background:var(--border);margin:10px 14px}
+.main{padding:40px 48px;background:var(--bg)}
+.ey{font-size:.7rem;font-weight:500;letter-spacing:.22em;text-transform:uppercase;color:var(--gold);margin-bottom:8px;display:flex;align-items:center;gap:10px}
+.ey::before{content:'';width:22px;height:1px;background:var(--gold)}
+.ptitle{font-family:'Bebas Neue',sans-serif;font-size:2.8rem;letter-spacing:.04em;line-height:1;margin-bottom:28px}
+.btn-g{background:var(--gold);border:none;color:#1a2210;padding:10px 20px;font-family:'DM Sans',sans-serif;font-size:.8rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;cursor:none;transition:all .2s;clip-path:polygon(0 0,calc(100% - 8px) 0,100% 8px,100% 100%,8px 100%,0 calc(100% - 8px))}
+.btn-g:hover{background:var(--gold-light)}
+.btn-o{background:transparent;border:1px solid var(--border-strong);color:var(--muted);padding:9px 18px;font-family:'DM Sans',sans-serif;font-size:.8rem;font-weight:500;letter-spacing:.07em;text-transform:uppercase;cursor:none;transition:all .2s}
+.btn-o:hover{border-color:var(--text);color:var(--text)}
+.btn-dng{background:transparent;border:1px solid rgba(224,32,32,.3);color:rgba(224,32,32,.7);padding:8px 14px;font-family:'DM Sans',sans-serif;font-size:.74rem;letter-spacing:.07em;text-transform:uppercase;cursor:none;transition:all .2s}
+.btn-dng:hover{background:rgba(224,32,32,.08);border-color:var(--red);color:var(--red)}
+.pill{font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;padding:3px 8px}
+.p-a{background:rgba(46,168,46,.1);color:var(--green-light);border:1px solid rgba(46,168,46,.25)}
+.p-r{background:rgba(255,255,255,.04);color:var(--muted);border:1px solid var(--border)}
+.p-e{background:rgba(224,32,32,.08);color:var(--red);border:1px solid rgba(224,32,32,.2)}
+.p-c{background:rgba(46,168,46,.1);color:var(--green-light);border:1px solid rgba(46,168,46,.25)}
+.p-p{background:rgba(245,200,0,.08);color:var(--gold);border:1px solid rgba(245,200,0,.2)}
+.p-x{background:rgba(224,32,32,.08);color:var(--red);border:1px solid rgba(224,32,32,.2)}
+.pt{height:4px;background:rgba(46,168,46,.1);overflow:hidden}
+.pf{height:100%;background:var(--green-mid)}
+.pf-g{background:var(--gold)}.pf-r{background:var(--red)}
+.toast{position:fixed;bottom:28px;right:28px;background:var(--green-dark);color:#fff;padding:14px 22px;z-index:900;font-size:.88rem;font-weight:500;border-left:3px solid var(--gold);opacity:0;transform:translateY(16px);transition:all .3s;pointer-events:none}
+.toast.show{opacity:1;transform:translateY(0)}
+.mov{position:fixed;inset:0;background:rgba(0,0,0,.65);backdrop-filter:blur(8px);z-index:800;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .3s}
+.mov.open{opacity:1;pointer-events:all}
+.mo{background:var(--card);border:1px solid var(--border-strong);width:90%;max-width:560px;padding:36px;transform:translateY(20px);transition:transform .3s;position:relative;max-height:90vh;overflow-y:auto}
+.mov.open .mo{transform:translateY(0)}
+.mo-x{position:absolute;top:14px;right:14px;background:transparent;border:1px solid var(--border-strong);color:var(--muted);width:30px;height:30px;display:flex;align-items:center;justify-content:center;cursor:none;transition:all .2s}
+.mo-x:hover{border-color:var(--red);color:var(--red)}
+.mo-ti{font-family:'Bebas Neue',sans-serif;font-size:1.6rem;letter-spacing:.05em;margin-bottom:20px;padding-bottom:14px;border-bottom:1px solid var(--border)}
+.mg{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.mf{grid-column:1/-1}
+.ml{font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:5px}
+.mi{width:100%;background:var(--surface);border:1px solid var(--border-strong);color:var(--text);font-family:'DM Sans',sans-serif;font-size:.88rem;padding:10px 13px;outline:none;transition:border-color .2s}
+.mi:focus{border-color:var(--gold)}
+.msel{width:100%;background:var(--surface);border:1px solid var(--border-strong);color:var(--text);font-family:'DM Sans',sans-serif;font-size:.88rem;padding:10px 13px;outline:none;cursor:none}
+.ma-row{display:flex;gap:10px;margin-top:20px;padding-top:16px;border-top:1px solid var(--border)}
+@media(max-width:900px){nav{padding:12px 20px}.main{padding:28px 20px}}
+@media(max-width:768px){.ham{display:flex}.btn-c{display:none}.sb{display:none}.layout{grid-template-columns:1fr}.mg{grid-template-columns:1fr}}
+@media(max-width:480px){.ptitle{font-size:2rem}}
+.fr{display:flex;align-items:center;gap:8px;margin-bottom:20px;flex-wrap:wrap}
+.fb{padding:7px 14px;border:1px solid var(--border-strong);background:transparent;color:var(--muted);font-family:'DM Sans',sans-serif;font-size:.74rem;letter-spacing:.07em;text-transform:uppercase;cursor:none;transition:all .2s}
+.fb.on,.fb:hover{border-color:var(--gold);color:var(--gold);background:rgba(245,200,0,.06)}
+.sr{flex:1;max-width:280px;background:var(--card);border:1px solid var(--border-strong);display:flex;align-items:center;padding:0 12px;gap:8px}
+.sr input{flex:1;background:transparent;border:none;color:var(--text);font-family:'DM Sans',sans-serif;font-size:.85rem;padding:9px 0;outline:none}
+.sr input::placeholder{color:var(--muted)}
+.el{display:flex;flex-direction:column;gap:2px}
+.ec{background:var(--card);border:1px solid var(--border);display:grid;grid-template-columns:100px 1fr auto;transition:border-color .2s}
+.ec:hover{border-color:rgba(245,200,0,.3)}
+.ec-img{width:100px;min-height:110px;object-fit:cover;filter:brightness(.75)saturate(1.1)}
+.ec-b{padding:18px 20px}
+.ec-top{display:flex;align-items:flex-start;gap:10px;margin-bottom:8px}
+.ec-ti{font-family:'Bebas Neue',sans-serif;font-size:1.2rem;letter-spacing:.04em;flex:1}
+.ec-m{display:flex;gap:12px;font-size:.74rem;color:var(--muted);margin-bottom:10px;flex-wrap:wrap}
+.ec-pg{display:flex;align-items:center;gap:10px}
+.ec-pct{font-size:.7rem;color:var(--muted);white-space:nowrap}
+.ec-acts{padding:18px 20px;display:flex;flex-direction:column;gap:8px;justify-content:center;border-left:1px solid var(--border)}
+.ba{padding:8px 14px;border:1px solid var(--border-strong);background:transparent;color:var(--muted);font-family:'DM Sans',sans-serif;font-size:.72rem;font-weight:500;letter-spacing:.07em;text-transform:uppercase;cursor:none;transition:all .2s;text-decoration:none;text-align:center;display:block;white-space:nowrap}
+.ba:hover{border-color:var(--gold);color:var(--gold)}
+.ba-g{background:rgba(245,200,0,.1);border-color:rgba(245,200,0,.35);color:var(--gold)}
+.ba-g:hover{background:var(--gold);color:#0a0f08}
+.ba-d{color:rgba(224,32,32,.6);border-color:rgba(224,32,32,.2)}
+.ba-d:hover{color:var(--red);border-color:var(--red);background:rgba(224,32,32,.05)}
+@media(max-width:768px){.ec{grid-template-columns:80px 1fr}.ec-acts{border-left:none;border-top:1px solid var(--border);flex-direction:row;padding:12px}.fr{gap:6px}.sr{max-width:100%;flex:1 1 200px}}
+</style>
+</head>
+<body>
+<div id="cursor"></div><div id="cursor-ring"></div>
+<div class="mob" id="mob">
+  <a href="org-criar-evento.html" class="ma hl">&#x271A; Criar Evento</a>
+  <div class="mhr"></div>
+  <a href="organizador-dashboard.html" class="ma ">&#x1F4CA; Dashboard</a>
+  <a href="org-gerenciar.html" class="ma on">&#x1F4C5; Meus Eventos</a>
+  <a href="org-inscritos.html" class="ma ">&#x1F465; Inscritos</a>
+  <div class="mhr"></div>
+  <a href="org-configuracoes.html" class="ma ">&#x1F3DB;&#xFE0F; Configura&#xE7;&#xF5;es</a>
+  <a href="org-notificacoes.html" class="ma ">&#x1F514; Notifica&#xE7;&#xF5;es</a>
+  <div class="mhr"></div>
+  <a href="index.html" class="ma red">&#x21A9; Sair</a>
+</div>
+<nav>
+  <a href="organizador-dashboard.html" class="nlo"><div class="nlo-ic">ID</div><div class="nlo-t"><span class="nlo-ti">IDEAU Eventos</span><span class="nlo-su">Faculdades IDEAU</span></div></a>
+  <div class="nav-r">
+    <button class="tgl" onclick="toggleTheme()">&#x1F319;</button>
+    <a href="org-criar-evento.html" class="btn-c">&#x271A; Criar Evento</a>
+    <button class="ham" id="ham" onclick="toggleMenu()"><span></span><span></span><span></span></button>
+  </div>
+</nav>
+<div class="layout">
+<aside class="sb">
+  <div class="sb-u"><div class="sb-av">CL</div><div class="sb-nm">Prof. Carlos Eduardo Lima</div><div class="sb-em">carlos.lima@ideau.edu.br</div><div class="sb-b"><span class="sb-bd"></span>Organizador</div></div>
+  <nav class="sbn">
+    <a href="org-criar-evento.html" class="sa hl"><span class="sai">&#x271A;</span>Criar Evento</a>
+    <div class="sahr"></div>
+    <a href="organizador-dashboard.html" class="sa "><span class="sai">&#x1F4CA;</span>Dashboard</a>
+    <a href="org-gerenciar.html" class="sa on"><span class="sai">&#x1F4C5;</span>Meus Eventos</a>
+    <a href="org-inscritos.html" class="sa "><span class="sai">&#x1F465;</span>Inscritos</a>
+    <div class="sahr"></div>
+    <a href="org-configuracoes.html" class="sa "><span class="sai">&#x1F3DB;&#xFE0F;</span>Perfil da Org.</a>
+    <a href="org-notificacoes.html" class="sa "><span class="sai">&#x1F514;</span>Notifica&#xE7;&#xF5;es</a>
+    <div class="sahr"></div>
+    <a href="index.html" class="sa dng"><span class="sai">&#x21A9;</span>Sair</a>
+  </nav>
+</aside>
+<main class="main">
+<div class="ey">Gerenciamento</div>
+<div class="ptitle">MEUS EVENTOS</div>
+<div class="fr">
+  <button class="fb on" onclick="setF('todos',this)">Todos (6)</button>
+  <button class="fb" onclick="setF('ativo',this)">Ativos (4)</button>
+  <button class="fb" onclick="setF('rascunho',this)">Rascunhos (1)</button>
+  <button class="fb" onclick="setF('encerrado',this)">Encerrados (1)</button>
+  <div class="sr"><span style="color:var(--muted)">&#x1F50D;</span><input type="text" placeholder="Buscar evento..." oninput="doSearch(this.value)"/></div>
+  <a href="org-criar-evento.html" class="btn-g" style="text-decoration:none;display:inline-block;padding:9px 18px;margin-left:auto">&#x271A; Criar Novo</a>
+</div>
+<div class="el" id="evList"></div>
+<div class="mov" id="editMov">
+  <div class="mo">
+    <button class="mo-x" onclick="closeEdit()">&#x2715;</button>
+    <div class="mo-ti">EDITAR EVENTO</div>
+    <div class="mg">
+      <div class="mf"><label class="ml">Nome</label><input class="mi" type="text" id="eNm"/></div>
+      <div><label class="ml">Local</label><input class="mi" type="text" id="eLo"/></div>
+      <div><label class="ml">Capacidade</label><input class="mi" type="number" id="eCa"/></div>
+      <div><label class="ml">Status</label><select class="msel" id="eSt"><option value="ativo">Ativo</option><option value="rascunho">Rascunho</option><option value="encerrado">Encerrado</option></select></div>
+    </div>
+    <div class="ma-row"><button class="btn-g" onclick="saveEdit()">&#x1F4BE; Salvar</button><button class="btn-o" onclick="closeEdit()">Cancelar</button></div>
+  </div>
+</div>
+</main>
+</div>
+<div class="toast" id="toast"></div>
+<script>
+
+  if (window.innerWidth > 768) {
+    var cur = document.getElementById('cursor');
+    var ring = document.getElementById('cursor-ring');
+    var shown = false;
+    document.addEventListener('mousemove', function(e) {
+      if (!shown) { cur.style.opacity='1'; ring.style.opacity='0.7'; shown=true; }
+      cur.style.left  = e.clientX + 'px';
+      cur.style.top   = e.clientY + 'px';
+      ring.style.left = e.clientX + 'px';
+      ring.style.top  = e.clientY + 'px';
+    }, {passive:true});
+    document.addEventListener('mouseleave', function(){ cur.style.opacity='0'; ring.style.opacity='0'; shown=false; });
+    document.addEventListener('mouseenter', function(){ if(shown){ cur.style.opacity='1'; ring.style.opacity='0.7'; } });
+  }
+
+
+  function toggleTheme() {
+    var d = document.documentElement.getAttribute('data-theme') === 'dark';
+    document.documentElement.setAttribute('data-theme', d ? 'light' : 'dark');
+    document.querySelector('.tgl').textContent = d ? '☀️' : '🌙';
+  }
+  function toggleMenu() {
+    document.getElementById('ham').classList.toggle('open');
+    document.getElementById('mob').classList.toggle('open');
+  }
+  document.addEventListener('click', function(e) {
+    if (!e.target.closest('#ham') && !e.target.closest('#mob')) {
+      var h = document.getElementById('ham'); var m = document.getElementById('mob');
+      if (h) h.classList.remove('open'); if (m) m.classList.remove('open');
+    }
+  });
+  function showToast(msg) {
+    var t = document.getElementById('toast'); t.textContent = msg;
+    t.classList.add('show'); setTimeout(function() { t.classList.remove('show'); }, 3000);
+  }
+
+
+  var evs = [
+    {id:0,t:'Semana Acad\u00eamica de Direito 2025',cat:'Acad\u00eamico',dt:'14/04/2025',lo:'Campus GV',cap:150,ins:142,st:'ativo',img:'https://images.unsplash.com/photo-1532012197267-da84d127e765?w=200&q=80'},
+    {id:1,t:'Festival Gastron\u00f4mico IDEAU',cat:'Gastronomia',dt:'19/04/2025',lo:'Pra\u00e7a Central',cap:200,ins:98,st:'ativo',img:'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=200&q=80'},
+    {id:2,t:'Mostra de Arte e Design',cat:'Arte',dt:'02/05/2025',lo:'Galeria IDEAU',cap:100,ins:64,st:'ativo',img:'https://images.unsplash.com/photo-1460661419201-fd4cecdf8a8b?w=200&q=80'},
+    {id:3,t:'Noite de Jazz IDEAU',cat:'M\u00fasica',dt:'05/05/2025',lo:'Audit\u00f3rio Central',cap:80,ins:45,st:'ativo',img:'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=200&q=80'},
+    {id:4,t:'Congresso de Administra\u00e7\u00e3o',cat:'Acad\u00eamico',dt:'20/06/2025',lo:'Campus GV',cap:200,ins:0,st:'rascunho',img:'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=200&q=80'},
+    {id:5,t:'Corrida IDEAU 5K 2024',cat:'Esporte',dt:'10/11/2024',lo:'Campus GV',cap:300,ins:280,st:'encerrado',img:'https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=200&q=80'}
+  ];
+  var curF='todos', curQ='';
+  function render() {
+    var list=document.getElementById('evList');
+    var data=evs.slice();
+    if(curF!=='todos') data=data.filter(function(e){return e.st===curF;});
+    if(curQ) data=data.filter(function(e){return e.t.toLowerCase().indexOf(curQ)>=0;});
+    if(!data.length){list.innerHTML='<div style="padding:48px;text-align:center;color:var(--muted)">Nenhum evento encontrado.</div>';return;}
+    list.innerHTML=data.map(function(ev){
+      var pct=Math.round(ev.ins/ev.cap*100);
+      var pc=ev.st==='ativo'?'p-a':ev.st==='rascunho'?'p-r':'p-e';
+      var pt=ev.st==='ativo'?'Ativo':ev.st==='rascunho'?'Rascunho':'Encerrado';
+      var bc=pct>80?'pf-r':pct>50?'pf-g':'';
+      return '<div class="ec"><img class="ec-img" src="'+ev.img+'" alt=""/>'
+        +'<div class="ec-b"><div class="ec-top"><div class="ec-ti">'+ev.t+'</div><span class="pill '+pc+'">'+pt+'</span></div>'
+        +'<div class="ec-m"><span>&#x1F4C5; '+ev.dt+'</span><span>&#x1F4CD; '+ev.lo+'</span></div>'
+        +'<div class="ec-pg"><div class="pt" style="flex:1"><div class="pf '+bc+'" style="width:'+pct+'%"></div></div>'
+        +'<span class="ec-pct">'+ev.ins+'/'+ev.cap+' &middot; '+pct+'%</span></div></div>'
+        +'<div class="ec-acts"><button class="ba ba-g" onclick="openEdit('+ev.id+')">&#x270F;&#xFE0F; Editar</button>'
+        +'<a href="org-inscritos.html" class="ba">&#x1F465; Inscritos ('+ev.ins+')</a>'
+        +'<button class="ba ba-d" onclick="delEv('+ev.id+')">&#x1F5D1;&#xFE0F; Excluir</button></div></div>';
+    }).join('');
+  }
+  function setF(f,btn){curF=f;document.querySelectorAll('.fb').forEach(function(b){b.classList.remove('on');});btn.classList.add('on');render();}
+  function doSearch(q){curQ=q.toLowerCase();render();}
+  var editId=null;
+  function openEdit(id){
+    var ev=evs.find(function(e){return e.id===id;});editId=id;
+    document.getElementById('eNm').value=ev.t;
+    document.getElementById('eLo').value=ev.lo;
+    document.getElementById('eCa').value=ev.cap;
+    document.getElementById('eSt').value=ev.st;
+    document.getElementById('editMov').classList.add('open');
+  }
+  function closeEdit(){document.getElementById('editMov').classList.remove('open');}
+  function saveEdit(){
+    var ev=evs.find(function(e){return e.id===editId;});
+    ev.t=document.getElementById('eNm').value;
+    ev.lo=document.getElementById('eLo').value;
+    ev.cap=parseInt(document.getElementById('eCa').value)||ev.cap;
+    ev.st=document.getElementById('eSt').value;
+    closeEdit();render();showToast('\u2705 Evento atualizado!');
+  }
+  function delEv(id){
+    if(!confirm('Excluir este evento?'))return;
+    evs=evs.filter(function(e){return e.id!==id;});render();showToast('\u1F5D1 Evento exclu\u00eddo.');
+  }
+  render();
+
+</script>
+</body>
+</html>

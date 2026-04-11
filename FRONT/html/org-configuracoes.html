@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Configurações &mdash; IDEAU</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+:root{--bg:#f4f6f0;--surface:#fff;--card:#fff;--card-hover:#f9fbf6;--green-dark:#0d4a0d;--green-mid:#1a6e1a;--gold:#d4a800;--gold-light:#f5c800;--red:#c41a1a;--text:#1a2210;--muted:#6b7a5a;--border:rgba(13,74,13,.12);--border-strong:rgba(13,74,13,.25);--nav-bg:rgba(244,246,240,.96)}
+[data-theme="dark"]{--bg:#0a0f08;--surface:#111a0e;--card:#141f10;--card-hover:#1a2916;--green-mid:#2ea82e;--green-light:#45c445;--gold:#f5c800;--gold-light:#ffd740;--red:#e02020;--text:#e8f0d8;--muted:#7a9460;--border:rgba(46,168,46,.12);--border-strong:rgba(46,168,46,.25);--nav-bg:rgba(10,15,8,.96)}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);overflow-x:hidden;cursor:none;transition:background .3s,color .3s}
+@media(max-width:768px){body{cursor:auto}}
+body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");pointer-events:none;z-index:1000;opacity:.3}
+#cursor{width:10px;height:10px;background:var(--gold);border-radius:50%;position:fixed;pointer-events:none;z-index:9999;mix-blend-mode:screen;opacity:0;transform:translate(-50%,-50%)}
+#cursor-ring{width:32px;height:32px;border:1.5px solid rgba(245,200,0,.5);border-radius:50%;position:fixed;pointer-events:none;z-index:9998;opacity:0;transform:translate(-50%,-50%);transition:left .08s ease,top .08s ease}
+nav{position:fixed;top:0;left:0;right:0;z-index:500;display:flex;align-items:center;justify-content:space-between;padding:14px 48px;background:var(--nav-bg);backdrop-filter:blur(12px);border-bottom:1px solid var(--border)}
+.nlo{display:flex;align-items:center;gap:10px;text-decoration:none}
+.nlo-ic{width:40px;height:40px;background:linear-gradient(135deg,var(--green-dark),var(--green-mid));display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',sans-serif;font-size:1.1rem;color:#fff}
+.nlo-t{display:flex;flex-direction:column;line-height:1.1}
+.nlo-ti{font-family:'Bebas Neue',sans-serif;font-size:1.3rem;letter-spacing:.12em;color:var(--green-light)}
+.nlo-su{font-size:.58rem;letter-spacing:.18em;text-transform:uppercase;color:var(--muted)}
+.nav-r{display:flex;align-items:center;gap:10px}
+.tgl{background:transparent;border:1px solid var(--border-strong);color:var(--muted);width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:none;font-size:1rem;border-radius:50%;transition:all .2s}
+.tgl:hover{border-color:var(--gold);color:var(--gold)}
+.btn-c{background:var(--gold);color:#1a2210;border:none;padding:8px 18px;font-family:'DM Sans',sans-serif;font-size:.78rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;cursor:none;transition:all .2s;text-decoration:none;display:flex;align-items:center;gap:6px;clip-path:polygon(0 0,calc(100% - 8px) 0,100% 8px,100% 100%,8px 100%,0 calc(100% - 8px))}
+.btn-c:hover{background:var(--gold-light)}
+.ham{display:none;background:transparent;border:1px solid var(--border-strong);width:36px;height:36px;flex-direction:column;align-items:center;justify-content:center;gap:5px;padding:8px;cursor:pointer;flex-shrink:0}
+.ham span{display:block;width:18px;height:2px;background:var(--muted);transition:all .3s}
+.ham.open span:nth-child(1){transform:rotate(45deg) translate(5px,5px)}
+.ham.open span:nth-child(2){opacity:0}
+.ham.open span:nth-child(3){transform:rotate(-45deg) translate(5px,-5px)}
+.mob{display:none;position:fixed;top:73px;left:0;right:0;background:var(--nav-bg);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);z-index:490;padding:16px 20px;flex-direction:column;gap:2px}
+.mob.open{display:flex}
+.ma{display:flex;align-items:center;gap:10px;padding:12px 14px;color:var(--muted);text-decoration:none;font-size:.86rem;font-weight:500;border-left:2px solid transparent;transition:all .2s}
+.ma:hover,.ma.on{color:var(--gold);border-left-color:var(--gold);background:rgba(245,200,0,.04)}
+.ma.hl{color:var(--gold);font-weight:700}
+.ma.red{color:rgba(224,32,32,.65)}
+.mhr{height:1px;background:var(--border);margin:4px 0}
+.layout{display:grid;grid-template-columns:240px 1fr;min-height:100vh;padding-top:73px}
+.sb{background:var(--surface);border-right:1px solid var(--border);padding:32px 0;position:sticky;top:73px;height:calc(100vh - 73px);overflow-y:auto}
+.sb-u{padding:24px 22px;border-bottom:1px solid var(--border);margin-bottom:12px}
+.sb-av{width:52px;height:52px;background:rgba(245,200,0,.12);border:2px solid rgba(245,200,0,.35);display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',sans-serif;font-size:1.3rem;color:var(--gold-light);margin-bottom:10px}
+.sb-nm{font-weight:500;font-size:.92rem;margin-bottom:2px}
+.sb-em{font-size:.72rem;color:var(--muted)}
+.sb-b{display:inline-flex;align-items:center;gap:5px;margin-top:8px;padding:3px 10px;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;background:rgba(245,200,0,.08);border:1px solid rgba(245,200,0,.25);color:var(--gold)}
+.sb-bd{width:5px;height:5px;border-radius:50%;background:currentColor}
+.sbn{padding:0 10px}
+.sa{display:flex;align-items:center;gap:12px;padding:11px 14px;color:var(--muted);text-decoration:none;font-size:.84rem;font-weight:500;transition:all .2s;border-left:2px solid transparent;margin-bottom:2px}
+.sa:hover{color:var(--text);background:rgba(245,200,0,.04);border-left-color:var(--border-strong)}
+.sa.on{color:var(--gold);background:rgba(245,200,0,.06);border-left-color:var(--gold)}
+.sa.hl{color:var(--gold);font-weight:700}
+.sa.dng{color:rgba(224,32,32,.6)}
+.sa.dng:hover{color:var(--red);background:rgba(224,32,32,.05);border-left-color:var(--red)}
+.sai{font-size:1rem;width:20px;text-align:center}
+.sahr{height:1px;background:var(--border);margin:10px 14px}
+.main{padding:40px 48px;background:var(--bg)}
+.ey{font-size:.7rem;font-weight:500;letter-spacing:.22em;text-transform:uppercase;color:var(--gold);margin-bottom:8px;display:flex;align-items:center;gap:10px}
+.ey::before{content:'';width:22px;height:1px;background:var(--gold)}
+.ptitle{font-family:'Bebas Neue',sans-serif;font-size:2.8rem;letter-spacing:.04em;line-height:1;margin-bottom:28px}
+.btn-g{background:var(--gold);border:none;color:#1a2210;padding:10px 20px;font-family:'DM Sans',sans-serif;font-size:.8rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;cursor:none;transition:all .2s;clip-path:polygon(0 0,calc(100% - 8px) 0,100% 8px,100% 100%,8px 100%,0 calc(100% - 8px))}
+.btn-g:hover{background:var(--gold-light)}
+.btn-o{background:transparent;border:1px solid var(--border-strong);color:var(--muted);padding:9px 18px;font-family:'DM Sans',sans-serif;font-size:.8rem;font-weight:500;letter-spacing:.07em;text-transform:uppercase;cursor:none;transition:all .2s}
+.btn-o:hover{border-color:var(--text);color:var(--text)}
+.btn-dng{background:transparent;border:1px solid rgba(224,32,32,.3);color:rgba(224,32,32,.7);padding:8px 14px;font-family:'DM Sans',sans-serif;font-size:.74rem;letter-spacing:.07em;text-transform:uppercase;cursor:none;transition:all .2s}
+.btn-dng:hover{background:rgba(224,32,32,.08);border-color:var(--red);color:var(--red)}
+.pill{font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;padding:3px 8px}
+.p-a{background:rgba(46,168,46,.1);color:var(--green-light);border:1px solid rgba(46,168,46,.25)}
+.p-r{background:rgba(255,255,255,.04);color:var(--muted);border:1px solid var(--border)}
+.p-e{background:rgba(224,32,32,.08);color:var(--red);border:1px solid rgba(224,32,32,.2)}
+.p-c{background:rgba(46,168,46,.1);color:var(--green-light);border:1px solid rgba(46,168,46,.25)}
+.p-p{background:rgba(245,200,0,.08);color:var(--gold);border:1px solid rgba(245,200,0,.2)}
+.p-x{background:rgba(224,32,32,.08);color:var(--red);border:1px solid rgba(224,32,32,.2)}
+.pt{height:4px;background:rgba(46,168,46,.1);overflow:hidden}
+.pf{height:100%;background:var(--green-mid)}
+.pf-g{background:var(--gold)}.pf-r{background:var(--red)}
+.toast{position:fixed;bottom:28px;right:28px;background:var(--green-dark);color:#fff;padding:14px 22px;z-index:900;font-size:.88rem;font-weight:500;border-left:3px solid var(--gold);opacity:0;transform:translateY(16px);transition:all .3s;pointer-events:none}
+.toast.show{opacity:1;transform:translateY(0)}
+.mov{position:fixed;inset:0;background:rgba(0,0,0,.65);backdrop-filter:blur(8px);z-index:800;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .3s}
+.mov.open{opacity:1;pointer-events:all}
+.mo{background:var(--card);border:1px solid var(--border-strong);width:90%;max-width:560px;padding:36px;transform:translateY(20px);transition:transform .3s;position:relative;max-height:90vh;overflow-y:auto}
+.mov.open .mo{transform:translateY(0)}
+.mo-x{position:absolute;top:14px;right:14px;background:transparent;border:1px solid var(--border-strong);color:var(--muted);width:30px;height:30px;display:flex;align-items:center;justify-content:center;cursor:none;transition:all .2s}
+.mo-x:hover{border-color:var(--red);color:var(--red)}
+.mo-ti{font-family:'Bebas Neue',sans-serif;font-size:1.6rem;letter-spacing:.05em;margin-bottom:20px;padding-bottom:14px;border-bottom:1px solid var(--border)}
+.mg{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.mf{grid-column:1/-1}
+.ml{font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:5px}
+.mi{width:100%;background:var(--surface);border:1px solid var(--border-strong);color:var(--text);font-family:'DM Sans',sans-serif;font-size:.88rem;padding:10px 13px;outline:none;transition:border-color .2s}
+.mi:focus{border-color:var(--gold)}
+.msel{width:100%;background:var(--surface);border:1px solid var(--border-strong);color:var(--text);font-family:'DM Sans',sans-serif;font-size:.88rem;padding:10px 13px;outline:none;cursor:none}
+.ma-row{display:flex;gap:10px;margin-top:20px;padding-top:16px;border-top:1px solid var(--border)}
+@media(max-width:900px){nav{padding:12px 20px}.main{padding:28px 20px}}
+@media(max-width:768px){.ham{display:flex}.btn-c{display:none}.sb{display:none}.layout{grid-template-columns:1fr}.mg{grid-template-columns:1fr}}
+@media(max-width:480px){.ptitle{font-size:2rem}}
+.tabs{display:flex;border-bottom:1px solid var(--border);margin-bottom:24px;overflow-x:auto}
+.ctab{padding:12px 18px;background:transparent;border:none;border-bottom:2px solid transparent;color:var(--muted);font-family:'DM Sans',sans-serif;font-size:.8rem;font-weight:500;letter-spacing:.07em;text-transform:uppercase;cursor:none;transition:all .2s;margin-bottom:-1px;white-space:nowrap;flex-shrink:0}
+.ctab.on{color:var(--gold);border-bottom-color:var(--gold)}
+.ctab:hover{color:var(--text)}
+.panel{display:none}.panel.on{display:block}
+.fc{background:var(--card);border:1px solid var(--border);padding:30px;margin-bottom:2px}
+.fc-h{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:20px;padding-bottom:14px;border-bottom:1px solid var(--border)}
+.fc-ti{font-family:'Bebas Neue',sans-serif;font-size:1.3rem;letter-spacing:.06em}
+.fc-su{font-size:.76rem;color:var(--muted);margin-top:3px}
+.fg{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.fgf{grid-column:1/-1}
+.fl{font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:6px}
+.req{color:var(--red);margin-left:2px}
+.fi{width:100%;background:var(--surface);border:1px solid var(--border-strong);color:var(--text);font-family:'DM Sans',sans-serif;font-size:.9rem;padding:11px 14px;outline:none;transition:border-color .2s}
+.fi:focus{border-color:var(--gold)}.fi:disabled{opacity:.5}
+.fs{width:100%;background:var(--surface);border:1px solid var(--border-strong);color:var(--text);font-family:'DM Sans',sans-serif;font-size:.9rem;padding:11px 14px;outline:none;cursor:none}
+.fta{width:100%;background:var(--surface);border:1px solid var(--border-strong);color:var(--text);font-family:'DM Sans',sans-serif;font-size:.9rem;padding:11px 14px;outline:none;transition:border-color .2s;resize:vertical;min-height:80px}
+.fta:focus{border-color:var(--gold)}
+.fh{font-size:.7rem;color:var(--muted);margin-top:2px}
+.fc-acts{display:flex;gap:10px;margin-top:20px;padding-top:16px;border-top:1px solid var(--border)}
+.av-w{display:flex;align-items:center;gap:20px;margin-bottom:22px;padding-bottom:18px;border-bottom:1px solid var(--border)}
+.av-lg{width:72px;height:72px;background:rgba(245,200,0,.12);border:2px solid rgba(245,200,0,.35);display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',sans-serif;font-size:1.8rem;color:var(--gold-light);flex-shrink:0}
+.tr{display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:1px solid var(--border)}
+.tr:last-child{border-bottom:none;padding-bottom:0}.tr:first-child{padding-top:0}
+.tr-ti{font-size:.88rem;font-weight:500;margin-bottom:2px}
+.tr-de{font-size:.74rem;color:var(--muted)}
+.tsw{position:relative;width:46px;height:24px;flex-shrink:0}
+.tsw input{opacity:0;width:0;height:0}
+.ts{position:absolute;inset:0;background:rgba(46,168,46,.1);border:1px solid var(--border-strong);cursor:none;transition:all .3s}
+.ts::before{content:'';position:absolute;height:16px;width:16px;left:3px;bottom:3px;background:var(--muted);transition:all .3s}
+.tsw input:checked+.ts{background:rgba(245,200,0,.15);border-color:rgba(245,200,0,.4)}
+.tsw input:checked+.ts::before{transform:translateX(22px);background:var(--gold)}
+.sr-row{display:flex;align-items:center;gap:14px;padding:15px 0;border-bottom:1px solid var(--border)}
+.sr-row:last-child{border-bottom:none}
+.sr-ic{width:36px;height:36px;display:flex;align-items:center;justify-content:center;font-size:.95rem;border:1px solid var(--border);background:rgba(245,200,0,.06);flex-shrink:0}
+.sr-inf{flex:1}.sr-ti{font-size:.88rem;font-weight:500;margin-bottom:2px}.sr-de{font-size:.74rem;color:var(--muted)}
+.sr-st{font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;padding:3px 8px;flex-shrink:0}
+.ss-on{background:rgba(46,168,46,.1);color:var(--green-light);border:1px solid rgba(46,168,46,.25)}
+.ss-off{background:rgba(255,255,255,.04);color:var(--muted);border:1px solid var(--border)}
+.btn-se{padding:8px 12px;border:1px solid var(--border-strong);background:transparent;color:var(--muted);font-family:'DM Sans',sans-serif;font-size:.72rem;letter-spacing:.07em;text-transform:uppercase;cursor:none;transition:all .2s;margin-left:6px}
+.btn-se:hover{border-color:var(--gold);color:var(--gold)}
+.dz{background:rgba(224,32,32,.04);border:1px solid rgba(224,32,32,.2);padding:22px;margin-top:2px}
+.dz-ti{font-family:'Bebas Neue',sans-serif;font-size:1.1rem;letter-spacing:.06em;color:var(--red);margin-bottom:14px}
+.dr{display:flex;align-items:center;justify-content:space-between;padding:13px 0;border-bottom:1px solid rgba(224,32,32,.1);flex-wrap:wrap;gap:8px}
+.dr:last-child{border-bottom:none;padding-bottom:0}
+.dr-ti{font-size:.88rem;font-weight:500;margin-bottom:2px}.dr-de{font-size:.74rem;color:var(--muted)}
+@media(max-width:768px){.fg{grid-template-columns:1fr}.fgf{grid-column:1}}
+</style>
+</head>
+<body>
+<div id="cursor"></div><div id="cursor-ring"></div>
+<div class="mob" id="mob">
+  <a href="org-criar-evento.html" class="ma hl">&#x271A; Criar Evento</a>
+  <div class="mhr"></div>
+  <a href="organizador-dashboard.html" class="ma ">&#x1F4CA; Dashboard</a>
+  <a href="org-gerenciar.html" class="ma ">&#x1F4C5; Meus Eventos</a>
+  <a href="org-inscritos.html" class="ma ">&#x1F465; Inscritos</a>
+  <div class="mhr"></div>
+  <a href="org-configuracoes.html" class="ma on">&#x1F3DB;&#xFE0F; Configura&#xE7;&#xF5;es</a>
+  <a href="org-notificacoes.html" class="ma ">&#x1F514; Notifica&#xE7;&#xF5;es</a>
+  <div class="mhr"></div>
+  <a href="index.html" class="ma red">&#x21A9; Sair</a>
+</div>
+<nav>
+  <a href="organizador-dashboard.html" class="nlo"><div class="nlo-ic">ID</div><div class="nlo-t"><span class="nlo-ti">IDEAU Eventos</span><span class="nlo-su">Faculdades IDEAU</span></div></a>
+  <div class="nav-r">
+    <button class="tgl" onclick="toggleTheme()">&#x1F319;</button>
+    <a href="org-criar-evento.html" class="btn-c">&#x271A; Criar Evento</a>
+    <button class="ham" id="ham" onclick="toggleMenu()"><span></span><span></span><span></span></button>
+  </div>
+</nav>
+<div class="layout">
+<aside class="sb">
+  <div class="sb-u"><div class="sb-av">CL</div><div class="sb-nm">Prof. Carlos Eduardo Lima</div><div class="sb-em">carlos.lima@ideau.edu.br</div><div class="sb-b"><span class="sb-bd"></span>Organizador</div></div>
+  <nav class="sbn">
+    <a href="org-criar-evento.html" class="sa hl"><span class="sai">&#x271A;</span>Criar Evento</a>
+    <div class="sahr"></div>
+    <a href="organizador-dashboard.html" class="sa "><span class="sai">&#x1F4CA;</span>Dashboard</a>
+    <a href="org-gerenciar.html" class="sa "><span class="sai">&#x1F4C5;</span>Meus Eventos</a>
+    <a href="org-inscritos.html" class="sa "><span class="sai">&#x1F465;</span>Inscritos</a>
+    <div class="sahr"></div>
+    <a href="org-configuracoes.html" class="sa on"><span class="sai">&#x1F3DB;&#xFE0F;</span>Perfil da Org.</a>
+    <a href="org-notificacoes.html" class="sa "><span class="sai">&#x1F514;</span>Notifica&#xE7;&#xF5;es</a>
+    <div class="sahr"></div>
+    <a href="index.html" class="sa dng"><span class="sai">&#x21A9;</span>Sair</a>
+  </nav>
+</aside>
+<main class="main">
+<div class="ey">Configura&#xE7;&#xF5;es</div>
+<div class="ptitle">MINHA CONTA</div>
+<div class="tabs">
+  <button class="ctab on" onclick="swTab('perfil',this)">&#x1F464; Perfil</button>
+  <button class="ctab" onclick="swTab('org',this)">&#x1F3DB;&#xFE0F; Organiza&#xE7;&#xE3;o</button>
+  <button class="ctab" onclick="swTab('seg',this)">&#x1F512; Seguran&#xE7;a</button>
+  <button class="ctab" onclick="swTab('notif',this)">&#x1F514; Notifica&#xE7;&#xF5;es</button>
+  <button class="ctab" onclick="swTab('priv',this)">&#x1F6E1;&#xFE0F; Privacidade</button>
+</div>
+<div class="panel on" id="panel-perfil">
+  <div class="fc"><div class="fc-h"><div><div class="fc-ti">INFORMA&#xC7;&#xD5;ES PESSOAIS</div><div class="fc-su">Seus dados cadastrais</div></div></div>
+  <div class="av-w"><div class="av-lg">CL</div><div><div style="font-weight:500;font-size:.88rem;margin-bottom:4px">Foto de perfil</div><div style="font-size:.74rem;color:var(--muted)">JPG, PNG &mdash; m&#xE1;x. 2MB</div><button class="btn-o" style="margin-top:8px">&#x1F4E4; Upload</button></div></div>
+  <div class="fg">
+    <div><label class="fl">Nome<span class="req">*</span></label><input class="fi" type="text" value="Carlos Eduardo"/></div>
+    <div><label class="fl">Sobrenome<span class="req">*</span></label><input class="fi" type="text" value="Lima"/></div>
+    <div><label class="fl">E-mail<span class="req">*</span></label><input class="fi" type="email" value="carlos.lima@ideau.edu.br" disabled/><div class="fh">E-mail institucional &mdash; n&#xE3;o edit&#xE1;vel</div></div>
+    <div><label class="fl">Telefone</label><input class="fi" type="tel" value="(54) 99876-5432"/></div>
+    <div><label class="fl">Cargo / Fun&#xE7;&#xE3;o</label><input class="fi" type="text" value="Professor de Direito"/></div>
+    <div><label class="fl">Departamento</label><input class="fi" type="text" value="Curso de Direito &mdash; IDEAU GV"/></div>
+    <div class="fgf"><label class="fl">Biografia</label><textarea class="fta">Professor de Direito com 15 anos de experi&#xEA;ncia. Coordenador de eventos acad&#xEA;micos da IDEAU desde 2018.</textarea></div>
+  </div>
+  <div class="fc-acts"><button class="btn-g" onclick="showToast('\u2705 Alterações salvas!')">Salvar</button><button class="btn-o">Cancelar</button></div></div>
+</div>
+<div class="panel" id="panel-org">
+  <div class="fc"><div class="fc-h"><div><div class="fc-ti">PERFIL DA ORGANIZA&#xC7;&#xC3;O</div><div class="fc-su">Dados p&#xFA;blicos exibidos nos seus eventos</div></div></div>
+  <div class="fg">
+    <div class="fgf"><label class="fl">Nome da organiza&#xE7;&#xE3;o<span class="req">*</span></label><input class="fi" type="text" value="Faculdades IDEAU &mdash; Campus Get&#xFA;lio Vargas"/></div>
+    <div><label class="fl">CNPJ</label><input class="fi" type="text" value="00.000.000/0001-00" disabled/></div>
+    <div><label class="fl">Tipo</label><select class="fs"><option>Institui&#xE7;&#xE3;o de Ensino</option><option>Empresa</option><option>ONG</option></select></div>
+    <div class="fgf"><label class="fl">Descri&#xE7;&#xE3;o</label><textarea class="fta">Instituto de Desenvolvimento Educacional do Alto Uruguai &mdash; Faculdades IDEAU.</textarea></div>
+    <div><label class="fl">Website</label><input class="fi" type="url" value="https://www.ideau.com.br"/></div>
+    <div><label class="fl">Instagram</label><input class="fi" type="text" value="@faculdadeideau"/></div>
+    <div class="fgf"><label class="fl">Endere&#xE7;o</label><input class="fi" type="text" value="Rua do Com&#xE9;rcio, 700 &mdash; Get&#xFA;lio Vargas, RS"/></div>
+  </div>
+  <div class="fc-acts"><button class="btn-g" onclick="showToast('\u2705 Salvo!')">Salvar</button><button class="btn-o">Cancelar</button></div></div>
+</div>
+<div class="panel" id="panel-seg">
+  <div class="fc" style="margin-bottom:2px"><div class="fc-h"><div><div class="fc-ti">SEGURAN&#xC7;A DA CONTA</div></div></div>
+    <div class="sr-row"><div class="sr-ic">&#x1F511;</div><div class="sr-inf"><div class="sr-ti">Senha</div><div class="sr-de">&#xDA;ltima altera&#xE7;&#xE3;o: 10 de Janeiro de 2025</div></div><span class="sr-st ss-on">Ativo</span><button class="btn-se">Alterar</button></div>
+    <div class="sr-row"><div class="sr-ic">&#x1F4F1;</div><div class="sr-inf"><div class="sr-ti">Autentica&#xE7;&#xE3;o 2FA</div><div class="sr-de">Prote&#xE7;&#xE3;o adicional via app autenticador</div></div><span class="sr-st ss-off">Inativo</span><button class="btn-se" onclick="showToast('2FA ativado!')">Ativar</button></div>
+    <div class="sr-row"><div class="sr-ic">&#x1F4BB;</div><div class="sr-inf"><div class="sr-ti">Sess&#xF5;es ativas</div><div class="sr-de">Chrome &mdash; Windows &middot; Get&#xFA;lio Vargas, RS &middot; Agora</div></div><span class="sr-st ss-on">1 ativa</span><button class="btn-se">Encerrar</button></div>
+  </div>
+  <div class="fc"><div class="fc-ti" style="margin-bottom:18px">ALTERAR SENHA</div>
+    <div class="fg">
+      <div class="fgf"><label class="fl">Senha atual<span class="req">*</span></label><input class="fi" type="password" placeholder="&#x2022;&#x2022;&#x2022;&#x2022;&#x2022;&#x2022;&#x2022;&#x2022;"/></div>
+      <div><label class="fl">Nova senha<span class="req">*</span></label><input class="fi" type="password" placeholder="M&#xED;nimo 8 caracteres"/></div>
+      <div><label class="fl">Confirmar<span class="req">*</span></label><input class="fi" type="password" placeholder="Repita a nova senha"/></div>
+    </div>
+    <div class="fc-acts"><button class="btn-g" onclick="showToast('\u1F512 Senha alterada!')">Alterar senha</button><button class="btn-o">Cancelar</button></div>
+  </div>
+</div>
+<div class="panel" id="panel-notif">
+  <div class="fc"><div class="fc-h"><div><div class="fc-ti">PREFER&#xCA;NCIAS DE NOTIFICA&#xC7;&#xC3;O</div></div></div>
+    <div style="font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:10px">Inscri&#xE7;&#xF5;es</div>
+    <div class="tr"><div><div class="tr-ti">Nova inscri&#xE7;&#xE3;o</div><div class="tr-de">Receba alerta a cada nova inscri&#xE7;&#xE3;o</div></div><label class="tsw"><input type="checkbox" checked/><span class="ts"></span></label></div>
+    <div class="tr"><div><div class="tr-ti">Cancelamento</div><div class="tr-de">Seja notificado quando um participante cancelar</div></div><label class="tsw"><input type="checkbox" checked/><span class="ts"></span></label></div>
+    <div class="tr"><div><div class="tr-ti">Resumo di&#xE1;rio</div><div class="tr-de">Receba um resumo das inscri&#xE7;&#xF5;es do dia &#xE0;s 18h</div></div><label class="tsw"><input type="checkbox"/><span class="ts"></span></label></div>
+    <div style="font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:16px 0 10px;padding-top:12px;border-top:1px solid var(--border)">Alertas de capacidade</div>
+    <div class="tr"><div><div class="tr-ti">Alerta de 80% de ocupa&#xE7;&#xE3;o</div><div class="tr-de">Aviso quando o evento atingir 80% das vagas</div></div><label class="tsw"><input type="checkbox" checked/><span class="ts"></span></label></div>
+    <div class="tr"><div><div class="tr-ti">Evento lotado</div><div class="tr-de">Notifica&#xE7;&#xE3;o quando todas as vagas forem preenchidas</div></div><label class="tsw"><input type="checkbox" checked/><span class="ts"></span></label></div>
+    <div style="font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:16px 0 10px;padding-top:12px;border-top:1px solid var(--border)">Sistema</div>
+    <div class="tr"><div><div class="tr-ti">Aprova&#xE7;&#xE3;o de eventos</div><div class="tr-de">Receba notifica&#xE7;&#xE3;o de aprova&#xE7;&#xE3;o ou reprova&#xE7;&#xE3;o</div></div><label class="tsw"><input type="checkbox" checked/><span class="ts"></span></label></div>
+    <div class="tr"><div><div class="tr-ti">Relat&#xF3;rio semanal</div><div class="tr-de">Resumo semanal do desempenho dos seus eventos</div></div><label class="tsw"><input type="checkbox" checked/><span class="ts"></span></label></div>
+    <div class="fc-acts"><button class="btn-g" onclick="showToast('\u2705 Prefer&#xEA;ncias salvas!')">Salvar</button></div>
+  </div>
+</div>
+<div class="panel" id="panel-priv">
+  <div class="fc" style="margin-bottom:2px"><div class="fc-h"><div><div class="fc-ti">PRIVACIDADE &amp; DADOS</div></div></div>
+    <div class="tr"><div><div class="tr-ti">Perfil p&#xFA;blico</div><div class="tr-de">Permitir que participantes vejam seu perfil</div></div><label class="tsw"><input type="checkbox" checked/><span class="ts"></span></label></div>
+    <div class="tr"><div><div class="tr-ti">An&#xE1;lise de dados</div><div class="tr-de">Permitir an&#xE1;lise an&#xF4;nima para melhorar a plataforma</div></div><label class="tsw"><input type="checkbox" checked/><span class="ts"></span></label></div>
+    <div class="tr"><div><div class="tr-ti">Compartilhar com parceiros</div><div class="tr-de">Compartilhar dados com parceiros institucionais</div></div><label class="tsw"><input type="checkbox"/><span class="ts"></span></label></div>
+    <div class="fc-acts"><button class="btn-g" onclick="showToast('\u2705 Salvo!')">Salvar</button></div>
+  </div>
+  <div class="dz"><div class="dz-ti">&#x26A0;&#xFE0F; ZONA DE RISCO</div>
+    <div class="dr"><div><div class="dr-ti">Exportar meus dados</div><div class="dr-de">Baixe todos os dados da sua conta e eventos</div></div><button class="btn-dng">&#x1F4E5; Exportar</button></div>
+    <div class="dr"><div><div class="dr-ti">Desativar conta de organizador</div><div class="dr-de">Seus eventos ser&#xE3;o ocultados, mas dados preservados</div></div><button class="btn-dng">Desativar</button></div>
+    <div class="dr"><div><div class="dr-ti">Excluir conta permanentemente</div><div class="dr-de">Todos os seus eventos e dados ser&#xE3;o apagados. Irrevers&#xED;vel.</div></div><button class="btn-dng">&#x1F5D1;&#xFE0F; Excluir</button></div>
+  </div>
+</div>
+</main>
+</div>
+<div class="toast" id="toast"></div>
+<script>
+
+  if (window.innerWidth > 768) {
+    var cur = document.getElementById('cursor');
+    var ring = document.getElementById('cursor-ring');
+    var shown = false;
+    document.addEventListener('mousemove', function(e) {
+      if (!shown) { cur.style.opacity='1'; ring.style.opacity='0.7'; shown=true; }
+      cur.style.left  = e.clientX + 'px';
+      cur.style.top   = e.clientY + 'px';
+      ring.style.left = e.clientX + 'px';
+      ring.style.top  = e.clientY + 'px';
+    }, {passive:true});
+    document.addEventListener('mouseleave', function(){ cur.style.opacity='0'; ring.style.opacity='0'; shown=false; });
+    document.addEventListener('mouseenter', function(){ if(shown){ cur.style.opacity='1'; ring.style.opacity='0.7'; } });
+  }
+
+
+  function toggleTheme() {
+    var d = document.documentElement.getAttribute('data-theme') === 'dark';
+    document.documentElement.setAttribute('data-theme', d ? 'light' : 'dark');
+    document.querySelector('.tgl').textContent = d ? '☀️' : '🌙';
+  }
+  function toggleMenu() {
+    document.getElementById('ham').classList.toggle('open');
+    document.getElementById('mob').classList.toggle('open');
+  }
+  document.addEventListener('click', function(e) {
+    if (!e.target.closest('#ham') && !e.target.closest('#mob')) {
+      var h = document.getElementById('ham'); var m = document.getElementById('mob');
+      if (h) h.classList.remove('open'); if (m) m.classList.remove('open');
+    }
+  });
+  function showToast(msg) {
+    var t = document.getElementById('toast'); t.textContent = msg;
+    t.classList.add('show'); setTimeout(function() { t.classList.remove('show'); }, 3000);
+  }
+
+
+  function swTab(id, btn) {
+    document.querySelectorAll('.panel').forEach(function(p) { p.classList.remove('on'); });
+    document.querySelectorAll('.ctab').forEach(function(b) { b.classList.remove('on'); });
+    document.getElementById('panel-' + id).classList.add('on');
+    btn.classList.add('on');
+  }
+
+</script>
+</body>
+</html>

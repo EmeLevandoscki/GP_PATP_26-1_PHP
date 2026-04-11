@@ -1,0 +1,830 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Criar Evento — IDEAU Organizador</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#f4f6f0;--surface:#fff;--card:#fff;--card-hover:#f9fbf6;--green-dark:#0d4a0d;--green-mid:#1a6e1a;--green-light:#2e8b2e;--gold:#d4a800;--gold-light:#f5c800;--red:#c41a1a;--text:#1a2210;--muted:#6b7a5a;--border:rgba(13,74,13,.12);--border-strong:rgba(13,74,13,.25);--shadow:0 2px 16px rgba(13,74,13,.10);--nav-bg:rgba(244,246,240,.96)}
+[data-theme="dark"]{--bg:#0a0f08;--surface:#111a0e;--card:#141f10;--card-hover:#1a2916;--green-mid:#2ea82e;--green-light:#45c445;--gold:#f5c800;--gold-light:#ffd740;--red:#e02020;--text:#e8f0d8;--muted:#7a9460;--border:rgba(46,168,46,.12);--border-strong:rgba(46,168,46,.25);--shadow:0 2px 16px rgba(0,0,0,.4);--nav-bg:rgba(10,15,8,.96)}
+html{scroll-behavior:smooth}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);overflow-x:hidden;cursor:none;transition:background .3s,color .3s}
+@media(max-width:768px){body{cursor:auto}}
+
+
+
+body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");pointer-events:none;z-index:1000;opacity:.3}
+
+/* NAV */
+nav{position:fixed;top:0;left:0;right:0;z-index:500;display:flex;align-items:center;justify-content:space-between;padding:14px 48px;background:var(--nav-bg);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);transition:background .3s}
+.nav-logo{display:flex;align-items:center;gap:10px;text-decoration:none}
+.nav-logo-icon{width:40px;height:40px;background:linear-gradient(135deg,var(--green-dark),var(--green-mid));display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',sans-serif;font-size:1.1rem;color:#fff;flex-shrink:0}
+.nav-logo-text{display:flex;flex-direction:column;line-height:1.1}
+.nav-logo-title{font-family:'Bebas Neue',sans-serif;font-size:1.3rem;letter-spacing:.12em;color:var(--green-light)}
+.nav-logo-sub{font-size:.58rem;letter-spacing:.18em;text-transform:uppercase;color:var(--muted)}
+.nav-right{display:flex;align-items:center;gap:10px}
+.theme-toggle{background:transparent;border:1px solid var(--border-strong);color:var(--muted);width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:none;font-size:1rem;border-radius:50%;transition:all .2s;flex-shrink:0}
+.theme-toggle:hover{border-color:var(--gold);color:var(--gold)}
+.nav-back{display:flex;align-items:center;gap:8px;color:var(--muted);text-decoration:none;font-size:.8rem;font-weight:500;letter-spacing:.07em;text-transform:uppercase;border:1px solid var(--border-strong);padding:7px 14px;cursor:none;transition:all .2s;white-space:nowrap}
+.nav-back:hover{border-color:var(--gold);color:var(--gold)}
+.hamburger{display:none;background:transparent;border:1px solid var(--border-strong);width:36px;height:36px;align-items:center;justify-content:center;cursor:pointer;flex-direction:column;gap:5px;padding:8px;transition:border-color .2s}
+.hamburger:hover{border-color:var(--gold)}
+.hamburger span{display:block;width:18px;height:2px;background:var(--muted);transition:all .3s}
+.hamburger.open span:nth-child(1){transform:rotate(45deg) translate(5px,5px)}
+.hamburger.open span:nth-child(2){opacity:0}
+.hamburger.open span:nth-child(3){transform:rotate(-45deg) translate(5px,-5px)}
+.mob-menu{display:none;position:fixed;top:73px;left:0;right:0;background:var(--nav-bg);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);z-index:490;padding:16px 20px;flex-direction:column;gap:4px}
+.mob-menu.open{display:flex}
+.mob-item{display:flex;align-items:center;gap:10px;padding:12px 14px;color:var(--muted);text-decoration:none;font-size:.86rem;font-weight:500;border-left:2px solid transparent;transition:all .2s}
+.mob-item:hover,.mob-item.active{color:var(--gold);border-left-color:var(--gold);background:rgba(245,200,0,.04)}
+.mob-item.highlight{color:var(--gold);font-weight:700}
+.mob-divider{height:1px;background:var(--border);margin:6px 0}
+
+/* PAGE */
+.page-wrap{max-width:900px;margin:0 auto;padding:100px 48px 80px}
+.page-header{margin-bottom:36px}
+.ph-eyebrow{font-size:.7rem;font-weight:500;letter-spacing:.22em;text-transform:uppercase;color:var(--gold);margin-bottom:8px;display:flex;align-items:center;gap:10px}
+.ph-eyebrow::before{content:'';width:22px;height:1px;background:var(--gold)}
+.ph-title{font-family:'Bebas Neue',sans-serif;font-size:clamp(2.4rem,8vw,3.5rem);letter-spacing:.04em;line-height:.9;margin-bottom:12px}
+.ph-title .outline{color:transparent;-webkit-text-stroke:1px rgba(212,168,0,.35)}
+.ph-title .acc{color:var(--gold)}
+.ph-sub{font-size:.88rem;color:var(--muted);line-height:1.7;max-width:500px}
+
+/* STEP INDICATOR */
+.steps{display:flex;align-items:center;margin-bottom:36px;background:var(--card);border:1px solid var(--border);padding:18px 24px;overflow-x:auto;gap:0}
+.step{display:flex;align-items:center;gap:10px;cursor:none;transition:opacity .2s;flex-shrink:0}
+.step.done,.step.active{opacity:1}
+.step:not(.active):not(.done){opacity:.45}
+.step-num{width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',sans-serif;font-size:.9rem;border:1px solid var(--border-strong);color:var(--muted);transition:all .2s;flex-shrink:0}
+.step.active .step-num{background:var(--gold);border-color:var(--gold);color:#0a0f08}
+.step.done .step-num{background:var(--green-light);border-color:var(--green-light);color:#fff}
+.step-label{font-size:.72rem;font-weight:500;letter-spacing:.06em;text-transform:uppercase;white-space:nowrap}
+.step.active .step-label{color:var(--gold)}
+.step.done .step-label{color:var(--green-light)}
+.step-line{flex:1;min-width:16px;height:1px;background:var(--border);margin:0 10px}
+
+/* FORM */
+.form-step{display:none}.form-step.active{display:block}
+.step-card{background:var(--card);border:1px solid var(--border);padding:36px;margin-bottom:2px}
+.sc-title{font-family:'Bebas Neue',sans-serif;font-size:1.6rem;letter-spacing:.05em;margin-bottom:5px}
+.sc-sub{font-size:.82rem;color:var(--muted);margin-bottom:28px}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.fg{display:flex;flex-direction:column;gap:6px}
+.fg.full{grid-column:1/-1}
+.fl{font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.fl .req{color:var(--red);margin-left:2px}
+.fi,.fsel,.ftextarea{width:100%;background:var(--surface);border:1px solid var(--border-strong);color:var(--text);font-family:'DM Sans',sans-serif;font-size:.9rem;padding:11px 14px;outline:none;transition:border-color .2s}
+.fi:focus,.fsel:focus,.ftextarea:focus{border-color:var(--gold)}
+.fi::placeholder,.ftextarea::placeholder{color:var(--muted)}
+.fsel{cursor:none}.fsel option{background:var(--surface)}
+.ftextarea{resize:vertical;min-height:100px}
+.fhint{font-size:.7rem;color:var(--muted);margin-top:2px}
+.char-count{font-size:.68rem;color:var(--muted);text-align:right;margin-top:3px}
+
+/* SECTION DIVIDER dentro do form */
+.form-section{margin:28px 0 18px;padding-bottom:10px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px}
+.form-section-title{font-family:'Bebas Neue',sans-serif;font-size:1.1rem;letter-spacing:.06em;color:var(--text)}
+.form-section-badge{font-size:.6rem;letter-spacing:.12em;text-transform:uppercase;padding:3px 9px;background:rgba(245,200,0,.1);border:1px solid rgba(245,200,0,.25);color:var(--gold)}
+
+/* PÚBLICO-ALVO TURMAS */
+.audience-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:8px;margin-bottom:18px}
+.audience-opt{position:relative;cursor:none}
+.audience-opt input{position:absolute;opacity:0;width:0;height:0}
+.audience-label{display:flex;flex-direction:column;align-items:center;gap:8px;padding:14px 10px;border:1px solid var(--border-strong);background:transparent;transition:all .25s;text-align:center;cursor:none}
+.audience-opt input:checked + .audience-label{border-color:var(--gold);background:rgba(245,200,0,.07)}
+.audience-label:hover{border-color:var(--gold);background:rgba(245,200,0,.04)}
+.aud-icon{font-size:1.6rem;line-height:1}
+.aud-name{font-size:.78rem;font-weight:500;letter-spacing:.04em;line-height:1.2}
+.aud-sub{font-size:.64rem;color:var(--muted);letter-spacing:.03em}
+.aud-check{position:absolute;top:8px;right:8px;width:16px;height:16px;border-radius:50%;background:var(--gold);display:none;align-items:center;justify-content:center;font-size:.55rem;color:#0a0f08;font-weight:700}
+.audience-opt input:checked ~ .audience-label .aud-check{display:flex}
+
+/* TAG SELECT de cursos */
+.tag-select-wrap{display:flex;flex-wrap:wrap;gap:6px;padding:10px;border:1px solid var(--border-strong);background:var(--surface);min-height:48px;cursor:text;transition:border-color .2s}
+.tag-select-wrap:focus-within{border-color:var(--gold)}
+.tag-chip{display:flex;align-items:center;gap:5px;padding:4px 10px;background:rgba(245,200,0,.1);border:1px solid rgba(245,200,0,.3);font-size:.74rem;color:var(--gold);cursor:none}
+.tag-chip-remove{background:transparent;border:none;color:var(--gold);cursor:none;font-size:.8rem;line-height:1;padding:0;opacity:.7;transition:opacity .2s}
+.tag-chip-remove:hover{opacity:1}
+.tag-select-input{flex:1;min-width:120px;background:transparent;border:none;color:var(--text);font-family:'DM Sans',sans-serif;font-size:.86rem;outline:none;padding:2px 4px}
+.tag-select-input::placeholder{color:var(--muted)}
+.tag-dropdown{position:absolute;top:100%;left:0;right:0;background:var(--card);border:1px solid var(--border-strong);border-top:none;z-index:100;max-height:200px;overflow-y:auto;display:none}
+.tag-dropdown.open{display:block}
+.tag-option{padding:10px 14px;font-size:.84rem;cursor:none;transition:background .15s;display:flex;align-items:center;justify-content:space-between}
+.tag-option:hover{background:rgba(245,200,0,.05)}
+.tag-option.selected{color:var(--gold)}
+.tag-option-check{font-size:.7rem;color:var(--gold)}
+.tag-wrap-outer{position:relative}
+
+/* NIVEL BADGE */
+.nivel-grid{display:flex;gap:8px;flex-wrap:wrap}
+.nivel-opt{position:relative;cursor:none}
+.nivel-opt input{position:absolute;opacity:0;width:0;height:0}
+.nivel-lbl{display:flex;align-items:center;gap:8px;padding:9px 16px;border:1px solid var(--border-strong);font-size:.8rem;font-weight:500;letter-spacing:.04em;transition:all .2s;cursor:none}
+.nivel-opt input:checked + .nivel-lbl{border-color:var(--gold);background:rgba(245,200,0,.08);color:var(--gold)}
+.nivel-lbl:hover{border-color:var(--gold)}
+.nivel-emoji{font-size:.95rem}
+
+/* UPLOAD */
+.upload-area{border:2px dashed var(--border-strong);padding:32px;text-align:center;cursor:none;transition:border-color .2s;background:rgba(212,168,0,.02)}
+.upload-area:hover{border-color:var(--gold);background:rgba(212,168,0,.04)}
+.upload-area.has-image{padding:0;border:1px solid var(--border-strong)}
+.upload-area.has-image img{width:100%;height:220px;object-fit:cover;display:block}
+.upload-icon{font-size:2rem;margin-bottom:12px}
+.upload-text{font-weight:500;margin-bottom:4px}
+.upload-sub{font-size:.74rem;color:var(--muted)}
+
+/* FREE TOGGLE */
+.free-toggle-wrap{background:rgba(212,168,0,.05);border:1px solid rgba(212,168,0,.2);border-left:3px solid var(--gold);padding:18px;display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:18px;flex-wrap:wrap}
+.ft-info .ft-title{font-weight:500;font-size:.9rem;margin-bottom:3px}
+.ft-info .ft-sub{font-size:.76rem;color:var(--muted)}
+.toggle-sw{position:relative;width:48px;height:26px;flex-shrink:0}
+.toggle-sw input{opacity:0;width:0;height:0}
+.toggle-slider{position:absolute;inset:0;background:rgba(46,168,46,.1);border:1px solid var(--border-strong);cursor:none;transition:all .3s}
+.toggle-slider::before{content:'';position:absolute;height:18px;width:18px;left:3px;bottom:3px;background:var(--muted);transition:all .3s}
+.toggle-sw input:checked + .toggle-slider{background:rgba(212,168,0,.2);border-color:rgba(212,168,0,.4)}
+.toggle-sw input:checked + .toggle-slider::before{transform:translateX(22px);background:var(--gold)}
+
+/* TICKET */
+.ticket-wrap{display:flex;flex-direction:column;gap:2px;margin-bottom:14px}
+.ticket-item{background:var(--card-hover);border:1px solid var(--border);padding:16px;display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:12px;align-items:end}
+.add-ticket-btn{background:transparent;border:1px dashed var(--border-strong);color:var(--muted);padding:12px;width:100%;font-family:'DM Sans',sans-serif;font-size:.8rem;font-weight:500;letter-spacing:.07em;text-transform:uppercase;cursor:none;transition:all .2s}
+.add-ticket-btn:hover{border-color:var(--gold);color:var(--gold)}
+.remove-ticket{background:transparent;border:1px solid rgba(224,32,32,.25);color:rgba(224,32,32,.5);width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:none;font-size:.9rem;transition:all .2s;flex-shrink:0}
+.remove-ticket:hover{background:var(--red);border-color:var(--red);color:#fff}
+
+/* REVIEW */
+.review-grid{display:grid;grid-template-columns:1fr 1fr;gap:2px;margin-bottom:16px}
+.rev-blk{background:var(--card-hover);border:1px solid var(--border);padding:16px}
+.rev-label{font-size:.62rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:4px}
+.rev-val{font-size:.88rem;font-weight:500}
+.rev-event-card{background:var(--card-hover);border:1px solid var(--border);overflow:hidden;margin-bottom:16px}
+.rec-no-img{width:100%;height:160px;background:rgba(212,168,0,.05);display:flex;align-items:center;justify-content:center;font-size:2.5rem;color:var(--muted)}
+.rec-img-preview{width:100%;height:160px;object-fit:cover;display:none}
+.rec-body{padding:18px}
+.rec-tag{font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;padding:3px 8px;background:var(--green-dark);color:#fff;display:inline-block;margin-bottom:8px}
+.rec-title{font-family:'Bebas Neue',sans-serif;font-size:1.4rem;letter-spacing:.04em;margin-bottom:6px}
+.rec-meta{font-size:.78rem;color:var(--muted)}
+
+/* STEP ACTIONS */
+.step-actions{display:flex;justify-content:space-between;align-items:center;margin-top:28px;padding-top:22px;border-top:1px solid var(--border);gap:12px;flex-wrap:wrap}
+.btn-next{background:var(--gold);color:#0a0f08;border:none;padding:14px 28px;font-family:'DM Sans',sans-serif;font-size:.88rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;cursor:none;transition:all .2s;clip-path:polygon(0 0,calc(100% - 8px) 0,100% 8px,100% 100%,8px 100%,0 calc(100% - 8px))}
+.btn-next:hover{background:var(--gold-light)}
+.btn-prev{background:transparent;border:1px solid var(--border-strong);color:var(--muted);padding:14px 22px;font-family:'DM Sans',sans-serif;font-size:.88rem;font-weight:500;letter-spacing:.07em;text-transform:uppercase;cursor:none;transition:all .2s}
+.btn-prev:hover{border-color:var(--text);color:var(--text)}
+
+/* PUB INFO */
+.pub-info{display:grid;grid-template-columns:repeat(3,1fr);gap:2px;margin-bottom:20px}
+.pi-item{background:var(--card-hover);border:1px solid var(--border);padding:16px;display:flex;gap:12px;align-items:flex-start}
+.pi-icon{font-size:1.2rem;flex-shrink:0}
+.pi-title{font-size:.82rem;font-weight:500;margin-bottom:3px}
+.pi-sub{font-size:.72rem;color:var(--muted)}
+.check-label{display:flex;align-items:flex-start;gap:12px;cursor:none;font-size:.84rem;color:var(--muted)}
+.check-label input{width:16px;height:16px;accent-color:var(--gold);cursor:none;flex-shrink:0;margin-top:2px}
+.check-label a{color:var(--gold);text-decoration:none}
+.pub-success{background:rgba(46,168,46,.07);border:1px solid rgba(46,168,46,.25);border-left:3px solid var(--green-light);padding:20px 24px;display:none;align-items:center;gap:16px;margin-top:20px}
+.pub-success .ps-icon{font-size:2rem}
+.pub-success .ps-text strong{display:block;font-size:.92rem;color:var(--green-light);margin-bottom:4px}
+.pub-success .ps-text span{font-size:.82rem;color:var(--muted)}
+
+/* MODAL DE SELECAO DE CURSOS */
+.corso-grid{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.corso-tag{display:flex;align-items:center;gap:6px;padding:6px 12px;border:1px solid var(--border-strong);font-size:.76rem;cursor:none;transition:all .2s;user-select:none}
+.corso-tag:hover{border-color:var(--gold)}
+.corso-tag.selected{border-color:var(--gold);background:rgba(245,200,0,.08);color:var(--gold)}
+.corso-tag.selected::before{content:'✓ ';font-size:.7rem}
+
+/* ==================== MEDIA QUERIES ==================== */
+@media(max-width:900px){nav{padding:12px 20px}.page-wrap{padding:80px 20px 60px}}
+@media(max-width:768px){
+  .hamburger{display:flex}
+  .nav-back{display:none}
+  .steps{padding:14px 16px}
+  .step-label{display:none}
+  .step-line{min-width:10px;margin:0 6px}
+  .step-card{padding:20px 18px}
+  .form-grid{grid-template-columns:1fr}
+  .fg.full{grid-column:1}
+  .ticket-item{grid-template-columns:1fr 1fr;gap:10px}
+  .ticket-item .remove-ticket{grid-column:1/-1;width:100%;height:36px}
+  .review-grid{grid-template-columns:1fr}
+  .pub-info{grid-template-columns:1fr}
+  .audience-grid{grid-template-columns:repeat(auto-fill,minmax(130px,1fr))}
+  .btn-next,.btn-prev{width:100%;text-align:center;justify-content:center}
+  .step-actions{flex-direction:column-reverse}
+}
+@media(max-width:480px){
+  .audience-grid{grid-template-columns:repeat(2,1fr)}
+  .nivel-grid{flex-direction:column}
+  .nivel-lbl{width:100%}
+  .ph-title{font-size:2.2rem}
+}
+#cursor{width:10px;height:10px;background:var(--gold);border-radius:50%;position:fixed;pointer-events:none;z-index:9999;mix-blend-mode:screen;opacity:0;transform:translate(-50%,-50%)}
+#cursor-ring{width:32px;height:32px;border:1.5px solid rgba(245,200,0,.5);border-radius:50%;position:fixed;pointer-events:none;z-index:9998;opacity:0;transform:translate(-50%,-50%);transition:left .08s ease,top .08s ease}
+</style>
+</head>
+<body>
+<div id="cursor"></div><div id="cursor-ring"></div>
+
+<nav>
+  <a href="organizador-dashboard.html" class="nav-logo">
+    <div class="nav-logo-icon">ID</div>
+    <div class="nav-logo-text"><span class="nav-logo-title">IDEAU Eventos</span><span class="nav-logo-sub">Faculdades IDEAU</span></div>
+  </a>
+  <div class="nav-right">
+    <button class="theme-toggle" onclick="toggleTheme()" title="Alternar tema">🌙</button>
+    <a href="organizador-dashboard.html" class="nav-back">← Painel</a>
+    <button class="hamburger" id="hamburger" onclick="toggleMenu()" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+
+<div class="mob-menu" id="mobMenu">
+  <a href="org-criar-evento.html" class="mob-item highlight">✚ Criar Evento</a>
+  <div class="mob-divider"></div>
+  <a href="organizador-dashboard.html" class="mob-item">📊 Dashboard</a>
+  <a href="org-gerenciar.html" class="mob-item">📅 Meus Eventos</a>
+  <a href="org-inscritos.html" class="mob-item">👥 Inscritos</a>
+  <div class="mob-divider"></div>
+  <a href="org-configuracoes.html" class="mob-item">🏛️ Configurações</a>
+  <a href="org-notificacoes.html" class="mob-item">🔔 Notificações</a>
+  <div class="mob-divider"></div>
+  <a href="HomeOrg.html" class="mob-item" style="color:rgba(224,32,32,.6)">↩ Sair</a>
+</div>
+
+<div class="page-wrap">
+  <div class="page-header">
+    <div class="ph-eyebrow">Painel do Organizador</div>
+    <div class="ph-title">CRIAR<br><span class="outline">NOVO</span><br><span class="acc">EVENTO</span></div>
+    <p class="ph-sub">Preencha os detalhes abaixo. Após envio, o evento será revisado e publicado em até 24h.</p>
+  </div>
+
+  <!-- STEP INDICATOR -->
+  <div class="steps">
+    <div class="step active" id="si1" onclick="goStep(1)"><div class="step-num" id="sn1">1</div><div class="step-label">Informações</div></div>
+    <div class="step-line"></div>
+    <div class="step" id="si2" onclick="goStep(2)"><div class="step-num" id="sn2">2</div><div class="step-label">Local & Data</div></div>
+    <div class="step-line"></div>
+    <div class="step" id="si3" onclick="goStep(3)"><div class="step-num" id="sn3">3</div><div class="step-label">Público</div></div>
+    <div class="step-line"></div>
+    <div class="step" id="si4" onclick="goStep(4)"><div class="step-num" id="sn4">4</div><div class="step-label">Ingressos</div></div>
+    <div class="step-line"></div>
+    <div class="step" id="si5" onclick="goStep(5)"><div class="step-num" id="sn5">5</div><div class="step-label">Revisão</div></div>
+  </div>
+
+  <!-- STEP 1: INFORMAÇÕES -->
+  <div class="form-step active" id="fs1">
+    <div class="step-card">
+      <div class="sc-title">INFORMAÇÕES BÁSICAS</div>
+      <div class="sc-sub">Passo 1 de 5 — Dados principais do evento</div>
+      <div class="form-grid">
+        <div class="fg full">
+          <label class="fl">Nome do evento <span class="req">*</span></label>
+          <input class="fi" id="evtName" type="text" placeholder="Ex: Semana Acadêmica de Direito 2026" maxlength="80" oninput="updateCharCount('evtName','cc1',80);updatePreview()"/>
+          <div class="char-count" id="cc1">0/80</div>
+        </div>
+        <div class="fg">
+          <label class="fl">Categoria <span class="req">*</span></label>
+          <select class="fsel" id="evtCat" onchange="updatePreview()">
+            <option value="">Selecione...</option>
+            <option value="musica">🎵 Música</option>
+            <option value="academico">🎓 Acadêmico</option>
+            <option value="arte">🎨 Arte & Cultura</option>
+            <option value="gastronomia">🍽️ Gastronomia</option>
+            <option value="esporte">⚽ Esporte</option>
+            <option value="tecnologia">💻 Tecnologia</option>
+            <option value="saude">🏥 Saúde</option>
+            <option value="outro">✨ Outro</option>
+          </select>
+        </div>
+        <div class="fg">
+          <label class="fl">Classificação etária</label>
+          <select class="fsel" id="evtAge">
+            <option>Livre</option><option>10 anos+</option><option>12 anos+</option>
+            <option>14 anos+</option><option>16 anos+</option><option>18 anos+</option>
+          </select>
+        </div>
+        <div class="fg full">
+          <label class="fl">Descrição do evento <span class="req">*</span></label>
+          <textarea class="ftextarea" id="evtDesc" maxlength="600" oninput="updateCharCount('evtDesc','cc2',600)" placeholder="Descreva o evento com detalhes: atrações, programação, diferenciais..."></textarea>
+          <div class="char-count" id="cc2">0/600</div>
+        </div>
+        <div class="fg full">
+          <label class="fl">Imagem de capa <span class="req">*</span></label>
+          <div class="upload-area" id="uploadArea" onclick="document.getElementById('imgInput').click()">
+            <input type="file" id="imgInput" accept="image/*" style="display:none" onchange="previewImg(this)"/>
+            <div class="upload-icon">🖼️</div>
+            <div class="upload-text">Clique para fazer upload da capa</div>
+            <div class="upload-sub">PNG, JPG ou WEBP — máx. 5MB — 1200×630px recomendado</div>
+            <img id="imgPreview" style="display:none;width:100%;height:220px;object-fit:cover"/>
+          </div>
+        </div>
+      </div>
+      <div class="step-actions">
+        <div></div>
+        <button class="btn-next" onclick="nextStep(1)">Próximo: Local & Data →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 2: LOCAL & DATA -->
+  <div class="form-step" id="fs2">
+    <div class="step-card">
+      <div class="sc-title">LOCAL & DATA</div>
+      <div class="sc-sub">Passo 2 de 5 — Onde e quando o evento acontece</div>
+      <div class="form-grid">
+        <div class="fg full">
+          <label class="fl">Modalidade <span class="req">*</span></label>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <label style="display:flex;align-items:center;gap:8px;cursor:none;font-size:.86rem;padding:10px 16px;border:1px solid var(--border-strong);flex:1;min-width:120px;transition:all .2s" id="rad-pres">
+              <input type="radio" name="mod" value="presencial" checked onchange="setMod('pres')" style="accent-color:var(--gold);cursor:none"/> 📍 Presencial
+            </label>
+            <label style="display:flex;align-items:center;gap:8px;cursor:none;font-size:.86rem;padding:10px 16px;border:1px solid var(--border-strong);flex:1;min-width:120px;transition:all .2s" id="rad-online">
+              <input type="radio" name="mod" value="online" onchange="setMod('online')" style="accent-color:var(--gold);cursor:none"/> 💻 Online
+            </label>
+            <label style="display:flex;align-items:center;gap:8px;cursor:none;font-size:.86rem;padding:10px 16px;border:1px solid var(--border-strong);flex:1;min-width:120px;transition:all .2s" id="rad-hib">
+              <input type="radio" name="mod" value="hibrido" onchange="setMod('hibrido')" style="accent-color:var(--gold);cursor:none"/> 🔀 Híbrido
+            </label>
+          </div>
+        </div>
+        <div class="fg full" id="onlineField" style="display:none">
+          <label class="fl">Link do evento online <span class="req">*</span></label>
+          <input class="fi" type="url" placeholder="https://meet.google.com/..."/>
+        </div>
+        <div class="fg full" id="venueField">
+          <label class="fl">Nome do local / venue <span class="req">*</span></label>
+          <input class="fi" id="evtVenue" type="text" placeholder="Ex: Auditório Principal — Campus GV" oninput="updatePreview()"/>
+        </div>
+        <div class="fg">
+          <label class="fl">Endereço <span class="req">*</span></label>
+          <input class="fi" type="text" placeholder="Rua, número"/>
+        </div>
+        <div class="fg">
+          <label class="fl">Bairro / Campus</label>
+          <input class="fi" type="text" placeholder="Ex: Centro"/>
+        </div>
+        <div class="fg">
+          <label class="fl">Cidade <span class="req">*</span></label>
+          <select class="fsel" id="evtCity" onchange="updatePreview()">
+            <option value="">Selecione...</option>
+            <option>Getúlio Vargas</option><option>Erechim</option>
+            <option>Concórdia</option><option>Porto Alegre</option><option>Outro</option>
+          </select>
+        </div>
+        <div class="fg">
+          <label class="fl">Capacidade máxima</label>
+          <input class="fi" id="evtCap" type="number" placeholder="Ex: 200" min="1" oninput="updatePreview()"/>
+        </div>
+        <div class="fg">
+          <label class="fl">Data de início <span class="req">*</span></label>
+          <input class="fi" id="evtDate" type="date" oninput="updatePreview()"/>
+        </div>
+        <div class="fg">
+          <label class="fl">Horário de início <span class="req">*</span></label>
+          <input class="fi" id="evtTime" type="time" oninput="updatePreview()"/>
+        </div>
+        <div class="fg">
+          <label class="fl">Data de encerramento</label>
+          <input class="fi" type="date"/>
+        </div>
+        <div class="fg">
+          <label class="fl">Horário de encerramento</label>
+          <input class="fi" type="time"/>
+        </div>
+      </div>
+      <div class="step-actions">
+        <button class="btn-prev" onclick="prevStep(2)">← Voltar</button>
+        <button class="btn-next" onclick="nextStep(2)">Próximo: Público-Alvo →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 3: PÚBLICO-ALVO / TURMAS -->
+  <div class="form-step" id="fs3">
+    <div class="step-card">
+      <div class="sc-title">PÚBLICO-ALVO & TURMAS</div>
+      <div class="sc-sub">Passo 3 de 5 — Defina para quem é este evento</div>
+
+      <!-- Nível do público -->
+      <div class="form-section">
+        <span class="form-section-title">Nível de ensino</span>
+        <span class="form-section-badge">Selecione um ou mais</span>
+      </div>
+      <div class="audience-grid" id="audienceGrid">
+        <label class="audience-opt">
+          <input type="checkbox" name="aud" value="maternal" onchange="updateAudienceTags()"/>
+          <div class="audience-label"><span class="aud-icon">🍼</span><span class="aud-name">Maternal</span><span class="aud-sub">0 a 2 anos</span><span class="aud-check">✓</span></div>
+        </label>
+        <label class="audience-opt">
+          <input type="checkbox" name="aud" value="jardim" onchange="updateAudienceTags()"/>
+          <div class="audience-label"><span class="aud-icon">🌱</span><span class="aud-name">Jardim / Pré</span><span class="aud-sub">3 a 5 anos</span><span class="aud-check">✓</span></div>
+        </label>
+        <label class="audience-opt">
+          <input type="checkbox" name="aud" value="fundamental1" onchange="updateAudienceTags()"/>
+          <div class="audience-label"><span class="aud-icon">📚</span><span class="aud-name">Fund. I</span><span class="aud-sub">1° ao 5° ano</span><span class="aud-check">✓</span></div>
+        </label>
+        <label class="audience-opt">
+          <input type="checkbox" name="aud" value="fundamental2" onchange="updateAudienceTags()"/>
+          <div class="audience-label"><span class="aud-icon">📖</span><span class="aud-name">Fund. II</span><span class="aud-sub">6° ao 9° ano</span><span class="aud-check">✓</span></div>
+        </label>
+        <label class="audience-opt">
+          <input type="checkbox" name="aud" value="medio" onchange="updateAudienceTags()"/>
+          <div class="audience-label"><span class="aud-icon">🏫</span><span class="aud-name">Ensino Médio</span><span class="aud-sub">1° ao 3° ano</span><span class="aud-check">✓</span></div>
+        </label>
+        <label class="audience-opt">
+          <input type="checkbox" name="aud" value="tecnico" onchange="updateAudienceTags()"/>
+          <div class="audience-label"><span class="aud-icon">🔧</span><span class="aud-name">Técnico</span><span class="aud-sub">Cursos técnicos</span><span class="aud-check">✓</span></div>
+        </label>
+        <label class="audience-opt">
+          <input type="checkbox" name="aud" value="graduacao" onchange="updateAudienceTags()"/>
+          <div class="audience-label"><span class="aud-icon">🎓</span><span class="aud-name">Graduação</span><span class="aud-sub">Bacharelado / Licenc.</span><span class="aud-check">✓</span></div>
+        </label>
+        <label class="audience-opt">
+          <input type="checkbox" name="aud" value="posgraduacao" onchange="updateAudienceTags()"/>
+          <div class="audience-label"><span class="aud-icon">🏆</span><span class="aud-name">Pós-Grad.</span><span class="aud-sub">MBA, Especialização</span><span class="aud-check">✓</span></div>
+        </label>
+        <label class="audience-opt">
+          <input type="checkbox" name="aud" value="professores" onchange="updateAudienceTags()"/>
+          <div class="audience-label"><span class="aud-icon">👩‍🏫</span><span class="aud-name">Professores</span><span class="aud-sub">Corpo docente</span><span class="aud-check">✓</span></div>
+        </label>
+        <label class="audience-opt">
+          <input type="checkbox" name="aud" value="colaboradores" onchange="updateAudienceTags()"/>
+          <div class="audience-label"><span class="aud-icon">🏢</span><span class="aud-name">Colaboradores</span><span class="aud-sub">Staff IDEAU</span><span class="aud-check">✓</span></div>
+        </label>
+        <label class="audience-opt">
+          <input type="checkbox" name="aud" value="comunidade" onchange="updateAudienceTags()"/>
+          <div class="audience-label"><span class="aud-icon">🌍</span><span class="aud-name">Comunidade</span><span class="aud-sub">Público geral</span><span class="aud-check">✓</span></div>
+        </label>
+        <label class="audience-opt">
+          <input type="checkbox" name="aud" value="egressos" onchange="updateAudienceTags()"/>
+          <div class="audience-label"><span class="aud-icon">🔗</span><span class="aud-name">Egressos</span><span class="aud-sub">Ex-alunos IDEAU</span><span class="aud-check">✓</span></div>
+        </label>
+      </div>
+
+      <!-- Cursos específicos (graduação) -->
+      <div id="cursosSection" style="display:none">
+        <div class="form-section" style="margin-top:24px">
+          <span class="form-section-title">Cursos específicos</span>
+          <span class="form-section-badge">Deixe vazio para todos os cursos</span>
+        </div>
+        <p style="font-size:.8rem;color:var(--muted);margin-bottom:10px">Selecione os cursos que podem participar (ou deixe em branco para todos):</p>
+        <div class="corso-grid" id="corsoGrid"></div>
+      </div>
+
+      <!-- Semestres / Períodos -->
+      <div id="semestresSection" style="display:none">
+        <div class="form-section" style="margin-top:24px">
+          <span class="form-section-title">Semestres / Períodos</span>
+          <span class="form-section-badge">Opcional</span>
+        </div>
+        <p style="font-size:.8rem;color:var(--muted);margin-bottom:10px">Restrinja por semestre (deixe vazio para todos):</p>
+        <div style="display:flex;flex-wrap:wrap;gap:6px" id="semGrid"></div>
+      </div>
+
+      <!-- Turmas específicas -->
+      <div class="form-section" style="margin-top:24px">
+        <span class="form-section-title">Turmas específicas</span>
+        <span class="form-section-badge">Opcional</span>
+      </div>
+      <div class="fg">
+        <label class="fl">Código / nome das turmas</label>
+        <input class="fi" id="evtTurmas" type="text" placeholder="Ex: DIR-A, DIR-B, ADM-2025 (separadas por vírgula)"/>
+        <div class="fhint">Deixe vazio para todas as turmas do(s) nível(is) selecionado(s)</div>
+      </div>
+
+      <!-- Vagas por tipo -->
+      <div class="form-section" style="margin-top:24px">
+        <span class="form-section-title">Acesso ao evento</span>
+      </div>
+      <div class="nivel-grid">
+        <label class="nivel-opt">
+          <input type="radio" name="acesso" value="todos" checked/>
+          <div class="nivel-lbl"><span class="nivel-emoji">🔓</span> Aberto — qualquer um pode se inscrever</div>
+        </label>
+        <label class="nivel-opt">
+          <input type="radio" name="acesso" value="publico_alvo"/>
+          <div class="nivel-lbl"><span class="nivel-emoji">🔒</span> Restrito — apenas o público-alvo definido acima</div>
+        </label>
+        <label class="nivel-opt">
+          <input type="radio" name="acesso" value="convite"/>
+          <div class="nivel-lbl"><span class="nivel-emoji">✉️</span> Por convite — inscrição mediante aprovação</div>
+        </label>
+      </div>
+
+      <!-- Resumo da seleção -->
+      <div id="audSummary" style="display:none;margin-top:20px;padding:14px 18px;background:rgba(245,200,0,.06);border:1px solid rgba(245,200,0,.2);border-left:3px solid var(--gold)">
+        <div style="font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:8px">Público selecionado</div>
+        <div id="audTags" style="display:flex;flex-wrap:wrap;gap:6px"></div>
+      </div>
+
+      <div class="step-actions">
+        <button class="btn-prev" onclick="prevStep(3)">← Voltar</button>
+        <button class="btn-next" onclick="nextStep(3)">Próximo: Ingressos →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 4: INGRESSOS -->
+  <div class="form-step" id="fs4">
+    <div class="step-card">
+      <div class="sc-title">INGRESSOS & PREÇOS</div>
+      <div class="sc-sub">Passo 4 de 5 — Configure os tipos de ingresso</div>
+      <div class="free-toggle-wrap">
+        <div class="ft-info">
+          <div class="ft-title">🎟️ Evento gratuito</div>
+          <div class="ft-sub">Ative para não cobrar ingressos — campos de preço serão desabilitados</div>
+        </div>
+        <label class="toggle-sw">
+          <input type="checkbox" id="freeToggle" onchange="toggleFree(this.checked)"/>
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+      <div class="ticket-wrap" id="ticketWrap">
+        <div class="ticket-item" id="ticket-0">
+          <div class="fg"><label class="fl">Tipo de ingresso</label><input class="fi" type="text" value="Entrada Geral" placeholder="Ex: VIP, Estudante..."/></div>
+          <div class="fg price-group"><label class="fl">Preço (R$)</label><input class="fi" type="number" id="price-0" value="0" min="0" step="0.01"/></div>
+          <div class="fg"><label class="fl">Qtd. disponível</label><input class="fi" type="number" value="200" min="1"/></div>
+        </div>
+      </div>
+      <button class="add-ticket-btn" onclick="addTicket()">+ Adicionar tipo de ingresso</button>
+      <div style="margin-top:20px;display:flex;flex-direction:column;gap:12px">
+        <label class="check-label"><input type="checkbox" id="halfPrice"/> Oferecer meia-entrada (estudantes, idosos, PCD)</label>
+        <label class="check-label"><input type="checkbox"/> Exigir confirmação manual de inscrições</label>
+        <label class="check-label"><input type="checkbox" checked/> Enviar e-mail de confirmação automático</label>
+      </div>
+      <div style="margin-top:18px">
+        <label class="fl">Data limite de inscrições</label>
+        <input class="fi" type="date" style="max-width:260px;margin-top:6px"/>
+      </div>
+      <div class="step-actions">
+        <button class="btn-prev" onclick="prevStep(4)">← Voltar</button>
+        <button class="btn-next" onclick="nextStep(4)">Próximo: Revisão →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 5: REVISÃO -->
+  <div class="form-step" id="fs5">
+    <div class="step-card">
+      <div class="sc-title">REVISÃO FINAL</div>
+      <div class="sc-sub">Passo 5 de 5 — Confira os dados antes de enviar</div>
+      <div class="rev-event-card">
+        <div class="rec-no-img" id="revImgWrap"><span>🖼️</span></div>
+        <img class="rec-img-preview" id="revImgActual" alt=""/>
+        <div class="rec-body">
+          <div class="rec-tag" id="revTag">Categoria</div>
+          <div class="rec-title" id="revTitle">Nome do evento</div>
+          <div class="rec-meta" id="revMeta">📅 — · 📍 —</div>
+        </div>
+      </div>
+      <div class="review-grid">
+        <div class="rev-blk"><div class="rev-label">Categoria</div><div class="rev-val" id="rv-cat">—</div></div>
+        <div class="rev-blk"><div class="rev-label">Local / Venue</div><div class="rev-val" id="rv-venue">—</div></div>
+        <div class="rev-blk"><div class="rev-label">Data & Horário</div><div class="rev-val" id="rv-date">—</div></div>
+        <div class="rev-blk"><div class="rev-label">Capacidade</div><div class="rev-val" id="rv-cap">—</div></div>
+        <div class="rev-blk"><div class="rev-label">Ingresso</div><div class="rev-val" id="rv-price">—</div></div>
+        <div class="rev-blk"><div class="rev-label">Modalidade</div><div class="rev-val" id="rv-mod">Presencial</div></div>
+        <div class="rev-blk" style="grid-column:1/-1"><div class="rev-label">Público-Alvo</div><div class="rev-val" id="rv-audience">—</div></div>
+        <div class="rev-blk" style="grid-column:1/-1"><div class="rev-label">Turmas</div><div class="rev-val" id="rv-turmas">Todas</div></div>
+      </div>
+      <div class="pub-info">
+        <div class="pi-item"><span class="pi-icon">⏱️</span><div><div class="pi-title">Revisão em até 24h</div><div class="pi-sub">Nossa equipe analisa antes de publicar</div></div></div>
+        <div class="pi-item"><span class="pi-icon">📧</span><div><div class="pi-title">Notificação por e-mail</div><div class="pi-sub">Você será avisado sobre aprovação</div></div></div>
+        <div class="pi-item"><span class="pi-icon">✏️</span><div><div class="pi-title">Edição possível</div><div class="pi-sub">Pode editar após aprovação</div></div></div>
+      </div>
+      <label class="check-label"><input type="checkbox" id="confirmTerms"/> Confirmo que as informações são verdadeiras e aceito os <a href="#">Termos para Organizadores</a></label>
+      <div class="step-actions" style="margin-top:24px">
+        <button class="btn-prev" onclick="prevStep(5)">← Voltar</button>
+        <button class="btn-next" onclick="publishEvent()">🚀 Enviar para aprovação</button>
+      </div>
+      <div class="pub-success" id="pubSuccess" style="display:none">
+        <span class="ps-icon">🎉</span>
+        <div class="ps-text"><strong>Evento enviado com sucesso!</strong><span>Você receberá um e-mail em até 24h com a decisão da nossa equipe.</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Custom cursor — desktop only
+  if (window.innerWidth > 768) {
+    var cur = document.getElementById('cursor');
+    var ring = document.getElementById('cursor-ring');
+    var curVisible = false;
+    document.addEventListener('mousemove', function(e) {
+      if (!curVisible) { cur.style.opacity = '1'; ring.style.opacity = '0.7'; curVisible = true; }
+      cur.style.left = e.clientX + 'px'; cur.style.top = e.clientY + 'px';
+      ring.style.left = e.clientX + 'px'; ring.style.top = e.clientY + 'px';
+    }, {passive: true});
+    document.addEventListener('mouseleave', function() { cur.style.opacity = '0'; ring.style.opacity = '0'; curVisible = false; });
+    document.addEventListener('mouseenter', function() { if (curVisible) { cur.style.opacity = '1'; ring.style.opacity = '0.7'; } });
+  }
+
+  // Theme
+  function toggleTheme() {
+    var t = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', t);
+    document.querySelector('.theme-toggle').textContent = t === 'dark' ? '🌙' : '☀️';
+  }
+
+  // Hamburger menu
+  function toggleMenu() {
+    document.getElementById('ham').classList.toggle('open');
+    document.getElementById('mobMenu').classList.toggle('open');
+  }
+  document.addEventListener('click', function(e) {
+    if (!e.target.closest('#ham') && !e.target.closest('#mobMenu')) {
+      var h = document.getElementById('ham'); var m = document.getElementById('mobMenu');
+      if (h) h.classList.remove('open'); if (m) m.classList.remove('open');
+    }
+  });
+
+  // Steps — 5 total
+  var curStep = 1, ticketCount = 1, isFree = false;
+  var TOTAL = 5;
+
+  function showStep(n) {
+    document.querySelectorAll('.form-step').forEach(function(s) { s.classList.remove('active'); });
+    document.getElementById('fs' + n).classList.add('active');
+    for (var i = 1; i <= TOTAL; i++) {
+      var si = document.getElementById('si' + i); si.classList.remove('active','done');
+      if (i < n) si.classList.add('done'); else if (i === n) si.classList.add('active');
+      document.getElementById('sn' + i).textContent = i < n ? '✓' : i;
+    }
+    curStep = n; window.scrollTo({top: 0, behavior: 'smooth'});
+  }
+  function goStep(n) { if (n < curStep) showStep(n); }
+  function nextStep(n) { if (n === TOTAL - 1) buildReview(); showStep(n + 1); }
+  function prevStep(n) { showStep(n - 1); }
+
+  // Char count
+  function updateCharCount(id, ccId, max) {
+    document.getElementById(ccId).textContent = document.getElementById(id).value.length + '/' + max;
+  }
+
+  // Image preview
+  function previewImg(input) {
+    if (!input.files || !input.files[0]) return;
+    var reader = new FileReader();
+    reader.onload = function(e) {
+      document.getElementById('uploadInner').style.display = 'none';
+      var prev = document.getElementById('imgPreview'); prev.src = e.target.result; prev.style.display = 'block';
+      document.getElementById('uploadArea').classList.add('has-image');
+      var ri = document.getElementById('revImgActual'); ri.src = e.target.result;
+      document.getElementById('revImgWrap').style.display = 'none'; ri.style.display = 'block';
+    };
+    reader.readAsDataURL(input.files[0]);
+  }
+
+  // Modality
+  function setMod(m) {
+    document.getElementById('onlineField').style.display = m === 'online' ? 'block' : 'none';
+    document.getElementById('venueField').style.display = m === 'online' ? 'none' : 'block';
+  }
+
+  // Free toggle
+  function toggleFree(checked) {
+    isFree = checked;
+    document.querySelectorAll('.price-group').forEach(function(g) {
+      g.style.opacity = checked ? '.4' : '1'; g.style.pointerEvents = checked ? 'none' : 'auto';
+    });
+    document.querySelectorAll('[id^="price-"]').forEach(function(p) { if (checked) p.value = 0; });
+  }
+
+  // Tickets — use data-id to avoid inline onclick quote hell
+  function addTicket() {
+    var wrap = document.getElementById('ticketWrap');
+    var id = ticketCount++;
+    var div = document.createElement('div');
+    div.className = 'ticket-item';
+    div.id = 'ticket-' + id;
+    div.innerHTML =
+      '<div class="fg"><label class="fl">Tipo de ingresso</label><input class="fi" type="text" placeholder="Ex: VIP, Estudante..."/></div>' +
+      '<div class="fg price-group"><label class="fl">Preco (R$)</label><input class="fi" type="number" id="price-' + id + '" value="' + (isFree ? 0 : '') + '" min="0" step="0.01"/></div>' +
+      '<div class="fg"><label class="fl">Qtd. disponivel</label><input class="fi" type="number" value="100" min="1"/></div>' +
+      '<button class="remove-ticket" data-target="ticket-' + id + '">x</button>';
+    wrap.appendChild(div);
+  }
+
+  // Delegate click for remove ticket buttons
+  document.addEventListener('click', function(e) {
+    var btn = e.target.closest('.remove-ticket');
+    if (btn) {
+      var target = btn.getAttribute('data-target');
+      var el = document.getElementById(target);
+      if (el) el.remove();
+    }
+  });
+
+  // Audience / Turmas
+  var audienceNames = {
+    maternal:'Maternal', jardim:'Jardim / Pre', fundamental1:'Fund. I',
+    fundamental2:'Fund. II', medio:'Ensino Medio', tecnico:'Tecnico',
+    graduacao:'Graduacao', posgraduacao:'Pos-Graduacao',
+    professores:'Professores', colaboradores:'Colaboradores',
+    comunidade:'Comunidade', egressos:'Egressos'
+  };
+  var cursosList = ['Administracao','Agronomia','Arquitetura','Biomedicina','Ciencias Contabeis',
+    'Ciencias da Computacao','Direito','Educacao Fisica','Enfermagem','Engenharia Civil',
+    'Engenharia de Software','Farmacia','Fisioterapia','Jornalismo','Letras',
+    'Medicina Veterinaria','Nutricao','Pedagogia','Psicologia','Publicidade','Recursos Humanos',
+    'Servico Social','Sistemas de Informacao'];
+  var semestres = ['1 Semestre','2 Semestre','3 Semestre','4 Semestre','5 Semestre',
+    '6 Semestre','7 Semestre','8 Semestre','9 Semestre','10 Semestre'];
+
+  function updateAudienceTags() {
+    var checked = Array.from(document.querySelectorAll('input[name="aud"]:checked')).map(function(i) { return i.value; });
+    var summary = document.getElementById('audSummary');
+    var tags = document.getElementById('audTags');
+    var cursosSection = document.getElementById('cursosSection');
+    var semSection = document.getElementById('semestresSection');
+    var needsGrad = checked.indexOf('graduacao') >= 0 || checked.indexOf('posgraduacao') >= 0 || checked.indexOf('tecnico') >= 0;
+    var needsSem = checked.indexOf('graduacao') >= 0 || checked.indexOf('posgraduacao') >= 0;
+
+    if (checked.length > 0) {
+      summary.style.display = 'block';
+      tags.innerHTML = checked.map(function(v) {
+        return '<span style="padding:4px 10px;background:rgba(245,200,0,.1);border:1px solid rgba(245,200,0,.3);font-size:.74rem;color:var(--gold)">' + (audienceNames[v] || v) + '</span>';
+      }).join('');
+    } else { summary.style.display = 'none'; }
+
+    if (needsGrad) {
+      cursosSection.style.display = 'block';
+      if (!document.getElementById('corsoGrid').childElementCount) buildCursos();
+    } else { cursosSection.style.display = 'none'; }
+
+    if (needsSem) {
+      semSection.style.display = 'block';
+      if (!document.getElementById('semGrid').childElementCount) buildSemestres();
+    } else { semSection.style.display = 'none'; }
+  }
+
+  // Build cursos using data attributes instead of inline onclick
+  function buildCursos() {
+    var grid = document.getElementById('corsoGrid');
+    grid.innerHTML = '';
+    cursosList.forEach(function(c) {
+      var span = document.createElement('span');
+      span.className = 'corso-tag';
+      span.textContent = c;
+      span.setAttribute('data-value', c);
+      grid.appendChild(span);
+    });
+  }
+
+  function buildSemestres() {
+    var grid = document.getElementById('semGrid');
+    grid.innerHTML = '';
+    semestres.forEach(function(s) {
+      var span = document.createElement('span');
+      span.className = 'corso-tag';
+      span.textContent = s;
+      span.setAttribute('data-value', s);
+      grid.appendChild(span);
+    });
+  }
+
+  // Delegate click for corso-tags
+  document.addEventListener('click', function(e) {
+    var tag = e.target.closest('.corso-tag');
+    if (tag) tag.classList.toggle('selected');
+  });
+
+  // Build review
+  function buildReview() {
+    var name = document.getElementById('evtName').value || '—';
+    var catEl = document.getElementById('evtCat');
+    var cat = catEl.options[catEl.selectedIndex].text || '—';
+    var venue = (document.getElementById('evtVenue') || {}).value || '—';
+    var city = (document.getElementById('evtCity') || {}).value || '';
+    var date = (document.getElementById('evtDate') || {}).value || '—';
+    var time = (document.getElementById('evtTime') || {}).value || '—';
+    var cap = (document.getElementById('evtCap') || {}).value;
+    var price0El = document.getElementById('price-0');
+    var price0 = price0El ? price0El.value : '0';
+    var turmas = document.getElementById('evtTurmas').value;
+    var aud = Array.from(document.querySelectorAll('input[name="aud"]:checked')).map(function(i) { return audienceNames[i.value] || i.value; });
+    var cursos = Array.from(document.querySelectorAll('#corsoGrid .corso-tag.selected')).map(function(el) { return el.textContent; });
+
+    document.getElementById('revTitle').textContent = name;
+    document.getElementById('revTag').textContent = cat;
+    document.getElementById('revMeta').textContent = '📅 ' + date + ' ' + time + ' · 📍 ' + venue + (city ? ', ' + city : '');
+    document.getElementById('rv-cat').textContent = cat;
+    document.getElementById('rv-venue').textContent = venue + (city ? ', ' + city : '');
+    document.getElementById('rv-date').textContent = date + ' às ' + time;
+    document.getElementById('rv-cap').textContent = cap ? cap + ' pessoas' : 'Não definida';
+    document.getElementById('rv-price').textContent = isFree ? 'Gratuito' : 'R$ ' + parseFloat(price0 || 0).toFixed(2);
+    document.getElementById('rv-mod').textContent = document.querySelector('input[name="mod"]:checked').value;
+    document.getElementById('rv-audience').textContent = aud.length ? aud.join(', ') + (cursos.length ? ' · Cursos: ' + cursos.join(', ') : '') : 'Todos (evento aberto)';
+    document.getElementById('rv-turmas').textContent = turmas || 'Todas';
+  }
+
+  function publishEvent() {
+    if (!document.getElementById('confirmTerms').checked) { alert('Aceite os termos para continuar.'); return; }
+    document.querySelector('#fs5 .step-actions').style.display = 'none';
+    document.getElementById('pubSuccess').style.display = 'flex';
+    setTimeout(function() { window.location.href = 'organizador-dashboard.html'; }, 3000);
+  }
+</script>
+</body></html>
