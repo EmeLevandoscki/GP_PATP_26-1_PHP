@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Configurações — IDEAU</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet"/>
+   <!-- BASES -->
+  <link rel="stylesheet" href="../../assets/css/base/reset.css">
+  <link rel="stylesheet" href="../../assets/css/base/variables.css">
+  <link rel="stylesheet" href="../../assets/css/base/global.css">
+  <link rel="stylesheet" href="../../assets/css/base/animations.css">
+    <!-- LAYOUT -->
+  <link rel="stylesheet" href="../../assets/css/layout/nav.css">
+  <link rel="stylesheet" href="../../assets/css/layout/hero.css">
+  <link rel="stylesheet" href="../../assets/css/layout/sections.css">
+  <link rel="stylesheet" href="../../assets/css/layout/featured.css">
+  <link rel="stylesheet" href="../../assets/css/layout/newsletter.css">
+  <link rel="stylesheet" href="../../assets/css/layout/footer.css">
+    <!-- COMPONENTES E RECURSOS -->
+  <link rel="stylesheet" href="../../assets/css/components/buttons.css">
+  <link rel="stylesheet" href="../../assets/css/components/marquee.css">
+  <link rel="stylesheet" href="../../assets/css/components/search.css">
+  <link rel="stylesheet" href="../../assets/css/components/filters.css">
+  <link rel="stylesheet" href="../../assets/css/components/cards.css">
+  <link rel="stylesheet" href="../../assets/css/components/categories.css">
+  <link rel="stylesheet" href="../../assets/css/components/modal.css">
+  <link rel="stylesheet" href="../../assets/css/components/feedback.css">
+    <!-- RESPONSIVIDADE -->
+  <link rel="stylesheet" href="../../assets/css/responsive/responsive.css">
+</head>
+<body>
+<div id="cursor"></div>
+<div id="cursor-ring"></div>
+
+<nav>
+  <a href="IndexCliente.html" class="nav-logo">
+    <div class="nav-logo-text">
+      <span class="nav-logo-title">IDEAU Eventos</span>
+      <span class="nav-logo-sub">Faculdades IDEAU</span>
+    </div>
+  </a>
+  <ul>
+    <li><a href="IndexCliente.html">Início</a></li>
+  </ul>
+  <div class="nav-right">
+    <button class="theme-toggle" onclick="toggleTheme()">🌙</button>
+
+    <div class="nav-notif-wrap" id="notifWrap">
+      <button class="nav-notif" id="notifBtn" onclick="toggleNotif()">
+        🔔
+        <span class="notif-dot" id="notifDot"></span>
+      </button>
+      <div class="notif-popup" id="notifPopup">
+        <div class="np-header">
+          <div class="np-header-left">
+            <span class="np-title">Notificações</span>
+            <span class="np-count-badge" id="npBadge">3</span>
+          </div>
+          <button class="np-mark-all" onclick="markAllRead()">Marcar todas como lidas</button>
+        </div>
+        <div class="np-list" id="npList"></div>
+        <div class="np-footer">
+          <a href="#notificacoes" onclick="switchTab('notificacoes');return false">Ver todas as notificações →</a>
+        </div>
+      </div>
+    </div>
+
+    <a href="IndexCliente.html" class="nav-back">← Voltar</a>
+  </div>
+</nav>
+
+<div class="layout">
+  <aside class="sidebar">
+    <div class="sidebar-user">
+      <div class="sidebar-avatar-wrap">
+        <div class="sidebar-avatar">MA</div>
+        <div class="avatar-edit-btn">✏️</div>
+      </div>
+      <div class="sidebar-name">Maria Aparecida</div>
+      <div class="sidebar-email">maria.a@aluno.ideau.edu.br</div>
+      <div class="sidebar-badge"><span class="sidebar-badge-dot"></span>Cliente</div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="sidebar-section-label">Minha Conta</div>
+      <a href="#" class="sidebar-item" onclick="switchTab('perfil',this);return false"><span class="sidebar-icon">🏠</span>Visão Geral</a>
+      <a href="#" class="sidebar-item" onclick="switchTab('ingressos',this);return false"><span class="sidebar-icon">🎟️</span>Meus Ingressos</a>
+      <a href="#" class="sidebar-item" onclick="switchTab('historico',this);return false"><span class="sidebar-icon">📋</span>Histórico</a>
+      <a href="#" class="sidebar-item" onclick="switchTab('recomendados',this);return false"><span class="sidebar-icon">⭐</span>Recomendados</a>
+      <div class="sidebar-divider"></div>
+      <div class="sidebar-section-label">Configurações</div>
+      <a href="#" class="sidebar-item" onclick="switchTab('perfil',this);return false"><span class="sidebar-icon">✏️</span>Editar Perfil</a>
+      <a href="#" class="sidebar-item" onclick="switchTab('seguranca',this);return false"><span class="sidebar-icon">🔒</span>Segurança</a>
+      <a href="#" class="sidebar-item" onclick="switchTab('notificacoes',this);return false"><span class="sidebar-icon">🔔</span>Notificações</a>
+      <a href="#" class="sidebar-item" onclick="switchTab('privacidade',this);return false"><span class="sidebar-icon">🛡️</span>Privacidade</a>
+      <div class="sidebar-divider"></div>
+      <a href="IndexCliente.html" class="sidebar-item danger"><span class="sidebar-icon">↩</span>Sair</a>
+    </nav>
+  </aside>
+
+  <main class="main">
+    <div class="page-header">
+      <div class="page-eyebrow">Configurações</div>
+      <div class="page-title">MINHA CONTA</div>
+    </div>
+
+    <div class="tabs">
+      <button class="tab-btn" onclick="switchTab('perfil',null,this)">👤 Perfil</button>
+      <button class="tab-btn" onclick="switchTab('ingressos',null,this)">🎟️ Ingressos</button>
+      <button class="tab-btn" onclick="switchTab('historico',null,this)">📋 Histórico</button>
+      <button class="tab-btn" onclick="switchTab('recomendados',null,this)">⭐ Recomendados</button>
+      <button class="tab-btn" onclick="switchTab('seguranca',null,this)">🔒 Segurança</button>
+      <button class="tab-btn" onclick="switchTab('notificacoes',null,this)">🔔 Notificações</button>
+      <button class="tab-btn" onclick="switchTab('privacidade',null,this)">🛡️ Privacidade</button>
+    </div>
+
+    <!-- PERFIL -->
+    <div class="tab-panel" id="panel-perfil">
+      <div class="form-card">
+        <div class="form-card-header">
+          <div>
+            <div class="form-card-title">INFORMAÇÕES PESSOAIS</div>
+            <div class="form-card-subtitle">Seus dados cadastrais na plataforma</div>
+          </div>
+        </div>
+        <div class="avatar-upload">
+          <div class="avatar-large">MA</div>
+          <div class="avatar-upload-info">
+            <div class="avatar-upload-title">Foto de perfil</div>
+            <div class="avatar-upload-hint">JPG, PNG ou GIF. Máximo 2MB.</div>
+            <button class="btn-upload">📤 Fazer upload</button>
+          </div>
+        </div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label">Nome<span class="required">*</span></label>
+            <input class="form-input" type="text" value="Maria"/>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Sobrenome<span class="required">*</span></label>
+            <input class="form-input" type="text" value="Aparecida Souza"/>
+          </div>
+          <div class="form-group">
+            <label class="form-label">E-mail<span class="required">*</span></label>
+            <input class="form-input" type="email" value="maria.a@aluno.ideau.edu.br" disabled/>
+            <span class="form-hint">E-mail institucional — não editável</span>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Telefone</label>
+            <input class="form-input" type="tel" value="(54) 99123-4567"/>
+          </div>
+          <div class="form-group">
+            <label class="form-label">CPF</label>
+            <input class="form-input" type="text" value="•••.•••.•••-••" disabled/>
+            <span class="form-hint">Não editável por segurança</span>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Data de nascimento</label>
+            <input class="form-input" type="date" value="1999-03-15"/>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Curso</label>
+            <select class="form-select">
+              <option>Administração</option>
+              <option>Arquitetura e Urbanismo e Engenharia Civil</option>
+              <option>Biomedicina</option>
+              <option>Ciências Contábeis</option>
+              <option>Direito</option>
+              <option>Educação Física</option>
+              <option>Enfermagem</option>
+              <option>Engenharia de Produção</option>
+              <option>Estética e Cosmética</option>
+              <option>Farmácia</option>
+              <option>Fisioterapia</option>
+              <option>Gastronomia</option>
+              <option>Gestão Comercial</option>
+              <option>Gestão de Recursos Humanos</option>
+              <option>Logística</option>
+              <option>Marketing</option>
+              <option>Nutrição</option>
+              <option>Pedagogia</option>
+              <option>Psicologia</option>
+              <option>Análise e Desenvolvimento de Sistemas</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Campus</label>
+            <select class="form-select">
+              <option>Bagé, RS</option><option>Caxias do Sul, SC</option><option>Getúlio Vargas, RS</option><option>Passo Fundo, RS</option>
+            </select>
+          </div>
+          <div class="form-group full">
+            <label class="form-label">Biografia</label>
+            <textarea class="form-input" rows="3" style="resize:vertical">Estudante.</textarea>
+          </div>
+        </div>
+        <div class="form-actions">
+          <button class="btn-save" onclick="showSaveToast()">Salvar alterações</button>
+          <button class="btn-cancel">Cancelar</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- INGRESSOS -->
+    <div class="tab-panel" id="panel-ingressos">
+      <div class="form-card">
+        <div class="form-card-header">
+          <div>
+            <div class="form-card-title">MEUS INGRESSOS</div>
+            <div class="form-card-subtitle">Todos os seus ingressos ativos e futuros</div>
+          </div>
+        </div>
+        <div class="mini-stats">
+          <div class="mini-stat"><div class="mini-stat-val green">3</div><div class="mini-stat-label">Ativos</div></div>
+          <div class="mini-stat"><div class="mini-stat-val gold">2</div><div class="mini-stat-label">Esta semana</div></div>
+          <div class="mini-stat"><div class="mini-stat-val">11</div><div class="mini-stat-label">Total 2025</div></div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:2px;">
+          <div style="display:flex;align-items:center;gap:14px;padding:16px;background:rgba(46,168,46,0.05);border:1px solid rgba(46,168,46,0.2);">
+            <div style="width:44px;height:50px;background:rgba(46,168,46,0.1);border:1px solid rgba(46,168,46,0.25);display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0;"><span style="font-family:'Bebas Neue',sans-serif;font-size:1.3rem;line-height:1;">14</span><span style="font-size:0.55rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--green-light);">ABR</span></div>
+            <div style="flex:1;"><div style="font-weight:500;font-size:0.9rem;margin-bottom:3px;">Semana Acadêmica de Direito 2025</div><div style="font-size:0.74rem;color:var(--muted);">📍 Campus PF · 08:00 · Código: IDEAU-SD-0042</div></div>
+            <span style="font-size:0.62rem;letter-spacing:0.1em;text-transform:uppercase;padding:3px 9px;background:rgba(245,200,0,0.1);color:var(--gold);border:1px solid rgba(245,200,0,0.25);">Em breve</span>
+            <button style="background:transparent;border:1px solid var(--border-strong);color:var(--muted);padding:6px 12px;font-size:0.72rem;letter-spacing:0.07em;text-transform:uppercase;cursor:none;transition:all 0.2s;" onmouseenter="this.style.borderColor='var(--green-light)';this.style.color='var(--green-light)'" onmouseleave="this.style.borderColor='var(--border-strong)';this.style.color='var(--muted)'">📲 QR</button>
+          </div>
+          <div style="display:flex;align-items:center;gap:14px;padding:16px;background:var(--card);border:1px solid var(--border);">
+            <div style="width:44px;height:50px;background:rgba(46,168,46,0.1);border:1px solid rgba(46,168,46,0.25);display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0;"><span style="font-family:'Bebas Neue',sans-serif;font-size:1.3rem;line-height:1;">19</span><span style="font-size:0.55rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--green-light);">ABR</span></div>
+            <div style="flex:1;"><div style="font-weight:500;font-size:0.9rem;margin-bottom:3px;">Festival Gastronômico IDEAU</div><div style="font-size:0.74rem;color:var(--muted);">📍 Praça Central · 10:00 · Código: IDEAU-FG-0118</div></div>
+            <span style="font-size:0.62rem;letter-spacing:0.1em;text-transform:uppercase;padding:3px 9px;background:rgba(46,168,46,0.1);color:var(--green-light);border:1px solid rgba(46,168,46,0.25);">Ativo</span>
+            <button style="background:transparent;border:1px solid var(--border-strong);color:var(--muted);padding:6px 12px;font-size:0.72rem;letter-spacing:0.07em;text-transform:uppercase;cursor:none;transition:all 0.2s;" onmouseenter="this.style.borderColor='var(--green-light)';this.style.color='var(--green-light)'" onmouseleave="this.style.borderColor='var(--border-strong)';this.style.color='var(--muted)'">📲 QR</button>
+          </div>
+          <div style="display:flex;align-items:center;gap:14px;padding:16px;background:var(--card);border:1px solid var(--border);">
+            <div style="width:44px;height:50px;background:rgba(46,168,46,0.1);border:1px solid rgba(46,168,46,0.25);display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0;"><span style="font-family:'Bebas Neue',sans-serif;font-size:1.3rem;line-height:1;">02</span><span style="font-size:0.55rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--green-light);">MAI</span></div>
+            <div style="flex:1;"><div style="font-weight:500;font-size:0.9rem;margin-bottom:3px;">Mostra de Arte & Design</div><div style="font-size:0.74rem;color:var(--muted);">📍 Galeria IDEAU · 14:00 · Código: IDEAU-AD-0207</div></div>
+            <span style="font-size:0.62rem;letter-spacing:0.1em;text-transform:uppercase;padding:3px 9px;background:rgba(46,168,46,0.1);color:var(--green-light);border:1px solid rgba(46,168,46,0.25);">Ativo</span>
+            <button style="background:transparent;border:1px solid var(--border-strong);color:var(--muted);padding:6px 12px;font-size:0.72rem;letter-spacing:0.07em;text-transform:uppercase;cursor:none;transition:all 0.2s;" onmouseenter="this.style.borderColor='var(--green-light)';this.style.color='var(--green-light)'" onmouseleave="this.style.borderColor='var(--border-strong)';this.style.color='var(--muted)'">📲 QR</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- HISTORICO -->
+    <div class="tab-panel" id="panel-historico">
+      <div class="form-card">
+        <div class="form-card-header">
+          <div>
+            <div class="form-card-title">HISTÓRICO DE PARTICIPAÇÕES</div>
+            <div class="form-card-subtitle">Seus eventos passados em 2025</div>
+          </div>
+        </div>
+        <div class="mini-stats">
+          <div class="mini-stat"><div class="mini-stat-val">11</div><div class="mini-stat-label">Participações</div></div>
+          <div class="mini-stat"><div class="mini-stat-val green">9</div><div class="mini-stat-label">Confirmados</div></div>
+          <div class="mini-stat"><div class="mini-stat-val" style="color:var(--red)">2</div><div class="mini-stat-label">Cancelados</div></div>
+        </div>
+        <table style="width:100%;border-collapse:collapse;">
+          <thead><tr style="border-bottom:2px solid var(--border);">
+            <th style="text-align:left;padding:10px 0;font-size:0.7rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);font-weight:500;">Evento</th>
+            <th style="text-align:left;padding:10px 0;font-size:0.7rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);font-weight:500;">Data</th>
+            <th style="text-align:left;padding:10px 0;font-size:0.7rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);font-weight:500;">Categoria</th>
+            <th style="text-align:left;padding:10px 0;font-size:0.7rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);font-weight:500;">Status</th>
+          </tr></thead>
+          <tbody id="historicoTable"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- RECOMENDADOS -->
+    <div class="tab-panel" id="panel-recomendados">
+      <div class="form-card">
+        <div class="form-card-header">
+          <div>
+            <div class="form-card-title">RECOMENDADOS PARA VOCÊ</div>
+            <div class="form-card-subtitle">Baseado no seu histórico de participações</div>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:2px;">
+          <div style="background:var(--card-hover);border:1px solid var(--border);overflow:hidden;">
+            <img src="https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=400&q=80" style="width:100%;height:140px;object-fit:cover;filter:brightness(0.75)saturate(1.1);" alt=""/>
+            <div style="padding:16px;">
+              <div style="font-size:0.6rem;letter-spacing:0.1em;text-transform:uppercase;padding:2px 7px;background:var(--green-dark);color:#fff;display:inline-block;margin-bottom:7px;">Esporte</div>
+              <div style="font-family:'Bebas Neue',sans-serif;font-size:1.1rem;letter-spacing:0.04em;margin-bottom:4px;">OLIMPÍADAS IDEAU 2025</div>
+              <div style="font-size:0.74rem;color:var(--muted);margin-bottom:12px;">📅 30 MAI · 📍 Ginásio IDEAU · GRÁTIS</div>
+              <button class="btn-save" style="width:100%;" onclick="showSaveToast('Inscrição confirmada! 🎟️')">Inscrever-se</button>
+            </div>
+          </div>
+          <div style="background:var(--card-hover);border:1px solid var(--border);overflow:hidden;">
+            <img src="https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=400&q=80" style="width:100%;height:140px;object-fit:cover;filter:brightness(0.75)saturate(1.1);" alt=""/>
+            <div style="padding:16px;">
+              <div style="font-size:0.6rem;letter-spacing:0.1em;text-transform:uppercase;padding:2px 7px;background:var(--green-dark);color:#fff;display:inline-block;margin-bottom:7px;">Música</div>
+              <div style="font-family:'Bebas Neue',sans-serif;font-size:1.1rem;letter-spacing:0.04em;margin-bottom:4px;">NOITE DE JAZZ IDEAU</div>
+              <div style="font-size:0.74rem;color:var(--muted);margin-bottom:12px;">📅 05 MAI · 📍 Auditório Central · GRÁTIS</div>
+              <button class="btn-save" style="width:100%;" onclick="showSaveToast('Inscrição confirmada! 🎟️')">Inscrever-se</button>
+            </div>
+          </div>
+          <div style="background:var(--card-hover);border:1px solid var(--border);overflow:hidden;">
+            <img src="https://images.unsplash.com/photo-1532012197267-da84d127e765?w=400&q=80" style="width:100%;height:140px;object-fit:cover;filter:brightness(0.75)saturate(1.1);" alt=""/>
+            <div style="padding:16px;">
+              <div style="font-size:0.6rem;letter-spacing:0.1em;text-transform:uppercase;padding:2px 7px;background:var(--green-dark);color:#fff;display:inline-block;margin-bottom:7px;">Acadêmico</div>
+              <div style="font-family:'Bebas Neue',sans-serif;font-size:1.1rem;letter-spacing:0.04em;margin-bottom:4px;">CONGRESSO DE DIREITO AMBIENTAL</div>
+              <div style="font-size:0.74rem;color:var(--muted);margin-bottom:12px;">📅 12 JUN · 📍 Campus PF · GRÁTIS</div>
+              <button class="btn-save" style="width:100%;" onclick="showSaveToast('Inscrição confirmada! 🎟️')">Inscrever-se</button>
+            </div>
+          </div>
+          <div style="background:var(--card-hover);border:1px solid var(--border);overflow:hidden;">
+            <img src="https://images.unsplash.com/photo-1460661419201-fd4cecdf8a8b?w=400&q=80" style="width:100%;height:140px;object-fit:cover;filter:brightness(0.75)saturate(1.1);" alt=""/>
+            <div style="padding:16px;">
+              <div style="font-size:0.6rem;letter-spacing:0.1em;text-transform:uppercase;padding:2px 7px;background:var(--green-dark);color:#fff;display:inline-block;margin-bottom:7px;">Arte</div>
+              <div style="font-family:'Bebas Neue',sans-serif;font-size:1.1rem;letter-spacing:0.04em;margin-bottom:4px;">EXPOSIÇÃO FOTOGRÁFICA URBANA</div>
+              <div style="font-size:0.74rem;color:var(--muted);margin-bottom:12px;">📅 20 JUN · 📍 Galeria IDEAU · GRÁTIS</div>
+              <button class="btn-save" style="width:100%;" onclick="showSaveToast('Inscrição confirmada! 🎟️')">Inscrever-se</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SEGURANCA -->
+    <div class="tab-panel" id="panel-seguranca">
+      <div class="form-card" style="margin-bottom:2px">
+        <div class="form-card-header"><div><div class="form-card-title">SEGURANÇA DA CONTA</div><div class="form-card-subtitle">Gerencie sua senha e autenticação</div></div></div>
+        <div class="security-method">
+          <div class="security-icon">🔑</div>
+          <div class="security-info"><div class="security-title">Senha</div><div class="security-desc">Última alteração: 12 de Janeiro de 2025</div></div>
+          <span class="security-status sec-ativo">Ativo</span>
+          <button class="btn-cancel" style="margin-left:10px">Alterar</button>
+        </div>
+        <div class="security-method">
+          <div class="security-icon">📱</div>
+          <div class="security-info"><div class="security-title">Autenticação em dois fatores</div><div class="security-desc">Via aplicativo autenticador</div></div>
+          <span class="security-status sec-inativo">Inativo</span>
+          <button class="btn-save" style="margin-left:10px" onclick="showSaveToast('2FA ativado! ✅')">Ativar</button>
+        </div>
+        <div class="security-method">
+          <div class="security-icon">💻</div>
+          <div class="security-info"><div class="security-title">Sessões ativas</div><div class="security-desc">Chrome — Windows · Passo Fundo, RS · Agora</div></div>
+          <span class="security-status sec-ativo">1 ativa</span>
+          <button class="btn-cancel" style="margin-left:10px">Encerrar</button>
+        </div>
+      </div>
+      <div class="form-card">
+        <div class="form-card-header"><div><div class="form-card-title">ALTERAR SENHA</div></div></div>
+        <div class="form-grid">
+          <div class="form-group full"><label class="form-label">Senha atual<span class="required">*</span></label><input class="form-input" type="password" placeholder="••••••••"/></div>
+          <div class="form-group"><label class="form-label">Nova senha<span class="required">*</span></label><input class="form-input" type="password" placeholder="Mínimo 8 caracteres"/></div>
+          <div class="form-group"><label class="form-label">Confirmar nova senha<span class="required">*</span></label><input class="form-input" type="password" placeholder="Repita a nova senha"/></div>
+        </div>
+        <div class="form-actions">
+          <button class="btn-save" onclick="showSaveToast('Senha alterada com sucesso! 🔒')">Alterar senha</button>
+          <button class="btn-cancel">Cancelar</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- NOTIFICACOES -->
+    <div class="tab-panel" id="panel-notificacoes">
+      <div class="form-card">
+        <div class="form-card-header"><div><div class="form-card-title">PREFERÊNCIAS DE NOTIFICAÇÃO</div><div class="form-card-subtitle">Escolha como e quando quer ser notificada</div></div></div>
+        <div style="font-size:0.7rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);margin-bottom:14px;">Por e-mail</div>
+        <div class="toggle-row"><div class="toggle-info"><div class="toggle-title">Confirmação de inscrição</div><div class="toggle-desc">Receba um e-mail sempre que confirmar presença em um evento</div></div><label class="toggle-switch"><input type="checkbox" checked/><span class="toggle-slider"></span></label></div>
+        <div class="toggle-row"><div class="toggle-info"><div class="toggle-title">Lembretes de eventos</div><div class="toggle-desc">Receba lembretes 24h e 1h antes dos seus eventos</div></div><label class="toggle-switch"><input type="checkbox" checked/><span class="toggle-slider"></span></label></div>
+        <div class="toggle-row"><div class="toggle-info"><div class="toggle-title">Novos eventos</div><div class="toggle-desc">Seja notificada quando novos eventos forem publicados</div></div><label class="toggle-switch"><input type="checkbox"/><span class="toggle-slider"></span></label></div>
+        <div class="toggle-row"><div class="toggle-info"><div class="toggle-title">Newsletter semanal</div><div class="toggle-desc">Resumo semanal dos eventos da IDEAU</div></div><label class="toggle-switch"><input type="checkbox" checked/><span class="toggle-slider"></span></label></div>
+        <div style="font-size:0.7rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);margin:24px 0 14px;padding-top:18px;border-top:1px solid var(--border);">Push (navegador)</div>
+        <div class="toggle-row"><div class="toggle-info"><div class="toggle-title">Notificações push</div><div class="toggle-desc">Receba alertas instantâneos no navegador</div></div><label class="toggle-switch"><input type="checkbox" checked/><span class="toggle-slider"></span></label></div>
+        <div class="toggle-row"><div class="toggle-info"><div class="toggle-title">Alertas de vagas</div><div class="toggle-desc">Seja avisada quando restarem poucas vagas em eventos favoritos</div></div><label class="toggle-switch"><input type="checkbox"/><span class="toggle-slider"></span></label></div>
+        <div class="form-actions"><button class="btn-save" onclick="showSaveToast()">Salvar preferências</button></div>
+      </div>
+    </div>
+
+    <!-- PRIVACIDADE -->
+    <div class="tab-panel" id="panel-privacidade">
+      <div class="form-card" style="margin-bottom:2px">
+        <div class="form-card-header"><div><div class="form-card-title">PRIVACIDADE & DADOS</div><div class="form-card-subtitle">Controle como seus dados são utilizados</div></div></div>
+        <div class="toggle-row"><div class="toggle-info"><div class="toggle-title">Perfil público</div><div class="toggle-desc">Permitir que outros participantes vejam seu perfil</div></div><label class="toggle-switch"><input type="checkbox" checked/><span class="toggle-slider"></span></label></div>
+        <div class="toggle-row"><div class="toggle-info"><div class="toggle-title">Mostrar participações</div><div class="toggle-desc">Exibir os eventos em que você participou publicamente</div></div><label class="toggle-switch"><input type="checkbox"/><span class="toggle-slider"></span></label></div>
+        <div class="toggle-row"><div class="toggle-info"><div class="toggle-title">Compartilhar com parceiros</div><div class="toggle-desc">Permitir que eventos parceiros usem seus dados de contato</div></div><label class="toggle-switch"><input type="checkbox"/><span class="toggle-slider"></span></label></div>
+        <div class="toggle-row"><div class="toggle-info"><div class="toggle-title">Análise de comportamento</div><div class="toggle-desc">Ajuda a melhorar as recomendações de eventos para você</div></div><label class="toggle-switch"><input type="checkbox" checked/><span class="toggle-slider"></span></label></div>
+        <div class="form-actions"><button class="btn-save" onclick="showSaveToast()">Salvar preferências</button></div>
+      </div>
+      <div class="danger-zone">
+        <div class="danger-zone-title">⚠️ ZONA DE RISCO</div>
+        <div class="danger-item"><div class="danger-item-info"><div class="danger-item-title">Exportar meus dados</div><div class="danger-item-desc">Baixe uma cópia completa dos seus dados da plataforma</div></div><button class="btn-danger">📥 Exportar</button></div>
+        <div class="danger-item"><div class="danger-item-info"><div class="danger-item-title">Desativar conta</div><div class="danger-item-desc">Sua conta ficará inativa mas os dados serão preservados</div></div><button class="btn-danger">Desativar</button></div>
+        <div class="danger-item"><div class="danger-item-info"><div class="danger-item-title">Excluir conta permanentemente</div><div class="danger-item-desc">Todos os seus dados serão apagados. Esta ação é irreversível.</div></div><button class="btn-danger">🗑️ Excluir</button></div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<div class="save-toast" id="saveToast">✅ Alterações salvas com sucesso!</div>
+
+<script src="../../assets/js/cliente/clientconf.js"></script>
+</body>
+</html>

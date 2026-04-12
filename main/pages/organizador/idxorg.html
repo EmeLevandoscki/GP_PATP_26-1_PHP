@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Eventos — IDEAU (Organizador)</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="../../assets/css/style.css">
+  <link rel="stylesheet" href="../../assets/css/organizador/idxorg.css">
+</head>
+<body>
+
+<div id="cursor"></div>
+<div id="cursor-ring"></div>
+
+<!-- NAV — VERSÃO ORGANIZADOR -->
+<nav>
+  <a href="index.html" class="nav-logo">
+    <img src="logo__ideau.png" alt="Logo IDEAU"/>
+    <div class="nav-logo-text">
+      <span class="nav-logo-title">IDEAU Eventos</span>
+      <span class="nav-logo-sub">Faculdades IDEAU</span>
+    </div>
+  </a>
+
+  <ul>
+    <li><a href="#eventos">Eventos</a></li>
+    <li><a href="#categorias">Categorias</a></li>
+    <li><a href="#destaque">Destaque</a></li>
+  </ul>
+
+  <div class="nav-right">
+    <button class="theme-toggle" onclick="toggleTheme()" title="Alternar tema">🌙</button>
+
+    <!-- Painel do organizador -->
+    <a href="organizador-dashboard.html" class="btn-nav-painel">📊 Painel</a>
+
+    <!-- Botão criar evento — destaque dourado na nav -->
+    <a href="organizador-dashboard.html" class="btn-criar-evento">✚ Criar Evento</a>
+
+    <!-- Notificações -->
+    <button class="nav-notif">🔔<span class="notif-dot"></span></button>
+
+    <!-- Avatar + dropdown organizador -->
+    <div class="nav-user" id="navUser">
+      <div class="nav-avatar" onclick="toggleDropdown()">
+        <div class="avatar-circle">CL</div>
+        <div class="avatar-info">
+          <span class="avatar-name">Prof. Carlos</span>
+          <span class="avatar-role">Organizador</span>
+        </div>
+        <span class="avatar-chevron">▾</span>
+      </div>
+      <div class="user-dropdown">
+        <div class="dropdown-header">
+          <div class="dh-name">Prof. Carlos Eduardo Lima</div>
+          <div class="dh-email">carlos.lima@ideau.edu.br</div>
+          <div class="dropdown-badge"><span class="dropdown-badge-dot"></span>Organizador</div>
+        </div>
+        <div class="dropdown-menu">
+          <a href="organizador-dashboard.html" class="dropdown-item highlight"><span class="di-icon">✚</span>Criar Evento</a>
+          <div class="dropdown-divider"></div>
+          <a href="organizador-dashboard.html" class="dropdown-item"><span class="di-icon">📊</span>Dashboard</a>
+          <a href="organizador-dashboard.html" class="dropdown-item"><span class="di-icon">📅</span>Meus Eventos</a>
+          <a href="organizador-dashboard.html" class="dropdown-item"><span class="di-icon">👥</span>Inscritos</a>
+          <div class="dropdown-divider"></div>
+          <a href="organizador-dashboard.html" class="dropdown-item"><span class="di-icon">🏛️</span>Perfil da Org.</a>
+          <a href="#" class="dropdown-item danger"><span class="di-icon">↩</span>Sair</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- HERO — VERSÃO ORGANIZADOR -->
+<section class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-grid"></div>
+
+  <!-- Banner organizador -->
+  <div class="hero-org-bar">
+    <div class="hob-avatar">ORG</div>
+    <div class="hob-text">
+      <span class="hob-role">Modo organizador</span>
+      <span class="hob-name">Prof. Carlos Eduardo Lima</span>
+    </div>
+    <div class="hob-sep"></div>
+    <div class="hob-stat">
+      <span class="hob-stat-val">6</span>
+      <span class="hob-stat-label">Eventos ativos</span>
+    </div>
+    <div class="hob-sep"></div>
+    <div class="hob-stat">
+      <span class="hob-stat-val">384</span>
+      <span class="hob-stat-label">Inscritos total</span>
+    </div>
+    <a href="organizador-dashboard.html" class="hob-link">Ver painel →</a>
+  </div>
+
+  <div class="hero-eyebrow">Faculdades IDEAU — Alto Uruguai</div>
+  <h1>
+    VIVA<br>
+    <span class="line2">CADA</span><br>
+    <span class="accent-word">MOMENTO</span>
+  </h1>
+  <p class="hero-sub">Gerencie e publique eventos para a comunidade IDEAU. Alcance milhares de alunos, professores e colaboradores da região.</p>
+
+  <div class="hero-actions">
+    <button class="btn-primary" onclick="document.getElementById('eventos').scrollIntoView({behavior:'smooth'})">Ver Eventos</button>
+    <!-- CTA principal do organizador -->
+    <a href="organizador-dashboard.html" class="btn-hero-criar">✚ Criar Novo Evento</a>
+    <a href="organizador-dashboard.html" class="btn-ghost">→ Meu painel</a>
+  </div>
+
+  <div class="hero-stats">
+    <div class="stat"><div class="stat-number">6</div><div class="stat-label">Seus eventos ativos</div></div>
+    <div class="stat"><div class="stat-number">384</div><div class="stat-label">Inscritos</div></div>
+    <div class="stat"><div class="stat-number">91%</div><div class="stat-label">Taxa de confirmação</div></div>
+  </div>
+  <div class="hero-ticker">↓ Role para explorar ↓</div>
+</section>
+
+<!-- MARQUEE -->
+<div class="marquee-bar">
+  <div class="marquee-track" id="marqueeTrack">
+    <span class="marquee-item">Semanas Acadêmicas <span class="marquee-dot"></span></span>
+    <span class="marquee-item">Festivais Culturais <span class="marquee-dot"></span></span>
+    <span class="marquee-item">Congressos <span class="marquee-dot"></span></span>
+    <span class="marquee-item">Exposições <span class="marquee-dot"></span></span>
+    <span class="marquee-item">Esportes <span class="marquee-dot"></span></span>
+    <span class="marquee-item">Gastronomia <span class="marquee-dot"></span></span>
+    <span class="marquee-item">Arte & Cultura <span class="marquee-dot"></span></span>
+    <span class="marquee-item">Formandos <span class="marquee-dot"></span></span>
+    <span class="marquee-item">Semanas Acadêmicas <span class="marquee-dot"></span></span>
+    <span class="marquee-item">Festivais Culturais <span class="marquee-dot"></span></span>
+    <span class="marquee-item">Congressos <span class="marquee-dot"></span></span>
+    <span class="marquee-item">Exposições <span class="marquee-dot"></span></span>
+    <span class="marquee-item">Esportes <span class="marquee-dot"></span></span>
+    <span class="marquee-item">Gastronomia <span class="marquee-dot"></span></span>
+    <span class="marquee-item">Arte & Cultura <span class="marquee-dot"></span></span>
+    <span class="marquee-item">Formandos <span class="marquee-dot"></span></span>
+  </div>
+</div>
+
+<!-- BUSCA -->
+<div class="search-section" style="padding-top:60px">
+  <div class="search-wrap">
+    <span>🔍</span>
+    <input type="text" id="searchInput" placeholder="Buscar eventos, cursos, locais..." oninput="filterEvents()"/>
+    <div class="search-divider"></div>
+    <select id="stateFilter">
+      <option value="">Estado</option>
+      <option value="RS">RS — Rio Grande do Sul</option>
+      <option value="SC">SC — Santa Catarina</option>
+      <option value="PR">PR — Paraná</option>
+    </select>
+    <div class="search-divider"></div>
+    <select id="cityFilter" disabled><option value="">Cidade</option></select>
+    <button onclick="filterEvents()">Buscar</button>
+  </div>
+</div>
+
+<!-- EVENTOS -->
+<section id="eventos">
+  <div class="section-label">Agenda</div>
+  <h2 class="section-title">PRÓXIMOS EVENTOS</h2>
+  <div class="filter-bar" id="filterBar">
+    <button class="filter-btn active" onclick="setFilter(this,'todos')">Todos</button>
+    <button class="filter-btn" onclick="setFilter(this,'musica')">🎵 Música</button>
+    <button class="filter-btn" onclick="setFilter(this,'tech')">🎓 Acadêmico</button>
+    <button class="filter-btn" onclick="setFilter(this,'arte')">🎨 Arte</button>
+    <button class="filter-btn" onclick="setFilter(this,'gastronomia')">🍽️ Gastronomia</button>
+    <button class="filter-btn" onclick="setFilter(this,'esporte')">⚽ Esporte</button>
+  </div>
+  <div class="events-grid" id="eventsGrid"></div>
+</section>
+
+<!-- DESTAQUE — versão do organizador mostra stats + botão gerenciar -->
+<section id="destaque" class="featured-section">
+  <div class="section-label">Em destaque</div>
+  <h2 class="section-title">EVENTO DO SEMESTRE</h2>
+  <div class="featured-wrap fade-up">
+    <div class="featured-img">
+      <div class="featured-badge">⭐ Destaque</div>
+      <img src="https://images.unsplash.com/photo-1532012197267-da84d127e765?w=800&q=80" alt="Semana Acadêmica"/>
+    </div>
+    <div class="featured-content">
+      <div class="section-label" style="margin-bottom:8px">Acadêmico · Seu evento</div>
+      <h2>SEMANA ACADÊMICA DE DIREITO 2025</h2>
+      <p>O maior evento acadêmico do semestre reúne professores, profissionais e estudantes para três dias de intenso aprendizado e networking.</p>
+      <!-- Stats do organizador no destaque -->
+      <div class="featured-stat-row">
+        <div class="fsr-item"><div class="fsr-val">142</div><div class="fsr-label">Inscritos</div></div>
+        <div class="fsr-item"><div class="fsr-val">150</div><div class="fsr-label">Vagas</div></div>
+        <div class="fsr-item"><div class="fsr-val">95%</div><div class="fsr-label">Ocupado</div></div>
+        <div class="fsr-item"><div class="fsr-val">3</div><div class="fsr-label">Dias restantes</div></div>
+      </div>
+      <div class="featured-details">
+        <div class="detail-row"><div class="detail-icon">📅</div><div><div class="detail-label">Data</div><div class="detail-val">14, 15 e 16 de Abril, 2025</div></div></div>
+        <div class="detail-row"><div class="detail-icon">📍</div><div><div class="detail-label">Local</div><div class="detail-val">Campus IDEAU — Getúlio Vargas, RS</div></div></div>
+        <div class="detail-row"><div class="detail-icon">🎟️</div><div><div class="detail-label">Inscrição</div><div class="detail-val">Gratuita — 8 vagas restantes</div></div></div>
+      </div>
+      <div class="featured-org-actions">
+        <a href="organizador-dashboard.html" class="btn-manage-lg">✏️ Gerenciar Evento</a>
+        <a href="organizador-dashboard.html" class="btn-inscritos-lg">👥 Ver Inscritos (142)</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CATEGORIAS -->
+<section id="categorias">
+  <div class="section-label">Navegue por</div>
+  <h2 class="section-title">CATEGORIAS</h2>
+  <div class="categories-grid">
+    <div class="cat-card fade-up" onclick="setFilterByName('musica')" style="cursor:pointer"><div class="cat-icon">🎵</div><div class="cat-name">Música</div><div class="cat-count">Shows & festivais</div><div class="cat-arrow">↗</div></div>
+    <div class="cat-card fade-up" style="transition-delay:0.1s" onclick="setFilterByName('tech')" style="cursor:pointer"><div class="cat-icon">🎓</div><div class="cat-name">Acadêmico</div><div class="cat-count">Congressos & semanas</div><div class="cat-arrow">↗</div></div>
+    <div class="cat-card fade-up" style="transition-delay:0.2s" onclick="setFilterByName('arte')" style="cursor:pointer"><div class="cat-icon">🎨</div><div class="cat-name">Arte & Cultura</div><div class="cat-count">Exposições & mostras</div><div class="cat-arrow">↗</div></div>
+    <div class="cat-card fade-up" style="transition-delay:0.3s" onclick="setFilterByName('gastronomia')" style="cursor:pointer"><div class="cat-icon">🍽️</div><div class="cat-name">Gastronomia</div><div class="cat-count">Feiras & degustações</div><div class="cat-arrow">↗</div></div>
+  </div>
+</section>
+
+<!-- NEWSLETTER -->
+<div class="newsletter-section">
+  <div><h2>FIQUE POR<br><span>DENTRO DE</span><br>TUDO</h2></div>
+  <div class="newsletter-form">
+    <input type="email" placeholder="seu@email.com"/>
+    <button>Me avisar</button>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-top">
+    <div class="footer-brand">
+      <div class="footer-logo"><img src="logo__ideau.png" alt="IDEAU"/><span class="footer-logo-name">IDEAU EVENTOS</span></div>
+      <p>A plataforma oficial de eventos das Faculdades IDEAU — Instituto de Desenvolvimento Educacional do Alto Uruguai.</p>
+    </div>
+    <div class="footer-col"><h4>Eventos</h4><ul><li><a href="#">Música</a></li><li><a href="#">Acadêmico</a></li><li><a href="#">Arte</a></li><li><a href="#">Gastronomia</a></li></ul></div>
+    <div class="footer-col"><h4>IDEAU</h4><ul><li><a href="https://www.ideau.com.br/?unidade=6" target="_blank">Site Oficial</a></li><li><a href="#">Cursos</a></li><li><a href="#">Campus</a></li><li><a href="#">Contato</a></li></ul></div>
+    <div class="footer-col"><h4>Organizador</h4><ul><li><a href="organizador-dashboard.html">Dashboard</a></li><li><a href="organizador-dashboard.html">Criar Evento</a></li><li><a href="organizador-dashboard.html">Inscritos</a></li><li><a href="organizador-dashboard.html">Perfil da Org.</a></li></ul></div>
+  </div>
+  <div class="footer-bottom">
+    <p>© 2025 Faculdades IDEAU. Todos os direitos reservados.</p>
+    <div class="socials">
+      <a href="https://www.instagram.com/faculdadeideau" target="_blank" class="social-btn">ig</a>
+      <a href="https://www.facebook.com/share/1ArAE5uzHj/" target="_blank" class="social-btn">fb</a>
+      <a href="https://youtube.com/@faculdadesideau" class="social-btn">yt</a>
+      <a href="#" class="social-btn">in</a>
+    </div>
+  </div>
+</footer>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeModalOutside(event)">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <div id="modalForm">
+      <h3>RESERVAR VAGA</h3>
+      <div class="modal-event-name" id="modalEventName"></div>
+      <label>Nome completo</label>
+      <input type="text" id="modalName" placeholder="Seu nome completo"/>
+      <label>E-mail</label>
+      <input type="email" id="modalEmail" placeholder="seu@email.com"/>
+      <label>Tipo de ingresso</label>
+      <select id="modalTicket"><option>Entrada Gratuita</option></select>
+      <label>Quantidade</label>
+      <select id="modalQty"><option>1 ingresso</option><option>2 ingressos</option><option>3 ingressos</option><option>4 ingressos</option></select>
+      <button class="modal-submit" onclick="submitReserva()">Confirmar Inscrição</button>
+    </div>
+    <div class="modal-success" id="modalSuccess">
+      <span class="check">✅</span>
+      <h3>INSCRIÇÃO CONFIRMADA!</h3>
+      <p>Sua vaga está garantida. Você receberá os detalhes por e-mail. Até o evento!</p>
+    </div>
+  </div>
+</div>
+<div id="toastMsg" class="toast"></div>
+
+<script src="../../assets/js/organizador/idxorg.js"></script>
+</body>
+</html>

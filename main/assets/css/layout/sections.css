@@ -1,0 +1,43 @@
+/* =========================================================
+   14. ESTRUTURA PADRÃO DE SEÇÕES
+   ========================================================= */
+
+section {
+  padding: 96px 48px;
+}
+
+.section-label {
+  font-size: 0.7rem;
+  font-weight: 500;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--green-mid);
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+[data-theme="dark"] .section-label {
+  color: var(--green-light);
+}
+
+.section-label::before {
+  content: '';
+  width: 22px;
+  height: 1px;
+  background: var(--green-mid);
+}
+
+[data-theme="dark"] .section-label::before {
+  background: var(--green-light);
+}
+
+.section-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(2.2rem, 4.5vw, 3.6rem);
+  letter-spacing: 0.04em;
+  margin-bottom: 44px;
+  line-height: 1;
+  color: var(--text);
+}

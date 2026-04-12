@@ -1,0 +1,162 @@
+/* =========================================================
+   11. HERO
+   ========================================================= */
+
+.hero {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 80px 48px 80px;
+  position: relative;
+  overflow: hidden;
+}
+
+.hero-bg {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 70% 55% at 55% 35%, rgba(13, 74, 13, 0.10) 0%, transparent 60%),
+    radial-gradient(ellipse 45% 45% at 15% 65%, rgba(212, 168, 0, 0.06) 0%, transparent 55%),
+    radial-gradient(ellipse 40% 40% at 85% 70%, rgba(196, 26, 26, 0.05) 0%, transparent 50%),
+    var(--bg);
+  transition: background 0.3s;
+}
+
+[data-theme="dark"] .hero-bg {
+  background:
+    radial-gradient(ellipse 70% 55% at 55% 35%, rgba(46, 168, 46, 0.09) 0%, transparent 60%),
+    radial-gradient(ellipse 45% 45% at 15% 65%, rgba(245, 200, 0, 0.05) 0%, transparent 55%),
+    radial-gradient(ellipse 40% 40% at 85% 70%, rgba(224, 32, 32, 0.06) 0%, transparent 50%),
+    var(--bg);
+}
+
+.hero-grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(13, 74, 13, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(13, 74, 13, 0.05) 1px, transparent 1px);
+  background-size: 56px 56px;
+  mask-image: linear-gradient(to bottom, transparent 0%, black 30%, black 70%, transparent 100%);
+}
+
+[data-theme="dark"] .hero-grid {
+  background-image:
+    linear-gradient(rgba(46, 168, 46, 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(46, 168, 46, 0.06) 1px, transparent 1px);
+}
+
+.hero-eyebrow {
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--green-mid);
+  margin-bottom: 18px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+[data-theme="dark"] .hero-eyebrow {
+  color: var(--green-light);
+}
+
+.hero-eyebrow::before {
+  content: '';
+  width: 28px;
+  height: 1px;
+  background: var(--green-mid);
+}
+
+[data-theme="dark"] .hero-eyebrow::before {
+  background: var(--green-light);
+}
+
+h1 {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(4.5rem, 11vw, 10rem);
+  line-height: 0.9;
+  letter-spacing: 0.02em;
+  position: relative;
+}
+
+h1 .line2 {
+  color: transparent;
+  -webkit-text-stroke: 1px rgba(13, 74, 13, 0.22);
+}
+
+[data-theme="dark"] h1 .line2 {
+  -webkit-text-stroke: 1px rgba(46, 168, 46, 0.28);
+}
+
+h1 .accent-word {
+  color: var(--accent);
+}
+
+h1 .accent-green {
+  color: var(--green-mid);
+}
+
+[data-theme="dark"] h1 .accent-green {
+  color: var(--green-light);
+}
+
+.hero-sub {
+  margin-top: 28px;
+  font-size: 1rem;
+  font-weight: 300;
+  color: var(--muted);
+  max-width: 420px;
+  line-height: 1.75;
+  position: relative;
+}
+
+.hero-actions {
+  margin-top: 36px;
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  position: relative;
+}
+
+.hero-stats {
+  position: absolute;
+  right: 48px;
+  bottom: 80px;
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
+
+.stat {
+  text-align: right;
+}
+
+.stat-number {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 2.6rem;
+  line-height: 1;
+  color: var(--text);
+}
+
+.stat-label {
+  font-size: 0.68rem;
+  color: var(--muted);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.hero-ticker {
+  position: absolute;
+  top: 50%;
+  right: -38px;
+  transform: translateY(-50%) rotate(90deg);
+  font-size: 0.65rem;
+  letter-spacing: 0.25em;
+  color: var(--muted);
+  text-transform: uppercase;
+  white-space: nowrap;
+}

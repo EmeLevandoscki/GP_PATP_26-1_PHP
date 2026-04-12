@@ -1,0 +1,50 @@
+/* =========================================================
+   25. RESPONSIVIDADE
+   ========================================================= */
+
+@media (max-width: 900px) {
+  nav {
+    padding: 12px 20px;
+  }
+
+  nav ul {
+    display: none;
+  }
+
+  .hero {
+    padding: 0 20px 56px;
+  }
+
+  section {
+    padding: 64px 20px;
+  }
+
+  .search-section {
+    padding: 0 20px 36px;
+  }
+
+  .featured-wrap {
+    grid-template-columns: 1fr;
+  }
+
+  .featured-img {
+    height: 260px;
+  }
+
+  .categories-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .footer-top {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .hero-stats {
+    display: none;
+  }
+
+  .newsletter-section {
+    flex-direction: column;
+    padding: 48px 20px;
+  }
+}

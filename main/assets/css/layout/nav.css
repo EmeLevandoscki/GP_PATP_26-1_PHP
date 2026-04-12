@@ -1,0 +1,472 @@
+/* =========================================================
+   07. NAVEGAÇÃO PRINCIPAL
+   ========================================================= */
+
+nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 500;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 48px;
+  background: var(--nav-bg);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  transition: background 0.3s, border-color 0.3s;
+}
+
+.nav-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+}
+
+.nav-logo img {
+  height: 44px;
+  width: auto;
+  object-fit: contain;
+}
+
+.nav-logo-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.1;
+}
+
+.nav-logo-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.3rem;
+  letter-spacing: 0.12em;
+  color: var(--green-dark);
+}
+
+[data-theme="dark"] .nav-logo-title {
+  color: var(--green-light);
+}
+
+.nav-logo-sub {
+  font-size: 0.58rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+nav ul {
+  list-style: none;
+  display: flex;
+  gap: 32px;
+}
+
+nav ul li a {
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 0.82rem;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  transition: color 0.2s;
+}
+
+nav ul li a:hover {
+  color: var(--text);
+}
+
+/* =========================================================
+   08. AÇÕES DA NAVEGAÇÃO
+   ========================================================= */
+
+.theme-toggle {
+  background: transparent;
+  border: 1px solid var(--border-strong);
+  color: var(--muted);
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: none;
+  font-size: 1rem;
+  transition: all 0.2s;
+  border-radius: 50%;
+}
+
+.theme-toggle:hover {
+  border-color: var(--accent3);
+  color: var(--accent3);
+  background: rgba(46, 139, 46, 0.08);
+}
+
+.nav-auth {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.btn-nav-login {
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 0.8rem;
+  font-weight: 500;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  transition: color 0.2s;
+}
+
+.btn-nav-login:hover {
+  color: var(--text);
+}
+
+.btn-nav-register {
+  background: transparent;
+  border: 1px solid var(--border-strong);
+  color: var(--text);
+  text-decoration: none;
+  font-size: 0.8rem;
+  font-weight: 500;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  padding: 7px 16px;
+  transition: all 0.2s;
+}
+
+.btn-nav-register:hover {
+  border-color: var(--accent3);
+  color: var(--accent3);
+}
+
+/* =========================================================
+   09. USUÁRIO, AVATAR E DROPDOWN
+   ========================================================= */
+
+.nav-user {
+  position: relative;
+}
+
+.nav-avatar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  padding: 5px 12px 5px 7px;
+  cursor: none;
+  transition: border-color 0.2s;
+}
+
+.nav-avatar:hover {
+  border-color: var(--accent3);
+}
+
+.avatar-circle {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.avatar-circle.cliente {
+  background: rgba(13, 74, 13, 0.12);
+  color: var(--green-mid);
+  border: 1px solid rgba(13, 74, 13, 0.3);
+}
+
+.avatar-circle.organizador {
+  background: rgba(212, 168, 0, 0.12);
+  color: var(--gold);
+  border: 1px solid rgba(212, 168, 0, 0.35);
+}
+
+[data-theme="dark"] .avatar-circle.cliente {
+  background: rgba(46, 168, 46, 0.15);
+  color: var(--green-light);
+  border-color: rgba(46, 168, 46, 0.3);
+}
+
+[data-theme="dark"] .avatar-circle.organizador {
+  background: rgba(245, 200, 0, 0.12);
+  color: var(--gold-light);
+  border-color: rgba(245, 200, 0, 0.3);
+}
+
+.avatar-info {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+
+.avatar-name {
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.avatar-role {
+  font-size: 0.62rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.avatar-role.cliente {
+  color: var(--green-mid);
+}
+
+.avatar-role.organizador {
+  color: var(--gold);
+}
+
+[data-theme="dark"] .avatar-role.cliente {
+  color: var(--green-light);
+}
+
+[data-theme="dark"] .avatar-role.organizador {
+  color: var(--gold-light);
+}
+
+.avatar-chevron {
+  color: var(--muted);
+  font-size: 0.65rem;
+  margin-left: 4px;
+  transition: transform 0.2s;
+}
+
+.nav-user.open .avatar-chevron {
+  transform: rotate(180deg);
+}
+
+.user-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  width: 220px;
+  background: var(--card);
+  border: 1px solid var(--border-strong);
+  box-shadow: var(--shadow-lg);
+  z-index: 600;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-8px);
+  transition: all 0.2s ease;
+}
+
+.nav-user.open .user-dropdown {
+  opacity: 1;
+  pointer-events: all;
+  transform: translateY(0);
+}
+
+.dropdown-header {
+  padding: 14px 16px 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+.dropdown-header .dh-name {
+  font-weight: 500;
+  font-size: 0.88rem;
+}
+
+.dropdown-header .dh-email {
+  font-size: 0.73rem;
+  color: var(--muted);
+  margin-top: 2px;
+}
+
+.dropdown-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 8px;
+  padding: 3px 10px;
+  font-size: 0.62rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.dropdown-badge.cliente {
+  background: rgba(13, 74, 13, 0.08);
+  border: 1px solid rgba(13, 74, 13, 0.2);
+  color: var(--green-mid);
+}
+
+.dropdown-badge.organizador {
+  background: rgba(212, 168, 0, 0.08);
+  border: 1px solid rgba(212, 168, 0, 0.25);
+  color: var(--gold);
+}
+
+[data-theme="dark"] .dropdown-badge.cliente {
+  background: rgba(46, 168, 46, 0.1);
+  border-color: rgba(46, 168, 46, 0.25);
+  color: var(--green-light);
+}
+
+[data-theme="dark"] .dropdown-badge.organizador {
+  background: rgba(245, 200, 0, 0.08);
+  border-color: rgba(245, 200, 0, 0.25);
+  color: var(--gold-light);
+}
+
+.dropdown-badge-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.dropdown-menu {
+  padding: 6px 0;
+}
+
+.dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 16px;
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 0.83rem;
+  transition: all 0.15s;
+  cursor: none;
+}
+
+.dropdown-item:hover {
+  color: var(--text);
+  background: rgba(13, 74, 13, 0.04);
+}
+
+[data-theme="dark"] .dropdown-item:hover {
+  background: rgba(46, 168, 46, 0.05);
+}
+
+.dropdown-item .di-icon {
+  font-size: 0.88rem;
+  width: 18px;
+  text-align: center;
+}
+
+.dropdown-divider {
+  height: 1px;
+  background: var(--border);
+  margin: 4px 0;
+}
+
+.dropdown-item.danger {
+  color: rgba(196, 26, 26, 0.65);
+}
+
+.dropdown-item.danger:hover {
+  color: var(--accent);
+  background: rgba(196, 26, 26, 0.04);
+}
+
+/* =========================================================
+   10. BOTÕES E ELEMENTOS AUXILIARES DA NAV
+   ========================================================= */
+
+.nav-notif {
+  position: relative;
+  cursor: none;
+  background: transparent;
+  border: 1px solid var(--border-strong);
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.88rem;
+  transition: border-color 0.2s;
+}
+
+.nav-notif:hover {
+  border-color: var(--accent3);
+}
+
+.notif-dot {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 7px;
+  height: 7px;
+  background: var(--accent);
+  border-radius: 50%;
+  border: 1.5px solid var(--bg);
+}
+
+.nav-org-btn {
+  background: var(--green-dark);
+  color: #fff;
+  text-decoration: none;
+  font-size: 0.76rem;
+  font-weight: 500;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  padding: 8px 16px;
+  clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px));
+  transition: background 0.2s;
+}
+
+.nav-org-btn:hover {
+  background: var(--green-light);
+}
+
+[data-theme="dark"] .nav-org-btn {
+  background: var(--green-mid);
+}
+
+[data-theme="dark"] .nav-org-btn:hover {
+  background: var(--green-light);
+}
+
+/* =========================================================
+   COMPLEMENTO DA PÁGINA DE CONFIGURAÇÕES clientconf.html
+   ========================================================= */
+
+.nav-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.nav-logo-icon {
+  width: 40px;
+  height: 40px;
+  background: linear-gradient(135deg, var(--green-dark), var(--green-mid));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.1rem;
+  color: #fff;
+}
+
+.nav-back {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 0.8rem;
+  font-weight: 500;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  transition: color 0.2s;
+  border: 1px solid var(--border-strong);
+  padding: 7px 14px;
+  cursor: none;
+}
+
+.nav-back:hover {
+  color: var(--text);
+  border-color: var(--border-strong);
+}
+
+.nav-notif-wrap {
+  position: relative;
+}

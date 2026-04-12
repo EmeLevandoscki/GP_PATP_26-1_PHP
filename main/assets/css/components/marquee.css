@@ -1,0 +1,41 @@
+/* =========================================================
+   13. MARQUEE / FAIXA EM MOVIMENTO
+   ========================================================= */
+
+.marquee-bar {
+  background: var(--marquee-bg);
+  padding: 13px 0;
+  overflow: hidden;
+  display: flex;
+  position: relative;
+  border-top: 2px solid var(--gold);
+  border-bottom: 2px solid var(--gold);
+}
+
+[data-theme="dark"] .marquee-bar {
+  border-color: var(--gold-light);
+}
+
+.marquee-track {
+  display: flex;
+  animation: marquee 22s linear infinite;
+  white-space: nowrap;
+}
+
+.marquee-item {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1rem;
+  letter-spacing: 0.18em;
+  color: #fff;
+  padding: 0 28px;
+  display: flex;
+  align-items: center;
+  gap: 28px;
+}
+
+.marquee-dot {
+  width: 5px;
+  height: 5px;
+  background: var(--gold-light);
+  border-radius: 50%;
+}

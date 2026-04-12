@@ -1,0 +1,183 @@
+/* =========================================================
+   17. GRID E CARDS DE EVENTOS
+   ========================================================= */
+
+.events-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
+  gap: 2px;
+}
+
+.event-card {
+  background: var(--card);
+  border: 1px solid var(--card-border);
+  overflow: hidden;
+  cursor: none;
+  transition: border-color 0.3s, background 0.3s;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.event-card:hover {
+  border-color: rgba(196, 26, 26, 0.35);
+  background: var(--card-hover);
+}
+
+.event-card:hover .card-img img {
+  transform: scale(1.06);
+}
+
+.card-img {
+  height: 190px;
+  overflow: hidden;
+  position: relative;
+}
+
+.card-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.5s ease;
+  filter: brightness(0.78) saturate(1.1);
+}
+
+.card-tag {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  font-size: 0.65rem;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 4px 10px;
+  background: var(--green-dark);
+  color: #fff;
+}
+
+.card-date-badge {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(8px);
+  padding: 7px 10px;
+  text-align: center;
+  border: 1px solid rgba(13, 74, 13, 0.15);
+}
+
+[data-theme="dark"] .card-date-badge {
+  background: rgba(10, 15, 8, 0.88);
+  border-color: rgba(46, 168, 46, 0.2);
+}
+
+.card-date-badge .day {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.5rem;
+  line-height: 1;
+  display: block;
+  color: var(--text);
+}
+
+.card-date-badge .month {
+  font-size: 0.62rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--green-mid);
+}
+
+[data-theme="dark"] .card-date-badge .month {
+  color: var(--green-light);
+}
+
+.card-body {
+  padding: 22px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.card-meta {
+  display: flex;
+  gap: 14px;
+  margin-bottom: 10px;
+}
+
+.card-meta span {
+  font-size: 0.72rem;
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.card-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.4rem;
+  letter-spacing: 0.04em;
+  line-height: 1.1;
+  margin-bottom: 9px;
+}
+
+.card-desc {
+  font-size: 0.83rem;
+  color: var(--muted);
+  line-height: 1.6;
+  flex: 1;
+}
+
+.card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+}
+
+.card-price {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.4rem;
+  color: var(--gold);
+}
+
+[data-theme="dark"] .card-price {
+  color: var(--gold-light);
+}
+
+.card-price small {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.68rem;
+  color: var(--muted);
+  font-weight: 300;
+  letter-spacing: 0.05em;
+}
+
+.card-btn {
+  background: transparent;
+  border: 1px solid var(--green-dark);
+  color: var(--green-dark);
+  padding: 7px 16px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  cursor: none;
+  transition: all 0.2s;
+}
+
+.card-btn:hover {
+  background: var(--green-dark);
+  color: #fff;
+}
+
+[data-theme="dark"] .card-btn {
+  border-color: var(--green-mid);
+  color: var(--green-mid);
+}
+
+[data-theme="dark"] .card-btn:hover {
+  background: var(--green-mid);
+  color: #fff;
+}

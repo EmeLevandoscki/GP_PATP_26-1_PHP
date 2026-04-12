@@ -1,0 +1,82 @@
+/* =========================================================
+   19. CATEGORIAS
+   ========================================================= */
+
+.categories-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 2px;
+}
+
+.cat-card {
+  background: var(--card);
+  border: 1px solid var(--card-border);
+  padding: 34px 22px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  cursor: none;
+  transition: all 0.3s;
+  position: relative;
+  overflow: hidden;
+}
+
+.cat-card::before {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  transform: scaleX(0);
+  transition: transform 0.3s;
+}
+
+.cat-card:nth-child(1)::before { background: var(--red); }
+.cat-card:nth-child(2)::before { background: var(--gold); }
+.cat-card:nth-child(3)::before { background: var(--green-mid); }
+.cat-card:nth-child(4)::before { background: var(--green-dark); }
+
+[data-theme="dark"] .cat-card:nth-child(3)::before {
+  background: var(--green-light);
+}
+
+.cat-card:hover::before {
+  transform: scaleX(1);
+}
+
+.cat-card:hover {
+  border-color: var(--border-strong);
+  background: var(--card-hover);
+}
+
+.cat-icon {
+  font-size: 1.9rem;
+  margin-bottom: 18px;
+}
+
+.cat-name {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.35rem;
+  letter-spacing: 0.06em;
+  margin-bottom: 5px;
+}
+
+.cat-count {
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+.cat-arrow {
+  position: absolute;
+  bottom: 22px;
+  right: 22px;
+  color: var(--muted);
+  font-size: 1.15rem;
+  transition: all 0.3s;
+}
+
+.cat-card:hover .cat-arrow {
+  color: var(--text);
+  transform: translate(4px, -4px);
+}

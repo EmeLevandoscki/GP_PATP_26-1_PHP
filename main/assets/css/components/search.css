@@ -1,0 +1,85 @@
+/* =========================================================
+   15. BUSCA
+   ========================================================= */
+
+.search-section {
+  padding: 0 48px 56px;
+}
+
+.search-wrap {
+  background: var(--card);
+  border: 1px solid var(--border-strong);
+  box-shadow: var(--shadow);
+  display: flex;
+  align-items: center;
+  padding: 0 22px;
+  gap: 14px;
+}
+
+.search-wrap span {
+  color: var(--muted);
+  font-size: 1rem;
+}
+
+.search-wrap input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.96rem;
+  padding: 17px 0;
+  outline: none;
+}
+
+.search-wrap input::placeholder {
+  color: var(--muted);
+}
+
+.search-divider {
+  width: 1px;
+  height: 22px;
+  background: var(--border);
+}
+
+.search-wrap select {
+  background: transparent;
+  border: none;
+  color: var(--muted);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.82rem;
+  outline: none;
+  cursor: none;
+}
+
+.search-wrap select option {
+  background: var(--card);
+  color: var(--text);
+}
+
+.search-wrap button {
+  background: var(--green-dark);
+  border: none;
+  color: #fff;
+  padding: 11px 22px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.8rem;
+  font-weight: 500;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  cursor: none;
+  transition: background 0.2s;
+  margin: 7px 0 7px 6px;
+}
+
+.search-wrap button:hover {
+  background: var(--green-light);
+}
+
+[data-theme="dark"] .search-wrap button {
+  background: var(--green-mid);
+}
+
+[data-theme="dark"] .search-wrap button:hover {
+  background: var(--green-light);
+}

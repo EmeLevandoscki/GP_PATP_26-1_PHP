@@ -1,0 +1,88 @@
+/* =========================================================
+    VARIÁVEIS GLOBAIS — TEMA CLARO
+   ========================================================= */
+
+:root {
+  --bg: #f4f6f0;
+  --surface: #ffffff;
+  --card: #ffffff;
+  --card-hover: #f9fbf6;
+
+  /* Cores principais */
+  --green-dark: #0d4a0d;
+  --green-mid: #1a6e1a;
+  --green-light: #2e8b2e;
+  --gold: #d4a800;
+  --gold-light: #f5c800;
+  --red: #c41a1a;
+  --red-light: #e02020;
+
+  /* Acentos */
+  --accent: var(--red);
+  --accent-hover: var(--red-light);
+  --accent2: var(--gold);
+  --accent3: var(--green-mid);
+
+  /* Tipografia e interface */
+  --text: #1a2210;
+  --text-secondary: #3d5230;
+  --muted: #6b7a5a;
+
+  /* Bordas e sombras */
+  --border: rgba(13, 74, 13, 0.12);
+  --border-strong: rgba(13, 74, 13, 0.25);
+  --card-border: rgba(13, 74, 13, 0.10);
+  --shadow: 0 2px 16px rgba(13, 74, 13, 0.10);
+  --shadow-lg: 0 8px 40px rgba(13, 74, 13, 0.14);
+
+  /* Fundos especiais */
+  --nav-bg: rgba(244, 246, 240, 0.96);
+  --hero-overlay: rgba(13, 74, 13, 0.06);
+  --marquee-bg: var(--green-dark);
+  --newsletter-bg: var(--green-dark);
+
+  /* Estados */
+  --filter-active-bg: rgba(196, 26, 26, 0.08);
+}
+
+/* =========================================================
+   VARIÁVEIS GLOBAIS — TEMA ESCURO
+   ========================================================= */
+
+[data-theme="dark"] {
+  --bg: #0a0f08;
+  --surface: #111a0e;
+  --card: #141f10;
+  --card-hover: #1a2916;
+
+  --green-dark: #0d4a0d;
+  --green-mid: #2ea82e;
+  --green-light: #45c445;
+  --gold: #f5c800;
+  --gold-light: #ffd740;
+  --red: #e02020;
+  --red-light: #ff4040;
+
+  --accent: var(--red);
+  --accent-hover: var(--red-light);
+  --accent2: var(--gold);
+  --accent3: var(--green-light);
+
+  --text: #e8f0d8;
+  --text-secondary: #b8cfa0;
+  --muted: #7a9460;
+
+  --border: rgba(46, 168, 46, 0.12);
+  --border-strong: rgba(46, 168, 46, 0.25);
+  --card-border: rgba(46, 168, 46, 0.10);
+
+  --shadow: 0 2px 16px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 8px 40px rgba(0, 0, 0, 0.5);
+
+  --nav-bg: rgba(10, 15, 8, 0.96);
+  --hero-overlay: rgba(46, 168, 46, 0.04);
+  --marquee-bg: #081208;
+  --newsletter-bg: #081208;
+
+  --filter-active-bg: rgba(224, 32, 32, 0.10);
+}

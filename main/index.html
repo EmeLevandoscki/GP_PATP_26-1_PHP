@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Eventos — IDEAU </title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap"
+    rel="stylesheet" />
+    <!-- BASES -->
+  <link rel="stylesheet" href="../main/assets/css/base/reset.css">
+  <link rel="stylesheet" href="../main/assets/css/base/variables.css">
+  <link rel="stylesheet" href="../main/assets/css/base/global.css">
+  <link rel="stylesheet" href="../main/assets/css/base/animations.css">
+    <!-- LAYOUT -->
+  <link rel="stylesheet" href="../main/assets/css/layout/nav.css">
+  <link rel="stylesheet" href="../main/assets/css/layout/hero.css">
+  <link rel="stylesheet" href="../main/assets/css/layout/sections.css">
+  <link rel="stylesheet" href="../main/assets/css/layout/featured.css">
+  <link rel="stylesheet" href="../main/assets/css/layout/newsletter.css">
+  <link rel="stylesheet" href="../main/assets/css/layout/footer.css">
+    <!-- COMPONENTES E RECURSOS -->
+  <link rel="stylesheet" href="../main/assets/css/components/buttons.css">
+  <link rel="stylesheet" href="../main/assets/css/components/marquee.css">
+  <link rel="stylesheet" href="../main/assets/css/components/search.css">
+  <link rel="stylesheet" href="../main/assets/css/components/filters.css">
+  <link rel="stylesheet" href="../main/assets/css/components/cards.css">
+  <link rel="stylesheet" href="../main/assets/css/components/categories.css">
+  <link rel="stylesheet" href="../main/assets/css/components/modal.css">
+  <link rel="stylesheet" href="../main/assets/css/components/feedback.css">
+    <!-- RESPONSIVIDADE -->
+  <link rel="stylesheet" href="../main/assets/css/responsive/responsive.css">
+</head>
+
+<body>
+
+  <div id="cursor"></div>
+  <div id="cursor-ring"></div>
+
+  <nav>
+    <a href="index.html" class="nav-logo">
+      <img src="logo__ideau.png" alt="Logo IDEAU" />
+      <div class="nav-logo-text">
+        <span class="nav-logo-title">IDEAU Eventos</span>
+        <span class="nav-logo-sub">Faculdades IDEAU</span>
+      </div>
+    </a>
+    <ul>
+      <li><a href="#eventos">Eventos</a></li>
+      <li><a href="#categorias">Categorias</a></li>
+      <li><a href="#destaque">Destaque</a></li>
+    </ul>
+    <div style="display:flex;align-items:center;gap:10px;">
+      <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="Alternar tema">🌙</button>
+      <div class="nav-auth" id="navAuth"></div>
+    </div>
+  </nav>
+
+  <section class="hero">
+    <div class="hero-bg"></div>
+    <div class="hero-grid"></div>
+    <div class="hero-eyebrow">Faculdades IDEAU — Alto Uruguai</div>
+    <h1>
+      VIVA<br>
+      <span class="line2">CADA</span><br>
+      <span class="accent-word">MOMENTO</span>
+    </h1>
+    <p class="hero-sub">Descubra os melhores eventos acadêmicos, culturais e esportivos das Faculdades IDEAU e da
+      região. Inscrição garantida, memória para sempre.</p>
+    <div class="hero-actions">
+      <button class="btn-primary"
+        onclick="document.getElementById('eventos').scrollIntoView({behavior:'smooth'})">Explorar Eventos</button>
+      <a href="#categorias" class="btn-ghost">→ Ver categorias</a>
+    </div>
+    <div class="hero-stats">
+      <div class="stat">
+        <div class="stat-number">60+</div>
+        <div class="stat-label">Eventos ativos</div>
+      </div>
+      <div class="stat">
+        <div class="stat-number">4K+</div>
+        <div class="stat-label">Participantes</div>
+      </div>
+      <div class="stat">
+        <div class="stat-number">20+</div>
+        <div class="stat-label">Anos de história</div>
+      </div>
+    </div>
+    <div class="hero-ticker">↓ Role para explorar ↓</div>
+  </section>
+
+  <div class="marquee-bar">
+    <div class="marquee-track" id="marqueeTrack">
+      <span class="marquee-item">Semanas Acadêmicas <span class="marquee-dot"></span></span>
+      <span class="marquee-item">Festivais Culturais <span class="marquee-dot"></span></span>
+      <span class="marquee-item">Congressos <span class="marquee-dot"></span></span>
+      <span class="marquee-item">Exposições <span class="marquee-dot"></span></span>
+      <span class="marquee-item">Esportes <span class="marquee-dot"></span></span>
+      <span class="marquee-item">Gastronomia <span class="marquee-dot"></span></span>
+      <span class="marquee-item">Arte & Cultura <span class="marquee-dot"></span></span>
+      <span class="marquee-item">Formandos <span class="marquee-dot"></span></span>
+    </div>
+  </div>
+
+  <div class="search-section" style="padding-top:60px">
+    <div class="search-wrap">
+      <span>🔍</span>
+      <input type="text" id="searchInput" placeholder="Buscar eventos, cursos, locais..." oninput="filterEvents()" />
+      <div class="search-divider"></div>
+      <select id="stateFilter" onchange="onStateChange()">
+        <option value="">Estado</option>
+        <option value="RS">RS — Rio Grande do Sul</option>
+        <option value="SC">SC — Santa Catarina</option>
+        <option value="PR">PR — Paraná</option>
+      </select>
+      <div class="search-divider"></div>
+      <select id="cityFilter" onchange="filterEvents()" disabled>
+        <option value="">Cidade</option>
+      </select>
+      <button onclick="filterEvents()">Buscar</button>
+    </div>
+  </div>
+
+  <section id="eventos">
+    <div class="section-label">Agenda</div>
+    <h2 class="section-title">PRÓXIMOS EVENTOS</h2>
+    <div class="filter-bar" id="filterBar">
+      <button class="filter-btn active" onclick="setFilter(this, 'todos')">Todos</button>
+      <button class="filter-btn" onclick="setFilter(this, 'musica')">🎵 Música</button>
+      <button class="filter-btn" onclick="setFilter(this, 'tech')">🎓 Acadêmico</button>
+      <button class="filter-btn" onclick="setFilter(this, 'arte')">🎨 Arte</button>
+      <button class="filter-btn" onclick="setFilter(this, 'gastronomia')">🍽️ Gastronomia</button>
+      <button class="filter-btn" onclick="setFilter(this, 'esporte')">⚽ Esporte</button>
+    </div>
+    <div class="events-grid" id="eventsGrid"></div>
+  </section>
+
+  <section id="destaque" class="featured-section">
+    <div class="section-label">Em destaque</div>
+    <h2 class="section-title">EVENTO DO SEMESTRE</h2>
+    <div class="featured-wrap fade-up">
+      <div class="featured-img">
+        <div class="featured-badge">⭐ Destaque</div>
+        <img src="https://images.unsplash.com/photo-1532012197267-da84d127e765?w=800&q=80" alt="Semana Acadêmica" />
+      </div>
+      <div class="featured-content">
+        <div class="section-label" style="margin-bottom:8px">Acadêmico</div>
+        <h2>SEMANA ACADÊMICA DE DIREITO 2025</h2>
+        <p>O maior evento acadêmico do semestre reúne professores, profissionais e estudantes para três dias de intenso
+          aprendizado e networking.</p>
+        <div class="featured-details">
+          <div class="detail-row">
+            <div class="detail-icon">📅</div>
+            <div>
+              <div class="detail-label">Data</div>
+              <div class="detail-val">14, 15 e 16 de Abril, 2025</div>
+            </div>
+          </div>
+          <div class="detail-row">
+            <div class="detail-icon">📍</div>
+            <div>
+              <div class="detail-label">Local</div>
+              <div class="detail-val">Campus IDEAU — Passo Fundo, RS</div>
+            </div>
+          </div>
+          <div class="detail-row">
+            <div class="detail-icon">🎟️</div>
+            <div>
+              <div class="detail-label">Inscrição</div>
+              <div class="detail-val">Gratuita — Vagas limitadas</div>
+            </div>
+          </div>
+        </div>
+        <button class="btn-primary" onclick="openModal('Semana Acadêmica de Direito 2025', '0')">Inscrever-se
+          Agora</button>
+      </div>
+    </div>
+  </section>
+
+  <section id="categorias">
+    <div class="section-label">Navegue por</div>
+    <h2 class="section-title">CATEGORIAS</h2>
+    <div class="categories-grid">
+      <div class="cat-card fade-up" onclick="setFilterByName('musica')" style="cursor:pointer">
+        <div class="cat-icon">🎵</div>
+        <div class="cat-name">Música</div>
+        <div class="cat-count">Shows & festivais</div>
+        <div class="cat-arrow">↗</div>
+      </div>
+      <div class="cat-card fade-up" style="transition-delay:0.1s" onclick="setFilterByName('tech')">
+        <div class="cat-icon">🎓</div>
+        <div class="cat-name">Acadêmico</div>
+        <div class="cat-count">Congressos & semanas</div>
+        <div class="cat-arrow">↗</div>
+      </div>
+      <div class="cat-card fade-up" style="transition-delay:0.2s" onclick="setFilterByName('arte')">
+        <div class="cat-icon">🎨</div>
+        <div class="cat-name">Arte & Cultura</div>
+        <div class="cat-count">Exposições & mostras</div>
+        <div class="cat-arrow">↗</div>
+      </div>
+      <div class="cat-card fade-up" style="transition-delay:0.3s" onclick="setFilterByName('gastronomia')">
+        <div class="cat-icon">🍽️</div>
+        <div class="cat-name">Gastronomia</div>
+        <div class="cat-count">Feiras & degustações</div>
+        <div class="cat-arrow">↗</div>
+      </div>
+    </div>
+  </section>
+
+  <div class="newsletter-section">
+    <div>
+      <h2>FIQUE POR<br><span>DENTRO DE</span><br>TUDO</h2>
+    </div>
+    <div class="newsletter-form">
+      <input type="email" placeholder="seu@email.com" id="newsletterEmail" />
+      <button onclick="subscribeNewsletter()">Me avisar</button>
+    </div>
+  </div>
+
+  <footer>
+    <div class="footer-top">
+      <div class="footer-brand">
+        <div class="footer-logo">
+          <img src="logo__ideau.png" alt="IDEAU" />
+          <span class="footer-logo-name">IDEAU EVENTOS</span>
+        </div>
+        <p>A plataforma oficial de eventos das Faculdades IDEAU — Instituto de Desenvolvimento Educacional do Alto
+          Uruguai.</p>
+      </div>
+      <div class="footer-col">
+        <h4>Eventos</h4>
+        <ul>
+          <li><a href="#" onclick="setFilterByName('musica')">Música</a></li>
+          <li><a href="#" onclick="setFilterByName('tech')">Acadêmico</a></li>
+          <li><a href="#" onclick="setFilterByName('arte')">Arte</a></li>
+          <li><a href="#" onclick="setFilterByName('gastronomia')">Gastronomia</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>IDEAU</h4>
+        <ul>
+          <li><a href="https://www.ideau.com.br/?unidade=6" target="_blank">Site Oficial</a></li>
+          <li><a href="#">Cursos</a></li>
+          <li><a href="#">Campus</a></li>
+          <li><a href="#">Contato</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Suporte</h4>
+        <ul>
+          <li><a href="#">FAQ</a></li>
+          <li><a href="meus-ingressos.html">Meus Ingressos</a></li>
+          <li><a href="#">Reembolsos</a></li>
+          <li><a href="#">Privacidade</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>© 2025 Faculdades IDEAU. Todos os direitos reservados.</p>
+      <div class="socials">
+        <a href="https://www.instagram.com/faculdadeideau?igsh=MXVlaHF0NjRtbzgyYw==" target="_blank"
+          class="social-btn">ig</a>
+        <a href="https://www.facebook.com/share/1ArAE5uzHj/" target="_blank" class="social-btn">fb</a>
+        <a href="https://youtube.com/@faculdadesideau?si=_nvgR1ZzYD-umHM2" class="social-btn">yt</a>
+        <a href="#" class="social-btn">in</a>
+      </div>
+    </div>
+  </footer>
+
+  <div class="modal-overlay" id="modalOverlay" onclick="closeModalOutside(event)">
+    <div class="modal">
+      <button class="modal-close" onclick="closeModal()">✕</button>
+      <div id="modalForm">
+        <h3>RESERVAR VAGA</h3>
+        <div class="modal-event-name" id="modalEventName"></div>
+        <label>Nome completo</label>
+        <input type="text" id="modalName" placeholder="Seu nome completo" />
+        <label>E-mail</label>
+        <input type="email" id="modalEmail" placeholder="seu@email.com" />
+        <label>Tipo de ingresso</label>
+        <select id="modalTicket">
+          <option>Entrada Gratuita</option>
+        </select>
+        <label>Quantidade</label>
+        <select id="modalQty">
+          <option>1 ingresso</option>
+          <option>2 ingressos</option>
+          <option>3 ingressos</option>
+          <option>4 ingressos</option>
+        </select>
+        <button class="modal-submit" onclick="submitReserva()">Confirmar Inscrição</button>
+      </div>
+      <div class="modal-success" id="modalSuccess">
+        <span class="check">✅</span>
+        <h3>INSCRIÇÃO CONFIRMADA!</h3>
+        <p>Sua vaga está garantida. Você receberá os detalhes por e-mail. Até o evento!</p>
+      </div>
+    </div>
+  </div>
+
+  <script src="../main/assets/js/script.js"></script>
+  <script>
+    function setFilterByName(cat) {
+      document.getElementById('eventos').scrollIntoView({ behavior: 'smooth' });
+      setTimeout(() => {
+        const btn = [...document.querySelectorAll('.filter-btn')].find(b => {
+          return b.getAttribute('onclick')?.includes(cat);
+        });
+        if (btn) btn.click();
+      }, 400);
+    }
+  </script>
+</body>
+
+</html>

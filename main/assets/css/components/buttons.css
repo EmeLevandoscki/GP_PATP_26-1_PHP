@@ -1,0 +1,55 @@
+/* =========================================================
+   12. BOTÕES GERAIS
+   ========================================================= */
+
+.btn-primary {
+  background: var(--green-dark);
+  color: #fff;
+  border: none;
+  padding: 15px 34px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.88rem;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: none;
+  transition: all 0.2s;
+  clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 10px 100%, 0 calc(100% - 10px));
+}
+
+.btn-primary:hover {
+  background: var(--green-light);
+  transform: translateY(-2px);
+}
+
+[data-theme="dark"] .btn-primary {
+  background: var(--green-mid);
+}
+
+[data-theme="dark"] .btn-primary:hover {
+  background: var(--green-light);
+}
+
+.btn-primary.red-btn {
+  background: var(--red);
+}
+
+.btn-primary.red-btn:hover {
+  background: var(--red-light);
+}
+
+.btn-ghost {
+  color: var(--muted);
+  font-size: 0.82rem;
+  text-decoration: none;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: color 0.2s;
+}
+
+.btn-ghost:hover {
+  color: var(--text);
+}

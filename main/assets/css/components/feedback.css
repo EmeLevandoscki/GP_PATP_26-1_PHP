@@ -1,0 +1,40 @@
+/* =========================================================
+   23. ESTADOS E FEEDBACK VISUAL
+   ========================================================= */
+
+.no-results {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 64px 24px;
+  color: var(--muted);
+}
+
+.no-results h3 {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 2rem;
+  margin-bottom: 8px;
+  letter-spacing: 0.05em;
+}
+
+.toast {
+  position: fixed;
+  bottom: 28px;
+  right: 28px;
+  background: var(--green-dark);
+  color: #fff;
+  padding: 14px 22px;
+  z-index: 900;
+  font-size: 0.88rem;
+  font-weight: 500;
+  border-left: 3px solid var(--gold);
+  opacity: 0;
+  transform: translateY(16px);
+  transition: all 0.3s;
+  pointer-events: none;
+  max-width: 320px;
+}
+
+.toast.show {
+  opacity: 1;
+  transform: translateY(0);
+}

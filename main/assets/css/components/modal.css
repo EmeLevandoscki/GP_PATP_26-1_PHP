@@ -1,0 +1,164 @@
+/* =========================================================
+   22. MODAL
+   ========================================================= */
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.65);
+  backdrop-filter: blur(8px);
+  z-index: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s;
+}
+
+.modal-overlay.open {
+  opacity: 1;
+  pointer-events: all;
+}
+
+.modal {
+  background: var(--card);
+  border: 1px solid var(--border-strong);
+  box-shadow: var(--shadow-lg);
+  width: 90%;
+  max-width: 540px;
+  padding: 44px;
+  transform: translateY(20px);
+  transition: transform 0.3s, background 0.3s;
+  position: relative;
+}
+
+.modal-overlay.open .modal {
+  transform: translateY(0);
+}
+
+.modal-close {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  background: transparent;
+  border: 1px solid var(--border-strong);
+  color: var(--muted);
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: none;
+  font-size: 0.95rem;
+  transition: all 0.2s;
+}
+
+.modal-close:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.modal h3 {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.7rem;
+  letter-spacing: 0.05em;
+  margin-bottom: 6px;
+}
+
+.modal-event-name {
+  color: var(--green-mid);
+  margin-bottom: 22px;
+  font-size: 0.88rem;
+}
+
+[data-theme="dark"] .modal-event-name {
+  color: var(--green-light);
+}
+
+.modal label {
+  display: block;
+  font-size: 0.72rem;
+  color: var(--muted);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: 7px;
+}
+
+.modal input,
+.modal select {
+  width: 100%;
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.88rem;
+  padding: 11px 14px;
+  outline: none;
+  transition: border-color 0.2s;
+  margin-bottom: 18px;
+}
+
+.modal input:focus,
+.modal select:focus {
+  border-color: var(--green-mid);
+}
+
+[data-theme="dark"] .modal input:focus,
+[data-theme="dark"] .modal select:focus {
+  border-color: var(--green-light);
+}
+
+.modal select option {
+  background: var(--surface);
+}
+
+.modal-submit {
+  width: 100%;
+  background: var(--green-dark);
+  border: none;
+  color: #fff;
+  padding: 15px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.88rem;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: none;
+  transition: background 0.2s;
+  margin-top: 6px;
+}
+
+.modal-submit:hover {
+  background: var(--green-light);
+}
+
+[data-theme="dark"] .modal-submit {
+  background: var(--green-mid);
+}
+
+[data-theme="dark"] .modal-submit:hover {
+  background: var(--green-light);
+}
+
+.modal-success {
+  text-align: center;
+  display: none;
+}
+
+.modal-success .check {
+  font-size: 2.8rem;
+  margin-bottom: 14px;
+  display: block;
+}
+
+.modal-success h3 {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.9rem;
+  margin-bottom: 7px;
+}
+
+.modal-success p {
+  color: var(--muted);
+  font-size: 0.88rem;
+}
