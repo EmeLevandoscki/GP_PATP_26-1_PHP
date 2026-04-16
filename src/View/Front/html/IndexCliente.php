@@ -1,6 +1,17 @@
-<!DOCTYPE html>
+<?php
+    session_start();
+    ini_set('display_errors', 1);
+    error_reporting(E_ALL);
+    require_once __DIR__ . '/../vendor/autoload.php';
+    use App\Service\EventoService;
+    $service = new EventoService();
+    $eventos = $service->listarTodosEventos();
+    var_dump($eventos)
+?>
+
 <html lang="pt-BR" data-theme="dark">
-<head>
+<!DOCTYPE html>
+  <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Eventos — IDEAU (Cliente)</title>
@@ -10,7 +21,6 @@
 <body>
 <div id="cursor"></div>
 <div id="cursor-ring"></div>
-
 <nav>
   <a href="IndexCliente.html" class="nav-logo">
     <img src="logo__ideau.png" alt="Logo IDEAU"/>

@@ -4,8 +4,5 @@
         "psr-4": {
             "App\\": "src/"
         }
-    },
-    "require": {
-        "robmorgan/phinx": "^0.16.11"
     }
 }
