@@ -76,38 +76,58 @@ class EventoService
 
         $stmt->execute();
     }
-
-    public function listarTodosEventos(): array
+    public function listarEventos(): array
     {
-        $sql = 'SELECT * FROM eventos';
+        $sql = 'SELECT 
+                    e.id,
+                    e.titulo,
+                    cat.nome as categoria,
+                    data_inicio,
+                    data_fim,
+                    ender.nome_local,
+                    ender.cidade,
+                    ender.estado,
+                    e.valor,
+                    e.descricao,
+                    e.foto_path,
+                    e.destaque
+                FROM
+                    eventos as e
+                LEFT OUTER JOIN 
+                    categorias as cat on cat.id = e.id_categoria
+                LEFT OUTER JOIN
+                    enderecos as ender on ender.id = e.id_endereco;';
+        
+        $stmt = $this->con->prepare($sql);
+        $stmt->execute();
+
+        return $stmt->fetchAll(PDO::FETCH_OBJ);
+    }
+    public function retornaQtdAtivos() : string
+    {
+        $sql = 'SELECT COUNT(*) AS total_eventos FROM eventos WHERE id_status = 1;';
 
         $stmt = $this->con->prepare($sql);
         $stmt->execute();
 
-        $resultSet = $stmt->fetchAll(PDO::FETCH_OBJ);
-        $eventos = [];
+        $resultado = $stmt->fetch();
 
-        foreach ($resultSet as $result) {
-            $eventos[] = new Evento(
-                $result->id,
-                $result->titulo,
-                $result->descricao,
-                (float) $result->valor,
-                new DateTime($result->data_inicio),
-                new DateTime($result->data_fim),
-                $result->foto_path,
-                (int) $result->id_tipo,
-                (int) $result->id_status,
-                (int) $result->id_usuario,
-                (int) $result->id_endereco,
-                new DateTime($result->criado_em),
-                $result->atualizado_em ? new DateTime($result->atualizado_em) : null
-            );
-        }
-
-        return $eventos;
+        return $resultado->total_eventos;
     }
+    public function listarCategorias(): array
+    {
+        $sql = 'SELECT 
+                    id,
+                    nome,
+                    icone
+                FROM
+                    categorias;';
+        
+        $stmt = $this->con->prepare($sql);
+        $stmt->execute();
 
+        return $stmt->fetchAll(PDO::FETCH_OBJ);
+    }
     public function editarEvento(array $params): void
     {
         $sql = 'UPDATE

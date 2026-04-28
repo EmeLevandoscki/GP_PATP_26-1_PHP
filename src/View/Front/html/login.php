@@ -224,16 +224,35 @@ function showError(id, msg){
 function doLogin(){
   const email = document.getElementById('loginEmail').value.trim();
   const pass  = document.getElementById('loginPass').value;
-  if(!email||!pass){ showError('loginError','Preencha todos os campos.'); return; }
-  const users = JSON.parse(localStorage.getItem('ideau-users')||'[]');
-  const user  = users.find(u=>u.email===email&&u.pass===pass);
-  if(!user){ showError('loginError','E-mail ou senha incorretos.'); return; }
-  sessionStorage.setItem('ideau-session', JSON.stringify({
-    name:user.name, initials:user.initials, email:user.email,
-    role:user.role, roleLabel:user.roleLabel, org:user.org||''
-  }));
-  showToast('✅ Bem-vindo(a) de volta, '+user.name.split(' ')[0]+'!');
-  setTimeout(()=>{ window.location.href='index.html'; }, 1000);
+
+  if(!email || !pass){
+    showError('loginError','Preencha todos os campos.');
+    return;
+  }
+
+  fetch('LoginController.php', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded'
+    },
+    body: `email=${encodeURIComponent(email)}&senha=${encodeURIComponent(pass)}`
+  })
+  .then(res => res.json())
+  .then(data => {
+    if(!data.success){
+      showError('loginError', data.message);
+      return;
+    }
+
+    // salva sessão no front
+    sessionStorage.setItem('ideau-session', JSON.stringify(data.user));
+
+    showToast('✅ Bem-vindo!');
+    setTimeout(()=>{ window.location.href='index.php'; }, 1000);
+  })
+  .catch(() => {
+    showError('loginError','Erro ao conectar com servidor.');
+  });
 }
 
 function doCadastro(){

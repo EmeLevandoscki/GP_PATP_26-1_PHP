@@ -3,31 +3,31 @@
    ================================ */
 
 // ── CURSOR PERSONALIZADO ──
-const cursor = document.getElementById('cursor');
-const cursorRing = document.getElementById('cursor-ring');
-let mouseX = 0, mouseY = 0, ringX = 0, ringY = 0;
+// const cursor = document.getElementById('cursor');
+// const cursorRing = document.getElementById('cursor-ring');
+// let mouseX = 0, mouseY = 0, ringX = 0, ringY = 0;
 
-document.addEventListener('mousemove', e => {
-  mouseX = e.clientX;
-  mouseY = e.clientY;
-  cursor.style.transform = `translate(${mouseX - 5}px, ${mouseY - 5}px)`;
-});
+// document.addEventListener('mousemove', e => {
+//   mouseX = e.clientX;
+//   mouseY = e.clientY;
+//   cursor.style.transform = `translate(${mouseX - 5}px, ${mouseY - 5}px)`;
+// });
 
-function animateRing() {
-  ringX += (mouseX - ringX - 16) * 0.18;
-  ringY += (mouseY - ringY - 16) * 0.18;
-  cursorRing.style.transform = `translate(${ringX}px, ${ringY}px)`;
-  requestAnimationFrame(animateRing);
-}
-animateRing();
+// function animateRing() {
+//   ringX += (mouseX - ringX - 16) * 0.18;
+//   ringY += (mouseY - ringY - 16) * 0.18;
+//   cursorRing.style.transform = `translate(${ringX}px, ${ringY}px)`;
+//   requestAnimationFrame(animateRing);
+// }
+// animateRing();
 
-document.querySelectorAll('a, button, select, input, .card-btn, .filter-btn, .event-card').forEach(el => {
-  el.addEventListener('mouseenter', () => {
-    cursor.style.transform += ' scale(1.6)';
-    cursorRing.style.transform += ' scale(1.4)';
-  });
-  el.addEventListener('mouseleave', () => {});
-});
+// document.querySelectorAll('a, button, select, input, .card-btn, .filter-btn, .event-card').forEach(el => {
+//   el.addEventListener('mouseenter', () => {
+//     cursor.style.transform += ' scale(1.6)';
+//     cursorRing.style.transform += ' scale(1.4)';
+//   });
+//   el.addEventListener('mouseleave', () => {});
+// });
 
 // ── TEMA CLARO / ESCURO ──
 function initTheme() {
@@ -191,6 +191,8 @@ const eventosData = [
     tag: 'Música',
     dia: '22', mes: 'ABR',
     local: 'Praça Central',
+    categoria: 'arte',
+    tag: 'Arte',
     cidade: 'Erechim', estado: 'RS',
     preco: 'R$ 40',
     precoNum: 40,
@@ -202,6 +204,8 @@ const eventosData = [
     id: 3,
     titulo: 'Feira de Negócios do Alto Uruguai',
     categoria: 'tech',
+    categoria: 'arte',
+    tag: 'Arte',
     tag: 'Negócios',
     dia: '05', mes: 'MAI',
     local: 'Ginásio Municipal',

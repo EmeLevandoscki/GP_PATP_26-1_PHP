@@ -6,6 +6,7 @@
   <title>Eventos — IDEAU </title>
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet"/>
   <link rel="stylesheet" href="css/style.css"/>
+  <link rel="icon" type="image/png" href="favicon.png">
 </head>
 <body>
 
@@ -46,9 +47,8 @@
     <a href="#categorias" class="btn-ghost">→ Ver categorias</a>
   </div>
   <div class="hero-stats">
-    <div class="stat"><div class="stat-number">60+</div><div class="stat-label">Eventos ativos</div></div>
-    <div class="stat"><div class="stat-number">4K+</div><div class="stat-label">Participantes</div></div>
-    <div class="stat"><div class="stat-number">20+</div><div class="stat-label">Anos de história</div></div>
+    <div class="stat"><div class="stat-number" id="totalEventos">0</div><div class="stat-label">Eventos ativos</div></div>
+    <div class="stat"><div class="stat-number" id="totalParticipantes">0</div><div class="stat-label">Participantes</div></div>
   </div>
   <div class="hero-ticker">↓ Role para explorar ↓</div>
 </section>
@@ -89,12 +89,6 @@
   <div class="section-label">Agenda</div>
   <h2 class="section-title">PRÓXIMOS EVENTOS</h2>
   <div class="filter-bar" id="filterBar">
-    <button class="filter-btn active" onclick="setFilter(this, 'todos')">Todos</button>
-    <button class="filter-btn" onclick="setFilter(this, 'musica')">🎵 Música</button>
-    <button class="filter-btn" onclick="setFilter(this, 'tech')">🎓 Acadêmico</button>
-    <button class="filter-btn" onclick="setFilter(this, 'arte')">🎨 Arte</button>
-    <button class="filter-btn" onclick="setFilter(this, 'gastronomia')">🍽️ Gastronomia</button>
-    <button class="filter-btn" onclick="setFilter(this, 'esporte')">⚽ Esporte</button>
   </div>
   <div class="events-grid" id="eventsGrid"></div>
 </section>
@@ -133,31 +127,7 @@
 <section id="categorias">
   <div class="section-label">Navegue por</div>
   <h2 class="section-title">CATEGORIAS</h2>
-  <div class="categories-grid">
-    <div class="cat-card fade-up" onclick="setFilterByName('musica')" style="cursor:pointer">
-      <div class="cat-icon">🎵</div>
-      <div class="cat-name">Música</div>
-      <div class="cat-count">Shows & festivais</div>
-      <div class="cat-arrow">↗</div>
-    </div>
-    <div class="cat-card fade-up" style="transition-delay:0.1s" onclick="setFilterByName('tech')">
-      <div class="cat-icon">🎓</div>
-      <div class="cat-name">Acadêmico</div>
-      <div class="cat-count">Congressos & semanas</div>
-      <div class="cat-arrow">↗</div>
-    </div>
-    <div class="cat-card fade-up" style="transition-delay:0.2s" onclick="setFilterByName('arte')">
-      <div class="cat-icon">🎨</div>
-      <div class="cat-name">Arte & Cultura</div>
-      <div class="cat-count">Exposições & mostras</div>
-      <div class="cat-arrow">↗</div>
-    </div>
-    <div class="cat-card fade-up" style="transition-delay:0.3s" onclick="setFilterByName('gastronomia')">
-      <div class="cat-icon">🍽️</div>
-      <div class="cat-name">Gastronomia</div>
-      <div class="cat-count">Feiras & degustações</div>
-      <div class="cat-arrow">↗</div>
-    </div>
+  <div class="categories-grid" id="categoriesGrid">
   </div>
 </section>
 
@@ -249,7 +219,10 @@
     </div>
   </div>
 </div>
-
+<script>
+  //Pegando o nome da pasta base, isso é pq o nome da pasta base do projeto no git é diferente do nome da pasta na hostinger
+  const PASTA_BASE = "<?php echo dirname($_SERVER['SCRIPT_NAME']) ?>";
+</script>
 <script src="js/script.js"></script>
 <script>
 function setFilterByName(cat) {

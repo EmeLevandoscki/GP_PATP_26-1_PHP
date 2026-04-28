@@ -3,32 +3,38 @@
    ================================ */
 
 // ── CURSOR PERSONALIZADO ──
-const cursor = document.getElementById('cursor');
-const cursorRing = document.getElementById('cursor-ring');
-let mouseX = 0, mouseY = 0, ringX = 0, ringY = 0;
+// const cursor = document.getElementById('cursor');
+// const cursorRing = document.getElementById('cursor-ring');
+// let mouseX = 0, mouseY = 0, ringX = 0, ringY = 0;
 
-document.addEventListener('mousemove', e => {
-  mouseX = e.clientX;
-  mouseY = e.clientY;
-  cursor.style.transform = `translate(${mouseX - 5}px, ${mouseY - 5}px)`;
-});
+// document.addEventListener('mousemove', e => {
+//   mouseX = e.clientX;
+//   mouseY = e.clientY;
+//   cursor.style.transform = `translate(${mouseX - 5}px, ${mouseY - 5}px)`;
+// });
 
-function animateRing() {
-  ringX += (mouseX - ringX - 16) * 0.18;
-  ringY += (mouseY - ringY - 16) * 0.18;
-  cursorRing.style.transform = `translate(${ringX}px, ${ringY}px)`;
-  requestAnimationFrame(animateRing);
+// function animateRing() {
+//   ringX += (mouseX - ringX - 16) * 0.18;
+//   ringY += (mouseY - ringY - 16) * 0.18;
+//   cursorRing.style.transform = `translate(${ringX}px, ${ringY}px)`;
+//   requestAnimationFrame(animateRing);
+// }
+// animateRing();
+
+// document.querySelectorAll('a, button, select, input, .card-btn, .filter-btn, .event-card').forEach(el => {
+//   el.addEventListener('mouseenter', () => {
+//     cursor.style.transform += ' scale(1.6)';
+//     cursorRing.style.transform += ' scale(1.4)';
+//   });
+//   el.addEventListener('mouseleave', () => {});
+// });
+function getPastaBase() {
+  if (PASTA_BASE === '/') {
+    return '';
+  }
+
+  return PASTA_BASE;
 }
-animateRing();
-
-document.querySelectorAll('a, button, select, input, .card-btn, .filter-btn, .event-card').forEach(el => {
-  el.addEventListener('mouseenter', () => {
-    cursor.style.transform += ' scale(1.6)';
-    cursorRing.style.transform += ' scale(1.4)';
-  });
-  el.addEventListener('mouseleave', () => {});
-});
-
 // ── TEMA CLARO / ESCURO ──
 function initTheme() {
   const saved = localStorage.getItem('ideau-theme');
@@ -168,121 +174,92 @@ document.addEventListener('click', e => {
 
 renderNav();
 
-// ── DADOS DE EVENTOS ──
-const eventosData = [
-  {
-    id: 1,
-    titulo: 'Semana Acadêmica de Direito',
-    categoria: 'tech',
-    tag: 'Acadêmico',
-    dia: '14', mes: 'ABR',
-    local: 'Campus Getúlio Vargas',
-    cidade: 'Getúlio Vargas', estado: 'RS',
-    preco: 'Gratuito',
-    precoNum: 0,
-    desc: 'Palestras, painéis e workshops com profissionais e professores do curso de Direito.',
-    img: 'https://images.unsplash.com/photo-1589829545856-d10d557cf95f?w=600&q=80',
-    destaque: true
-  },
-  {
-    id: 2,
-    titulo: 'Festival de Música Regional',
-    categoria: 'musica',
-    tag: 'Música',
-    dia: '22', mes: 'ABR',
-    local: 'Praça Central',
-    cidade: 'Erechim', estado: 'RS',
-    preco: 'R$ 40',
-    precoNum: 40,
-    desc: 'Apresentações de bandas locais e regionais com ritmos gaúchos e sertanejo.',
-    img: 'https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=600&q=80',
-    destaque: false
-  },
-  {
-    id: 3,
-    titulo: 'Feira de Negócios do Alto Uruguai',
-    categoria: 'tech',
-    tag: 'Negócios',
-    dia: '05', mes: 'MAI',
-    local: 'Ginásio Municipal',
-    cidade: 'Erechim', estado: 'RS',
-    preco: 'R$ 25',
-    precoNum: 25,
-    desc: 'Expositores, rodadas de negócios e palestras sobre empreendedorismo regional.',
-    img: 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=600&q=80',
-    destaque: false
-  },
-  {
-    id: 4,
-    titulo: 'Exposição de Arte Contemporânea',
-    categoria: 'arte',
-    tag: 'Arte',
-    dia: '18', mes: 'MAI',
-    local: 'Centro Cultural IDEAU',
-    cidade: 'Getúlio Vargas', estado: 'RS',
-    preco: 'Gratuito',
-    precoNum: 0,
-    desc: 'Obras de artistas da região e convidados nacionais, aberta ao público geral.',
-    img: 'https://images.unsplash.com/photo-1531243269054-5ebf6f34081e?w=600&q=80',
-    destaque: false
-  },
-  {
-    id: 5,
-    titulo: 'Torneio Universitário de Futsal',
-    categoria: 'esporte',
-    tag: 'Esporte',
-    dia: '25', mes: 'MAI',
-    local: 'Ginásio IDEAU',
-    cidade: 'Getúlio Vargas', estado: 'RS',
-    preco: 'R$ 15',
-    precoNum: 15,
-    desc: 'Campeonato entre as turmas do campus com premiações e encerramento festivo.',
-    img: 'https://images.unsplash.com/photo-1529900748604-07564a03e7a6?w=600&q=80',
-    destaque: false
-  },
-  {
-    id: 6,
-    titulo: 'Noite Gastronômica do Alto Uruguai',
-    categoria: 'gastronomia',
-    tag: 'Gastronomia',
-    dia: '07', mes: 'JUN',
-    local: 'Restaurante Escola IDEAU',
-    cidade: 'Getúlio Vargas', estado: 'RS',
-    preco: 'R$ 65',
-    precoNum: 65,
-    desc: 'Jantar temático com chefs da região preparando receitas típicas do Rio Grande do Sul.',
-    img: 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=600&q=80',
-    destaque: false
-  },
-  {
-    id: 7,
-    titulo: 'Congresso de Psicologia',
-    categoria: 'tech',
-    tag: 'Acadêmico',
-    dia: '13', mes: 'JUN',
-    local: 'Auditório Principal',
-    cidade: 'Erechim', estado: 'RS',
-    preco: 'R$ 30',
-    precoNum: 30,
-    desc: 'Debates atuais sobre saúde mental, pesquisas e avanços na área da Psicologia.',
-    img: 'https://images.unsplash.com/photo-1576091160399-112ba8d25d1f?w=600&q=80',
-    destaque: false
-  },
-  {
-    id: 8,
-    titulo: 'Show Sertanejo — Dupla Revelação',
-    categoria: 'musica',
-    tag: 'Música',
-    dia: '28', mes: 'JUN',
-    local: 'Parque de Exposições',
-    cidade: 'Erechim', estado: 'RS',
-    preco: 'R$ 90',
-    precoNum: 90,
-    desc: 'Grande show com a dupla do momento, prometendo uma noite inesquecível.',
-    img: 'https://images.unsplash.com/photo-1501386761578-eac5c94b800a?w=600&q=80',
-    destaque: false
-  },
-];
+// // ── DADOS DE EVENTOS ──
+async function listarEventos() {
+  let url = getPastaBase() + '/src/Controller/EventoController.php?action=eventos';
+
+  const response = await fetch(url);
+  const eventos  = await response.json();
+
+  return eventos.map(e => ({
+    id: e.id,
+    titulo: e.titulo,
+    categoria: e.categoria,
+    dia: retornaDia(e.data_inicio),
+    mes: retornaMes(e.data_inicio),
+    local: e.nome_local,
+    cidade: e.cidade, estado: e.estado,
+    preco: '0',//e.preco, não será implementado com preço
+    desc: e.descricao,
+    img: e.foto_path,
+    destaque: e.destaque
+  }));
+}
+async function listarCategorias() {
+  let url = getPastaBase() + '/src/Controller/EventoController.php?action=categorias';
+
+  const response = await fetch(url);
+  const categorias = await response.json();
+
+  return categorias.map(cat => ({
+    id : cat.id,
+    nome : cat.nome,
+    icone : cat.icone
+  }));
+}
+function retornaDia(data) {
+  if (!data) return '';
+  return data.substring(8, 10)
+}
+function retornaMes(data) {
+  if (!data) return '';
+  
+  strMes = data.substring(5, 7);
+  intMes = parseInt(strMes, 10);
+
+  switch (intMes) {
+    case 1:
+      nomeMes = 'Janeiro';
+      break;
+    case 2:
+      nomeMes = 'Fevereiro';
+      break;
+    case 3:
+      nomeMes = 'Março';
+      break;
+    case 4:
+      nomeMes = 'Abril';
+      break;
+    case 5:
+      nomeMes = 'Maio';
+      break;
+    case 6:
+      nomeMes = 'Junho';
+      break;
+    case 7:
+      nomeMes = 'Julho';
+      break;
+    case 8:
+      nomeMes = 'Agosto';
+      break;
+    case 9:
+      nomeMes = 'Setembro';
+      break;
+    case 10:
+      nomeMes = 'Outubro';
+      break;
+    case 11:
+      nomeMes = 'Novembro';
+      break;
+    case 12:
+      nomeMes = 'Dezembro';
+      break;
+    default:
+      nomeMes = '';
+      break;
+  }
+  return nomeMes;
+}
 
 let filtroAtual = 'todos';
 let buscaAtual = '';
@@ -320,16 +297,18 @@ function setFilter(btn, cat) {
   filterEvents();
 }
 
-function filterEvents() {
+async function filterEvents() {
   buscaAtual = document.getElementById('searchInput').value.toLowerCase();
   estadoAtual = document.getElementById('stateFilter').value;
   cidadeAtual = document.getElementById('cityFilter').value;
+
+  const eventosData = await listarEventos();
 
   const resultados = eventosData.filter(ev => {
     const matchCat   = filtroAtual === 'todos' || ev.categoria === filtroAtual;
     const matchBusca = !buscaAtual || ev.titulo.toLowerCase().includes(buscaAtual) ||
                        ev.local.toLowerCase().includes(buscaAtual) ||
-                       ev.tag.toLowerCase().includes(buscaAtual);
+                       ev.categoria.toLowerCase().includes(buscaAtual);
     const matchEstado = !estadoAtual || ev.estado === estadoAtual;
     const matchCidade = !cidadeAtual || ev.cidade === cidadeAtual;
     return matchCat && matchBusca && matchEstado && matchCidade;
@@ -354,8 +333,8 @@ function renderEvents(lista) {
   grid.innerHTML = lista.map(ev => `
     <div class="event-card fade-up">
       <div class="card-img">
-        <img src="${ev.img}" alt="${ev.titulo}" loading="lazy"/>
-        <span class="card-tag">${ev.tag}</span>
+        <img src="${ev.img}" alt="${ev.titulo}" loading="lazy" onerror="this.onerror=null; this.src='${getPastaBase()}/uploads/foto_generica_1.png'" />
+        <span class="card-tag">${ev.categoria}</span>
         <div class="card-date-badge">
           <span class="day">${ev.dia}</span>
           <span class="month">${ev.mes}</span>
@@ -364,17 +343,17 @@ function renderEvents(lista) {
       <div class="card-body">
         <div class="card-meta">
           <span>📍 ${ev.cidade}</span>
-          <span>🏛️ ${ev.local}</span>
+          <span>${ev.local === null ? '' : '🏛️ ' + ev.local}</span>
         </div>
         <h3 class="card-title">${ev.titulo}</h3>
         <p class="card-desc">${ev.desc}</p>
         <div class="card-footer">
           <div class="card-price">
-            ${ev.precoNum === 0 ? 'Gratuito' : ev.preco}
-            ${ev.precoNum > 0 ? '<small>/ ingresso</small>' : ''}
+            ${ev.preco == 0 ? '' : ev.preco}
+            ${ev.preco > 0 ? '<small>/ ingresso</small>' : ''}
           </div>
           <button class="card-btn" onclick="openModal('${ev.titulo.replace(/'/g, "\\'")}', '${ev.precoNum}')">
-            ${ev.precoNum === 0 ? 'Inscrever-se' : 'Comprar'}
+            Inscrever-se
           </button>
         </div>
       </div>
@@ -392,6 +371,57 @@ function renderEvents(lista) {
 // Inicializar eventos
 filterEvents();
 
+//Pega as categorias do banco e coloca no filtro (aquele perto de próximos eventos)
+async function renderCategoriasFiltro() {
+  const categorias = await listarCategorias();
+  const container = document.getElementById('filterBar');
+
+  container.innerHTML = `<button class="filter-btn active" onclick="setFilter(this, 'todos')">Todos</button>`;
+
+  categorias.forEach(cat => {
+    container.innerHTML += ` 
+      <button class="filter-btn" onclick='setFilter(this, ${JSON.stringify(cat.nome)})'>${cat.icone || '📌'} ${cat.nome}</button>
+      `;  
+  })
+}
+
+renderCategoriasFiltro();
+
+//Pega as categorias do banco e coloca no "Navegue por Categorias" 
+async function renderCategoriasNavegue() {
+  const container = document.getElementById('categoriesGrid');
+  const categorias = await listarCategorias();
+
+  container.innerHTML = '';
+
+  categorias.forEach((cat, i) => {
+    container.innerHTML += `
+        <div class="cat-card fade-up" 
+            style="transition-delay:${i * 0.1}s; cursor:pointer"
+            onclick="setFilterByName('${cat.nome}')">
+
+          <div class="cat-icon">${cat.icone || '📌'}</div>
+          <div class="cat-name">${cat.nome}</div>
+          ${cat.descricao ? `<div class="cat-count">${cat.descricao}</div>` : ''}
+
+          <div class="cat-arrow">↗</div>
+        </div>
+      `;
+  }); 
+  document.querySelectorAll('.cat-card.fade-up').forEach(el => observer.observe(el));
+}
+renderCategoriasNavegue();
+
+async function atualizaStatsInicio() {
+  let url = getPastaBase() + '/src/Controller/EventoController.php?action=qtdAtivos';
+  
+  const response = await fetch(url);
+  const ativos   = await response.json();
+  
+  document.getElementById('totalEventos').textContent = ativos + '+';
+  document.getElementById('totalParticipantes').textContent = 0 + '+';
+}
+atualizaStatsInicio();
 // ── MODAL ──
 function openModal(nomeEvento, preco) {
   if (!currentUser) {

@@ -13,8 +13,7 @@
         $_SESSION['sucesso'] = 'Evento cadastrado com sucesso!';
         header('Location: ../../public/index.php');
         exit();
-    } else if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['editar'])) {
-        var_dump($_POST);
+    }  else if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['editar'])) {
         $service->editarEvento($_POST);
 
         $_SESSION['sucesso'] = 'Evento editado com sucesso!';
@@ -26,5 +25,32 @@
         $_SESSION['sucesso'] = 'Evento excluído com sucesso!';
         header('Location: ../../public/index.php');
         exit();
+    } else if ($_SERVER['REQUEST_METHOD'] === 'GET') {
+        $action = $_GET['action'];
+        
+        switch ($action) {
+            case 'eventos':
+                $eventos = $service->listarEventos();
+        
+                echo json_encode($eventos);
+                exit();
+                break;
+            case 'categorias':
+                $categorias = $service->listarCategorias();
+                
+                echo json_encode($categorias);
+                exit();
+                break;
+            case 'qtdAtivos':
+                $ativos = $service->retornaQtdAtivos();
+
+                echo json_encode($ativos);
+                exit();
+                break;
+            default:
+                echo '';
+                exit();
+                break;
+        }
     }
 ?>
