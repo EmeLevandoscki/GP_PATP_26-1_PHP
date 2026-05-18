@@ -50,7 +50,7 @@
     body {
       font-family:'DM Sans',sans-serif;
       background:var(--bg); color:var(--text);
-      overflow:hidden; cursor:none;
+      overflow:hidden; 
       transition:background .35s,color .35s;
     }
     /*GOOGLE*/
@@ -79,21 +79,6 @@
       background: var(--surface);
     border: 1px solid var(--border-strong);
 }
-
-    /* CURSOR */
-    #cursor {
-      width:10px; height:10px; background:var(--green-mid);
-      border-radius:50%; position:fixed; top:-100px; left:-100px;
-      pointer-events:none; z-index:9999; mix-blend-mode:screen;
-      transition:background .3s; will-change:transform;
-    }
-    #cursor-ring {
-      width:32px; height:32px; border:1.5px solid rgba(46,168,46,.5);
-      border-radius:50%; position:fixed; top:-100px; left:-100px;
-      pointer-events:none; z-index:9998; will-change:transform;
-    }
-    [data-theme="light"] #cursor { mix-blend-mode:multiply; background:var(--green-dark); }
-    [data-theme="light"] #cursor-ring { border-color:rgba(13,74,13,.4); }
 
     /* ── LAYOUT: ocupa 100vh sem overflow no body ── */
     .login-layout {

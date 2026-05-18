@@ -25,6 +25,12 @@
         $_SESSION['sucesso'] = 'Evento excluído com sucesso!';
         header('Location: ../../public/index.php');
         exit();
+    } else if($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['reservar'])) {
+        $service->realizarReserva($_POST);
+        
+        $_SESSION['sucesso'] = 'Reserva realizada com sucesso!';
+        header('Location: ../../public/index.php');
+        exit();
     } else if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         $action = $_GET['action'];
         

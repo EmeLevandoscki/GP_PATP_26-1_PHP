@@ -215,4 +215,27 @@ class EventoService
         $stmt->bindValue(':id', $id);
         $stmt->execute();
     }
+    public function realizarReserva(array $params): void
+    {
+        $sql = 'INSERT INTO 
+                    reservas (
+                        id_usuario,
+                        id_evento,
+                        data_reserva
+                    ) 
+                VALUES 
+                    (
+                        :id_usuario,
+                        :id_evento,
+                        :data_reserva
+                    )';
+
+        $stmt = $this->con->prepare($sql);
+
+        $stmt->bindValue(':id_usuario', $params['id_usuario'], PDO::PARAM_INT);
+        $stmt->bindValue(':id_evento', $params['id_evento'], PDO::PARAM_INT);
+        $stmt->bindValue(':data_reserva', $params['data_reserva']);
+
+        $stmt->execute();
+    }
 }

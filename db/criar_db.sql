@@ -62,3 +62,13 @@ CREATE TABLE eventos (
     CONSTRAINT fk_eventos_usuario FOREIGN KEY (id_usuario) REFERENCES usuarios(id),
     CONSTRAINT fk_eventos_endereco FOREIGN KEY (id_endereco) REFERENCES enderecos(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE eventos_usuarios (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    id_evento INT UNSIGNED,
+    id_usuario INT UNSIGNED,
+    data_reserva DATETIME DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT fk_eventos_usuarios_evento FOREIGN KEY (id_evento) REFERENCES eventos(id),
+    CONSTRAINT fk_eventos_usuarios_usuario FOREIGN KEY (id_usuario) REFERENCES usuarios(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

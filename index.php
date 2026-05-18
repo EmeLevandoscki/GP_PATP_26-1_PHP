@@ -199,17 +199,8 @@
       <input type="text" id="modalName" placeholder="Seu nome completo"/>
       <label>E-mail</label>
       <input type="email" id="modalEmail" placeholder="seu@email.com"/>
-      <label>Tipo de ingresso</label>
-      <select id="modalTicket">
-        <option>Entrada Gratuita</option>
-      </select>
-      <label>Quantidade</label>
-      <select id="modalQty">
-        <option>1 ingresso</option>
-        <option>2 ingressos</option>
-        <option>3 ingressos</option>
-        <option>4 ingressos</option>
-      </select>
+       <label>CPF</label>
+       <input type="text" id="modalCPF" placeholder="Seu CPF"/>
       <button class="modal-submit" onclick="submitReserva()">Confirmar Inscrição</button>
     </div>
     <div class="modal-success" id="modalSuccess">
@@ -233,6 +224,47 @@ function setFilterByName(cat) {
     });
     if (btn) btn.click();
   }, 400);
+}
+function submitReserva() {
+  const nome = document.getElementById('modalName').value.trim();
+  const email = document.getElementById('modalEmail').value.trim();
+  const cpf = document.getElementById('modalCPF').value.trim();
+
+  if (!nome || !email || !cpf) {
+    alert('Por favor, preencha todos os campos.');
+     return;
+  }
+
+  const formData = new URLSearchParams();
+
+  formData.append('reservar', '1');
+  formData.append('id_evento', id_evento);
+  formData.append('id_usuario', id_usuario);
+  //verificar: reservar para mais de um dia, caso o evento seja de mais de um dia ex semana academica
+  //acho que nao precisa de nome email e cpf. refazer
+
+
+  fetch('src/Controller/EventoController.php', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded'
+    },
+    body: formData.toString()
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.success) {
+      // Mostrar mensagem de sucesso
+      document.getElementById('modalForm').style.display = 'none';
+      document.getElementById('modalSuccess').style.display = 'block';
+    } else {
+      alert('Erro ao reservar vaga: ' + data.message);
+    }
+  })
+  .catch(error => {
+    console.error('Erro:', error);
+    alert('Ocorreu um erro ao reservar vaga. Tente novamente mais tarde.');
+  });
 }
 </script>
 </body>

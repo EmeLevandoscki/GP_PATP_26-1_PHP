@@ -83,8 +83,8 @@ function renderNav() {
 
   if (!currentUser) {
     auth.innerHTML = `
-      <a href="login.html" class="btn-nav-login">Entrar</a>
-      <a href="login.html" class="btn-nav-register">Cadastrar</a>
+      <a href="src/View/Front/html/login.html?tab=login" class="btn-nav-login">Entrar</a>
+      <a href="src/View/Front/html/login.html?tab=cadastro" class="btn-nav-register">Cadastrar</a>
     `;
     return;
   }
@@ -432,6 +432,8 @@ function openModal(nomeEvento, preco) {
   document.getElementById('modalEventName').textContent = nomeEvento;
   document.getElementById('modalName').value = currentUser.name || '';
   document.getElementById('modalEmail').value = currentUser.email || '';
+  const modalCpfEl = document.getElementById('modalCPF');
+  if (modalCpfEl) modalCpfEl.value = currentUser.cpf || '';
 
   // Atualiza opções de ingresso com preço real
   const precoNum = parseInt(preco) || 0;

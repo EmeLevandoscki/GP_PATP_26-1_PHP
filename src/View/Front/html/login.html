@@ -10,8 +10,8 @@
 </head>
 <body>
 
-<div id="cursor"></div>
-<div id="cursor-ring"></div>
+<!-- <div id="cursor"></div>
+<div id="cursor-ring"></div> -->
 <button class="corner-toggle" id="themeToggle" onclick="toggleTheme()" title="Alternar tema">☀️</button>
 <div class="toast" id="toast"></div>
 
@@ -39,7 +39,7 @@
         <div class="ls-item">
           <div class="ls-num">840<sup>+</sup></div>
           <div class="ls-label">Eventos ativos</div>
-        </div>
+          </div>
         <div class="ls-div"></div>
         <div class="ls-item">
           <div class="ls-num">12K</div>
@@ -73,19 +73,19 @@
       <!-- LOGIN -->
       <div id="formLogin" class="auth-box">
         <h3>BEM-VINDO DE VOLTA</h3>
-        <p class="auth-sub">Entre com seu e-mail e senha para acessar sua conta.</p>
+        <p class="auth-sub">Entre com seu e-mail ou CPF e senha para acessar sua conta.</p>
 
-        <div class="social-btns">
+        <!-- <div class="social-btns">
           <button class="social-login" onclick="socialLogin('Google')">
             <svg width="18" height="18" viewBox="0 0 18 18"><path fill="#EA4335" d="M9 3.48c1.69 0 2.83.73 3.48 1.34l2.54-2.48C13.46.89 11.43 0 9 0 5.48 0 2.44 2.02.96 4.96l2.91 2.26C4.6 5.05 6.62 3.48 9 3.48z"/><path fill="#4285F4" d="M17.64 9.2c0-.74-.06-1.28-.19-1.84H9v3.34h4.96c-.1.83-.64 2.08-1.84 2.92l2.84 2.2c1.7-1.57 2.68-3.88 2.68-6.62z"/><path fill="#FBBC05" d="M3.88 10.78A5.54 5.54 0 0 1 3.58 9c0-.62.11-1.22.29-1.78L.96 4.96A9.008 9.008 0 0 0 0 9c0 1.45.35 2.82.96 4.04l2.92-2.26z"/><path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.84-2.2c-.76.53-1.78.9-3.12.9-2.38 0-4.4-1.57-5.12-3.74L.97 13.04C2.45 15.98 5.48 18 9 18z"/></svg>
             Continuar com Google
           </button>
-        </div>
+        </div> -->
 
         <div class="auth-error" id="loginError"></div>
         <div class="form-group">
-          <label>E-mail</label>
-          <input type="email" id="loginEmail" placeholder="seu@email.com"/>
+          <label>E-mail / CPF</label>
+          <input type="email" id="loginEmail" placeholder="Seu e-mail ou CPF"/>
         </div>
         <div class="form-group">
           <label>Senha</label>
@@ -102,18 +102,34 @@
         <p class="auth-sub">Cadastre-se para se inscrever em eventos e receber novidades.</p>
         <div class="auth-error" id="cadError"></div>
         <div class="form-group">
-          <label>Nome completo</label>
-          <input type="text" id="cadNome" placeholder="Seu nome completo"/>
+          <label>Nome</label>
+          <input type="text" id="cadNome" placeholder="Seu nome"/>
+        </div>
+        <div class="form-group">
+          <label>Sobrenome</label>
+          <input type="text" id="cadSobrenome" placeholder="Seu sobrenome"/>
+        </div>
+        <div class="form-group">
+          <label>Senha</label>
+          <input type="password" id="cadPass" placeholder="Mínimo 6 caracteres"/>
         </div>
         <div class="form-group">
           <label>E-mail</label>
           <input type="email" id="cadEmail" placeholder="seu@email.com"/>
         </div>
         <div class="form-group">
-          <label>Senha</label>
-          <input type="password" id="cadPass" placeholder="Mínimo 6 caracteres"/>
+          <label>Telefone</label>
+          <input type="telefone" id="cadTelefone" placeholder="Seu telefone"/>
         </div>
-        <div class="form-group" style="margin-bottom:8px"><label>Tipo de conta</label></div>
+        <div class="form-group">
+          <label>CPF</label>
+          <input type="cpf" id="cadCPF" placeholder="Seu CPF"/>
+        </div>
+        <!-- data_nascimento
+        foto_path
+        created_at -->
+        
+        <!-- <div class="form-group" style="margin-bottom:8px"><label>Tipo de conta</label></div>
         <div class="role-selector">
           <div class="role-card selected" id="roleCliente" onclick="selectRole('cliente')">
             <div class="role-icon">👤</div>
@@ -125,7 +141,7 @@
             <div class="role-info"><span class="role-name">Organizador</span><span class="role-desc">Criar eventos</span></div>
             <div class="role-check">✓</div>
           </div>
-        </div>
+        </div> -->
         <div class="form-group" id="orgFieldGroup" style="display:none">
           <label>Nome da organização</label>
           <input type="text" id="cadOrg" placeholder="Ex: IDEAU, empresa, entidade..."/>
@@ -140,7 +156,7 @@
 
 <script>
 /* ── CURSOR ── */
-(function(){
+/*(function(){
   const cur  = document.getElementById('cursor');
   const ring = document.getElementById('cursor-ring');
   let mx=0, my=0, rx=0, ry=0;
@@ -169,7 +185,7 @@
     requestAnimationFrame(loop);
   }
 })();
-
+*/
 /* ── TEMA ── */
 function toggleTheme(){
   const html = document.documentElement;
@@ -196,6 +212,18 @@ function showToast(msg){
 /* ── AUTH ── */
 let selectedRole = 'cliente';
 
+/* ── TAB VIA URL ── */
+(function () {
+  const params = new URLSearchParams(window.location.search);
+  const tab = params.get('tab');
+
+  if (tab === 'cadastro') {
+    switchTab('cadastro');
+  } else {
+    switchTab('login');
+  }
+})();
+
 function switchTab(tab){
   const isL = tab==='login';
   document.getElementById('tabLogin').classList.toggle('active', isL);
@@ -220,22 +248,27 @@ function showError(id, msg){
   el.textContent = msg; el.classList.add('show');
   setTimeout(()=>el.classList.remove('show'), 4000);
 }
-
 function doLogin(){
-  const email = document.getElementById('loginEmail').value.trim();
+  const emailCPF = document.getElementById('loginEmail').value.trim();
   const pass  = document.getElementById('loginPass').value;
 
-  if(!email || !pass){
+  if(!emailCPF || !pass){
     showError('loginError','Preencha todos os campos.');
     return;
   }
 
-  fetch('LoginController.php', {
+  const formData = new URLSearchParams();
+
+  formData.append('login', '1');
+  formData.append('emailCPF', emailCPF);
+  formData.append('senha', pass);
+
+  fetch('../../../../src/Controller/UsuarioController.php', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/x-www-form-urlencoded'
     },
-    body: `email=${encodeURIComponent(email)}&senha=${encodeURIComponent(pass)}`
+    body: formData.toString()
   })
   .then(res => res.json())
   .then(data => {
@@ -244,41 +277,157 @@ function doLogin(){
       return;
     }
 
-    // salva sessão no front
-    sessionStorage.setItem('ideau-session', JSON.stringify(data.user));
+    const user = data.user || {};
+    const nome = [user.nome, user.sobrenome].filter(Boolean).join(' ').trim();
+    const initials = nome.split(' ').map(w => w.charAt(0).toUpperCase()).join('').slice(0, 2);
+    const role = user.cargo || 'cliente';
+    const roleLabel = role === 'organizador' ? 'Organizador' : 'Cliente';
+
+    const currentUser = {
+      name: nome || user.email || 'Usuário',
+      initials: initials || 'U',
+      email: user.email || '',
+      role,
+      roleLabel,
+      org: '',
+      cpf: user.cpf || ''
+    };
+
+    localStorage.setItem('ideau-user', JSON.stringify(currentUser));
 
     showToast('✅ Bem-vindo!');
-    setTimeout(()=>{ window.location.href='index.php'; }, 1000);
+
+    setTimeout(() => {
+      window.location.href = '../../../../index.php';
+    }, 1200);
   })
-  .catch(() => {
-    showError('loginError','Erro ao conectar com servidor.');
+  .catch((error) => {
+    console.log(error);
+    showError('loginError', 'Erro ao fazer login.');
   });
 }
 
+function validarCPF(cpf) {
+  cpf = cpf.replace(/[^\d]+/g, '');
+
+  if (cpf.length !== 11) {
+    return false;
+  }
+
+  // elimina CPFs inválidos conhecidos
+  if (
+    cpf === '00000000000' ||
+    cpf === '11111111111' ||
+    cpf === '22222222222' ||
+    cpf === '33333333333' ||
+    cpf === '44444444444' ||
+    cpf === '55555555555' ||
+    cpf === '66666666666' ||
+    cpf === '77777777777' ||
+    cpf === '88888888888' ||
+    cpf === '99999999999'
+  ) {
+    return false;
+  }
+
+  let soma = 0;
+
+  // primeiro dígito
+  for (let i = 0; i < 9; i++) {
+    soma += parseInt(cpf.charAt(i)) * (10 - i);
+  }
+
+  let resto = (soma * 10) % 11;
+
+  if (resto === 10 || resto === 11) {
+    resto = 0;
+  }
+
+  if (resto !== parseInt(cpf.charAt(9))) {
+    return false;
+  }
+
+  soma = 0;
+
+  // segundo dígito
+  for (let i = 0; i < 10; i++) {
+    soma += parseInt(cpf.charAt(i)) * (11 - i);
+  }
+
+  resto = (soma * 10) % 11;
+
+  if (resto === 10 || resto === 11) {
+    resto = 0;
+  }
+
+  if (resto !== parseInt(cpf.charAt(10))) {
+    return false;
+  }
+
+  return true;
+}
+
 function doCadastro(){
-  const nome  = document.getElementById('cadNome').value.trim();
-  const email = document.getElementById('cadEmail').value.trim();
-  const pass  = document.getElementById('cadPass').value;
-  const orgEl = document.getElementById('cadOrg');
-  const org   = orgEl ? orgEl.value.trim() : '';
-  if(!nome||!email||!pass){ showError('cadError','Preencha todos os campos.'); return; }
-  if(pass.length<6){ showError('cadError','A senha deve ter no mínimo 6 caracteres.'); return; }
-  const users = JSON.parse(localStorage.getItem('ideau-users')||'[]');
-  if(users.find(u=>u.email===email)){ showError('cadError','Este e-mail já está cadastrado.'); return; }
-  const initials = nome.split(' ').slice(0,2).map(w=>w[0].toUpperCase()).join('');
-  const newUser  = {
-    name:nome, initials, email, pass, role:selectedRole,
-    roleLabel: selectedRole==='cliente'?'Cliente':'Organizador',
-    org: selectedRole==='organizador'?org:''
-  };
-  users.push(newUser);
-  localStorage.setItem('ideau-users', JSON.stringify(users));
-  sessionStorage.setItem('ideau-session', JSON.stringify({
-    name:newUser.name, initials:newUser.initials, email:newUser.email,
-    role:newUser.role, roleLabel:newUser.roleLabel, org:newUser.org
-  }));
-  showToast('✅ Conta criada! Bem-vindo(a), '+nome.split(' ')[0]+'!');
-  setTimeout(()=>{ window.location.href='index.html'; }, 1000);
+  const nome         = document.getElementById('cadNome').value.trim();
+  const sobrenome    = document.getElementById('cadSobrenome').value.trim();
+  const email        = document.getElementById('cadEmail').value.trim();
+  const senha        = document.getElementById('cadPass').value;
+  const telefone     = document.getElementById('cadTelefone').value.trim();
+  const cpf          = document.getElementById('cadCPF').value.trim();
+
+  if(!nome || !sobrenome || !email || !senha){
+    showError('cadError', 'Preencha todos os campos obrigatórios.');
+    return;
+  }
+
+  if(senha.length < 6){
+    showError('cadError', 'A senha deve ter no mínimo 6 caracteres.');
+    return;
+  }
+
+  if(!validarCPF(cpf)){
+    showError('cadError', 'CPF inválido.');
+    return;
+  }
+
+  const formData = new URLSearchParams();
+
+  formData.append('salvar', '1');
+  formData.append('nome', nome);
+  formData.append('sobrenome', sobrenome);
+  formData.append('email', email);
+  formData.append('telefone', telefone);
+  formData.append('cpf', cpf);
+  formData.append('senha', senha);
+
+  // campos default
+  formData.append('cargo', 'cliente');
+  formData.append('foto_path', '');
+  formData.append('data_nascimento', '');
+
+  fetch('../../../../src/Controller/UsuarioController.php', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded'
+    },
+    body: formData.toString()
+  })
+  .then(res => res.json())
+  .then(data => {
+    if(!data.success){
+      showError('cadError', data.message);
+      return;
+    }
+    showToast('✅ Conta criada com sucesso!');
+
+    setTimeout(() => {
+      window.location.href = '../../../../index.php';
+    }, 1200);
+  })
+  .catch((error) => {
+    console.log(error);
+    showError('cadError', 'Erro ao cadastrar usuário.');
+  });
 }
 </script>
 </body>
