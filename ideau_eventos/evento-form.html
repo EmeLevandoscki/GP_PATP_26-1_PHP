@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cadastrar Evento — IDEAU Eventos</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,700;1,300&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/app.css" />
+</head>
+<body data-page="event-form" class="admin-page">
+  <aside class="admin-sidebar">
+    <a class="brand admin-brand" href="dashboard.html"><span class="brand-mark">ID</span><span class="brand-text"><strong>IDEAU Eventos</strong><small>Organizador</small></span></a>
+    <nav class="admin-nav">
+      <a href="dashboard.html">Dashboard</a>
+      <a href="eventos.html">Eventos</a>
+      <a class="active" href="evento-form.html">Novo evento</a>
+      <a href="inscritos.html">Inscritos</a>
+      <a href="index.html" target="_blank">Ver site público</a>
+    </nav>
+    <button class="btn btn-danger full" id="logoutButton" type="button">Sair</button>
+  </aside>
+
+  <main class="admin-main">
+    <header class="admin-topbar">
+      <div><p class="eyebrow">Cadastro</p><h1 id="formPageTitle">Novo evento</h1></div>
+      <div class="dashboard-actions"><a href="eventos.html" class="btn btn-secondary">Voltar para eventos</a></div>
+    </header>
+
+    <form id="eventForm" class="admin-form">
+      <input type="hidden" id="eventId">
+      <section class="panel-card">
+        <div class="panel-heading"><h2>Informações principais</h2><p class="muted">Dados que aparecem na página pública do evento.</p></div>
+        <div class="form-grid">
+          <label class="form-field wide"><span>Título do evento *</span><input id="eventTitle" required placeholder="Ex.: Semana Acadêmica de Direito"></label>
+          <label class="form-field"><span>Categoria *</span><select id="eventCategory" required><option value="academico">Acadêmico</option><option value="institucional">Institucional</option><option value="comunidade">Comunidade</option><option value="cultural">Cultural</option><option value="esportivo">Esportivo</option></select></label>
+          <label class="form-field"><span>Data *</span><input id="eventDate" type="date" required></label>
+          <label class="form-field"><span>Horário *</span><input id="eventTime" type="time" required></label>
+          <label class="form-field"><span>Vagas *</span><input id="eventSeats" type="number" min="1" required placeholder="100"></label>
+          <label class="form-field"><span>Cidade *</span><input id="eventCity" required placeholder="Passo Fundo"></label>
+          <label class="form-field wide"><span>Local *</span><input id="eventLocation" required placeholder="Auditório principal"></label>
+          <label class="form-field wide"><span>Imagem de capa — URL opcional</span><input id="eventCover" type="url" placeholder="https://..."></label>
+          <label class="form-field wide"><span>Resumo curto *</span><textarea id="eventSummary" required rows="3" placeholder="Texto curto usado nos cards de divulgação."></textarea></label>
+          <label class="form-field wide"><span>Descrição completa *</span><textarea id="eventDescription" required rows="7" placeholder="Descreva objetivo, programação, público-alvo, regras, certificação, carga horária etc."></textarea></label>
+        </div>
+      </section>
+
+      <section class="panel-card">
+        <div class="panel-heading"><h2>Campos da inscrição</h2><p class="muted">Aqui o organizador escolhe quais dados o participante deverá informar.</p></div>
+        <div class="checks-grid">
+          <label class="check-card"><input id="fieldCpf" type="checkbox" checked><span>Solicitar CPF</span></label>
+          <label class="check-card"><input id="fieldEmail" type="checkbox" checked><span>Solicitar e-mail</span></label>
+          <label class="check-card"><input id="fieldPhone" type="checkbox" checked><span>Solicitar telefone</span></label>
+          <label class="check-card"><input id="fieldCourse" type="checkbox" checked><span>Permitir seleção de curso</span></label>
+          <label class="check-card"><input id="fieldCommunity" type="checkbox" checked><span>Permitir comunidade externa</span></label>
+          <label class="check-card"><input id="fieldNotes" type="checkbox"><span>Campo de observações</span></label>
+        </div>
+        <label class="form-field wide top-gap"><span>Campos extras opcionais</span><textarea id="eventExtraFields" rows="4" placeholder="Um campo por linha. Ex.:\nMatrícula|required\nEmpresa\nNecessidade especial"></textarea><small>Use <b>|required</b> no final para tornar o campo obrigatório.</small></label>
+      </section>
+
+      <section class="panel-card">
+        <div class="panel-heading"><h2>Publicação</h2><p class="muted">Evento publicado aparece na página inicial e possui link público individual.</p></div>
+        <label class="check-card inline-check"><input id="eventPublished" type="checkbox" checked><span>Publicar evento agora</span></label>
+        <div class="form-actions"><button class="btn btn-primary" type="submit">Salvar evento</button><a href="eventos.html" class="btn btn-secondary">Cancelar</a></div>
+      </section>
+    </form>
+  </main>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="assets/js/app.js"></script>
+</body>
+</html>

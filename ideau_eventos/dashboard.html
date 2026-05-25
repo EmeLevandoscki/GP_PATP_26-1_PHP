@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard — IDEAU Eventos</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,700;1,300&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/app.css" />
+</head>
+<body data-page="dashboard" class="admin-page">
+  <aside class="admin-sidebar">
+    <a class="brand admin-brand" href="dashboard.html"><span class="brand-mark">ID</span><span class="brand-text"><strong>IDEAU Eventos</strong><small>Organizador</small></span></a>
+    <nav class="admin-nav">
+      <a class="active" href="dashboard.html">Dashboard</a>
+      <a href="eventos.html">Eventos</a>
+      <a href="evento-form.html">Novo evento</a>
+      <a href="inscritos.html">Inscritos</a>
+      <a href="index.html" target="_blank">Ver site público</a>
+    </nav>
+    <button class="btn btn-danger full" id="logoutButton" type="button">Sair</button>
+  </aside>
+
+  <main class="admin-main">
+    <header class="admin-topbar">
+      <div><p class="eyebrow">Visão geral</p><h1>Dashboard</h1></div>
+      <div class="dashboard-actions"><a href="evento-form.html" class="btn btn-primary">Criar evento</a><a href="inscritos.html" class="btn btn-secondary">Ver inscritos</a></div>
+    </header>
+
+    <section class="metrics-grid">
+      <article class="metric-card"><span class="metric-value" id="metricEvents">0</span><span class="metric-label">Eventos cadastrados</span></article>
+      <article class="metric-card"><span class="metric-value" id="metricPublished">0</span><span class="metric-label">Eventos publicados</span></article>
+      <article class="metric-card"><span class="metric-value" id="metricRegistrations">0</span><span class="metric-label">Inscrições totais</span></article>
+      <article class="metric-card"><span class="metric-value" id="metricSeats">0%</span><span class="metric-label">Ocupação média</span></article>
+    </section>
+
+    <section class="admin-grid two-cols">
+      <article class="panel-card">
+        <div class="panel-heading"><h2>Eventos recentes</h2><a href="eventos.html">Gerenciar</a></div>
+        <div id="dashboardEvents" class="mini-list"></div>
+      </article>
+      <article class="panel-card">
+        <div class="panel-heading"><h2>Últimas inscrições</h2><a href="inscritos.html">Ver todas</a></div>
+        <div id="dashboardRegistrations" class="mini-list"></div>
+      </article>
+    </section>
+  </main>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="assets/js/app.js"></script>
+</body>
+</html>

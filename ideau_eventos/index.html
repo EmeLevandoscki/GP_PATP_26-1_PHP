@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>IDEAU Eventos</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,700;1,300&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/app.css" />
+</head>
+<body data-page="home">
+  <header class="site-header">
+    <a class="brand" href="index.html" aria-label="Página inicial IDEAU Eventos">
+      <span class="brand-mark">LOGO</span>
+      <span class="brand-text"><strong>IDEAU Eventos</strong><small>Faculdades IDEAU</small></span>
+    </a>
+    <button class="menu-toggle" id="menuToggle" type="button" aria-label="Abrir menu" aria-expanded="false">Menu</button>
+    <nav class="main-nav" id="mainNav">
+      <a href="#eventos">Eventos</a>
+      <a href="#como-funciona">Inscrição</a>
+      <a href="login.html" class="nav-cta">Organizador</a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="hero-content">
+        <p class="eyebrow">Plataforma institucional de eventos</p>
+        <h1>EVENTOS<br><span class="outline-word">IDEAU</span></h1>
+        <p class="hero-copy">Encontre eventos acadêmicos, institucionais e abertos à comunidade. Cada evento possui uma página própria para divulgação e inscrição.</p>
+        <div class="hero-actions">
+          <a href="#eventos" class="btn btn-primary">Ver eventos</a>
+          <a href="login.html" class="btn btn-secondary">Área do organizador</a>
+        </div>
+      </div>
+      <aside class="hero-panel" aria-label="Resumo da plataforma">
+        <div><span class="panel-number" id="statEventos">0</span><span class="panel-label">Eventos publicados</span></div>
+        <div><span class="panel-number" id="statInscricoes">0</span><span class="panel-label">Inscrições registradas</span></div>
+        <div><span class="panel-number">100%</span><span class="panel-label">Responsivo</span></div>
+      </aside>
+    </section>
+
+    <section id="eventos" class="section-block">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow">Agenda</p>
+          <h2>Próximos eventos</h2>
+        </div>
+        <div class="toolbar compact">
+          <label class="search-box">
+            <span class="sr-only">Buscar evento</span>
+            <input id="searchInput" type="search" placeholder="Buscar por nome, curso, cidade ou local" />
+          </label>
+          <label class="select-box">
+            <span class="sr-only">Filtrar categoria</span>
+            <select id="categoryFilter">
+              <option value="todos">Todas as categorias</option>
+              <option value="academico">Acadêmico</option>
+              <option value="institucional">Institucional</option>
+              <option value="comunidade">Comunidade</option>
+              <option value="cultural">Cultural</option>
+              <option value="esportivo">Esportivo</option>
+            </select>
+          </label>
+        </div>
+      </div>
+      <div class="events-grid" id="eventsGrid"></div>
+    </section>
+
+    <section id="como-funciona" class="section-block surface-section">
+      <div class="section-head narrow">
+        <p class="eyebrow">Fluxo público</p>
+        <h2>Como a inscrição funciona</h2>
+        <p class="muted big">O organizador define quais dados serão solicitados em cada evento. A página pública exibe apenas os campos configurados, evitando formulário pesado e genérico.</p>
+      </div>
+      <div class="steps-grid">
+        <article class="info-card"><span class="step-number">01</span><h3>Organizador cria o evento</h3><p>Define título, descrição, data, vagas, categoria, imagem e publicação.</p></article>
+        <article class="info-card"><span class="step-number">02</span><h3>Configura os campos</h3><p>Escolhe CPF, e-mail, telefone, curso, comunidade e campos extras.</p></article>
+        <article class="info-card"><span class="step-number">03</span><h3>Divulga o link</h3><p>Cada evento possui link individual, como <code>evento.html?id=...</code>.</p></article>
+        <article class="info-card"><span class="step-number">04</span><h3>Acompanha inscritos</h3><p>O painel mostra totais, ocupação, inscritos recentes e exportação CSV.</p></article>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div><strong>IDEAU Eventos</strong><p>Protótipo front-end separado em páginas públicas e páginas de organizador.</p></div>
+    <div class="footer-links"><a href="login.html">Organizador</a><a href="#eventos">Eventos</a></div>
+  </footer>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="assets/js/app.js"></script>
+</body>
+</html>
