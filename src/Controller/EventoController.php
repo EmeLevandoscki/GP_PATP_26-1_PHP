@@ -32,13 +32,20 @@
         header('Location: ../../public/index.php');
         exit();
     } else if ($_SERVER['REQUEST_METHOD'] === 'GET') {
-        $action = $_GET['action'];
+        $action = $_GET['action'] ?? '';
         
         switch ($action) {
             case 'eventos':
                 $eventos = $service->listarEventos();
         
                 echo json_encode($eventos);
+                exit();
+                break;
+            case 'detalhes':
+                $id = isset($_GET['id']) ? (int) $_GET['id'] : 0;
+                $evento = $service->retornaDetalhesEvento($id);
+
+                echo json_encode($evento);
                 exit();
                 break;
             case 'categorias':

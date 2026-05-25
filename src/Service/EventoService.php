@@ -103,6 +103,50 @@ class EventoService
 
         return $stmt->fetchAll(PDO::FETCH_OBJ);
     }
+    public function retornaDetalhesEvento(int $id): ?array
+    {
+        $sql = 'SELECT
+                    e.id,
+                    e.titulo,
+                    e.descricao,
+                    e.valor,
+                    e.data_inicio,
+                    e.data_fim,
+                    e.foto_path,
+                    e.destaque,
+                    cat.nome AS categoria,
+                    ender.nome_local,
+                    ender.cidade,
+                    ender.estado
+                FROM eventos AS e
+                LEFT JOIN categorias AS cat ON cat.id = e.id_categoria
+                LEFT JOIN enderecos AS ender ON ender.id = e.id_endereco
+                WHERE e.id = :id;';
+
+        $stmt = $this->con->prepare($sql);
+        $stmt->bindValue(':id', $id, PDO::PARAM_INT);
+        $stmt->execute();
+
+        $result = $stmt->fetch(PDO::FETCH_OBJ);
+        if (!$result) {
+            return null;
+        }
+
+        return [
+            'id' => $result->id,
+            'titulo' => $result->titulo,
+            'descricao' => $result->descricao,
+            'valor' => $result->valor,
+            'data_inicio' => $result->data_inicio,
+            'data_fim' => $result->data_fim,
+            'foto_path' => $result->foto_path,
+            'categoria' => $result->categoria,
+            'nome_local' => $result->nome_local,
+            'cidade' => $result->cidade,
+            'estado' => $result->estado,
+            'destaque' => $result->destaque,
+        ];
+    }
     public function retornaQtdAtivos() : string
     {
         $sql = 'SELECT COUNT(*) AS total_eventos FROM eventos WHERE id_status = 1;';

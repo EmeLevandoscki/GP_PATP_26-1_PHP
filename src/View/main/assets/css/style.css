@@ -1248,13 +1248,15 @@ section {
 .card-footer {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-end;
+  gap: 1rem;
   margin-top: 18px;
   padding-top: 14px;
   border-top: 1px solid var(--border);
 }
 
 .card-price {
+  display: none;
   font-family: 'Bebas Neue', sans-serif;
   font-size: 1.4rem;
   color: var(--gold);

@@ -210,6 +210,34 @@
     </div>
   </div>
 </div>
+
+<div class="modal-overlay" id="eventDetailOverlay" onclick="closeDetailOverlay(event)">
+  <div class="modal event-detail-modal">
+    <button class="modal-close" onclick="closeEventDetails()">✕</button>
+    <div class="detail-header">
+      <h3 id="detailEventTitle">Detalhes do Evento</h3>
+      <div class="detail-category" id="detailEventCategory"></div>
+      <div class="detail-meta" id="detailEventMeta"></div>
+    </div>
+    <div class="detail-body">
+      <div class="detail-image-wrapper">
+        <img id="detailEventImage" src="" alt="Evento" />
+      </div>
+      <div class="detail-text">
+        <div class="detail-section">
+          <h4>Sobre o evento</h4>
+          <div class="detail-description" id="detailEventDescription"></div>
+        </div>
+        <div class="detail-section">
+          <h4>Atividades</h4>
+          <div id="detailScheduleList" class="detail-schedule-list"></div>
+        </div>
+      </div>
+    </div>
+    <button class="modal-submit" id="detailReserveBtn" onclick="openModalFromDetails()">Inscrever-se</button>
+  </div>
+</div>
+
 <script>
   //Pegando o nome da pasta base, isso é pq o nome da pasta base do projeto no git é diferente do nome da pasta na hostinger
   const PASTA_BASE = "<?php echo dirname($_SERVER['SCRIPT_NAME']) ?>";
@@ -236,7 +264,6 @@ function submitReserva() {
   }
 
   const formData = new URLSearchParams();
-
   formData.append('reservar', '1');
   formData.append('id_evento', id_evento);
   formData.append('id_usuario', id_usuario);

@@ -373,12 +373,8 @@ function renderEvents(lista) {
         <h3 class="card-title">${ev.titulo}</h3>
         <p class="card-desc">${ev.desc}</p>
         <div class="card-footer">
-          <div class="card-price">
-            ${ev.precoNum === 0 ? 'Gratuito' : ev.preco}
-            ${ev.precoNum > 0 ? '<small>/ ingresso</small>' : ''}
-          </div>
-          <button class="card-btn" onclick="openModal('${ev.titulo.replace(/'/g, "\\'")}', '${ev.precoNum}')">
-            ${ev.precoNum === 0 ? 'Inscrever-se' : 'Comprar'}
+          <button class="card-btn" onclick="openModal('${ev.titulo.replace(/'/g, "\\'")}')">
+            Inscrever-se
           </button>
         </div>
       </div>
@@ -397,7 +393,7 @@ function renderEvents(lista) {
 filterEvents();
 
 // ── MODAL ──
-function openModal(nomeEvento, preco) {
+function openModal(nomeEvento) {
   if (!currentUser) {
     showToast('Faça login para reservar ingressos!');
     setTimeout(() => { window.location.href = 'login.html'; }, 1500);
@@ -407,19 +403,9 @@ function openModal(nomeEvento, preco) {
   document.getElementById('modalName').value = currentUser.name || '';
   document.getElementById('modalEmail').value = currentUser.email || '';
 
-  // Atualiza opções de ingresso com preço real
-  const precoNum = parseInt(preco) || 0;
   const sel = document.getElementById('modalTicket');
   if (sel) {
-    if (precoNum === 0) {
-      sel.innerHTML = '<option>Entrada Gratuita</option>';
-    } else {
-      sel.innerHTML = `
-        <option>Pista — R$ ${precoNum}</option>
-        <option>Área VIP — R$ ${precoNum * 2}</option>
-        <option>Camarote — R$ ${precoNum * 4}</option>
-      `;
-    }
+    sel.innerHTML = '<option>Entrada Gratuita</option>';
   }
 
   document.getElementById('modalForm').style.display = 'block';

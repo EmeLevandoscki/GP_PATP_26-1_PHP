@@ -188,8 +188,10 @@ async function listarEventos() {
     dia: retornaDia(e.data_inicio),
     mes: retornaMes(e.data_inicio),
     local: e.nome_local,
-    cidade: e.cidade, estado: e.estado,
-    preco: '0',//e.preco, não será implementado com preço
+    cidade: e.cidade,
+    estado: e.estado,
+    preco: 0,
+    precoNum: 0,
     desc: e.descricao,
     img: e.foto_path,
     destaque: e.destaque
@@ -331,7 +333,7 @@ function renderEvents(lista) {
   }
 
   grid.innerHTML = lista.map(ev => `
-    <div class="event-card fade-up">
+    <div class="event-card fade-up" onclick="openEventDetails(${ev.id})" role="button" tabindex="0">
       <div class="card-img">
         <img src="${ev.img}" alt="${ev.titulo}" loading="lazy" onerror="this.onerror=null; this.src='${getPastaBase()}/uploads/foto_generica_1.png'" />
         <span class="card-tag">${ev.categoria}</span>
@@ -348,11 +350,7 @@ function renderEvents(lista) {
         <h3 class="card-title">${ev.titulo}</h3>
         <p class="card-desc">${ev.desc}</p>
         <div class="card-footer">
-          <div class="card-price">
-            ${ev.preco == 0 ? '' : ev.preco}
-            ${ev.preco > 0 ? '<small>/ ingresso</small>' : ''}
-          </div>
-          <button class="card-btn" onclick="openModal('${ev.titulo.replace(/'/g, "\\'")}', '${ev.precoNum}')">
+          <button class="card-btn" onclick="event.stopPropagation(); openModal('${ev.titulo.replace(/'/g, "\\'")}')">
             Inscrever-se
           </button>
         </div>
@@ -366,6 +364,104 @@ function renderEvents(lista) {
       setTimeout(() => el.classList.add('visible'), i * 60);
     });
   });
+}
+
+let currentDetailEvent = null;
+
+async function openEventDetails(eventoId) {
+  try {
+    const response = await fetch(getPastaBase() + '/src/Controller/EventoController.php?action=detalhes&id=' + encodeURIComponent(eventoId));
+    const evento = await response.json();
+
+    if (!evento || !evento.id) {
+      showToast('Evento não encontrado.');
+      return;
+    }
+
+    currentDetailEvent = evento;
+    renderEventDetails(evento);
+    document.getElementById('eventDetailOverlay').classList.add('open');
+  } catch (error) {
+    console.error(error);
+    showToast('Erro ao carregar detalhes do evento.');
+  }
+}
+
+function renderEventDetails(evento) {
+  document.getElementById('detailEventTitle').textContent = evento.titulo || 'Detalhes do evento';
+  document.getElementById('detailEventCategory').textContent = evento.categoria || '';
+  document.getElementById('detailEventMeta').innerHTML = `
+    <span>📍 ${evento.cidade || ''}${evento.nome_local ? ' • ' + evento.nome_local : ''}</span>
+    <span>🗓️ ${formatDateRange(evento.data_inicio, evento.data_fim)}</span>
+  `;
+  document.getElementById('detailEventImage').src = evento.foto_path || getPastaBase() + '/uploads/foto_generica_1.png';
+  document.getElementById('detailEventImage').alt = evento.titulo || 'Evento';
+
+  const description = evento.descricao || 'Descrição não disponível.';
+  document.getElementById('detailEventDescription').innerHTML = description
+    .split(/\r?\n/)
+    .filter(Boolean)
+    .map(line => `<p>${line}</p>`)
+    .join('');
+
+  const scheduleContainer = document.getElementById('detailScheduleList');
+  const scheduleItems = extractScheduleItems(description);
+
+  if (scheduleItems.length) {
+    scheduleContainer.innerHTML = scheduleItems.map(item => `
+      <div class="detail-schedule-item">
+        <div class="detail-schedule-time">${item.time}</div>
+        <div class="detail-schedule-content">
+          <strong>${item.title}</strong>
+          <p>${item.description}</p>
+        </div>
+      </div>
+    `).join('');
+  } else {
+    scheduleContainer.innerHTML = '<p class="detail-empty">A programação detalhada do evento será exibida aqui quando disponível.</p>';
+  }
+}
+
+function extractScheduleItems(text) {
+  const lines = text.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+  const items = [];
+
+  lines.forEach(line => {
+    const parts = line.split(/-+/).map(p => p.trim()).filter(Boolean);
+    if (parts.length >= 2 && /dia|Dia|\d{1,2}:\d{2}|horas|h/.test(line)) {
+      items.push({
+        time: parts[0],
+        title: parts[1],
+        description: parts.slice(2).join(' - ') || ''
+      });
+    }
+  });
+
+  return items;
+}
+
+function formatDateRange(start, end) {
+  if (!start) return '';
+  const options = { day: '2-digit', month: 'short' };
+  const startDate = new Date(start).toLocaleDateString('pt-BR', options);
+  const endDate = end ? new Date(end).toLocaleDateString('pt-BR', options) : null;
+
+  return endDate && startDate !== endDate ? `${startDate} — ${endDate}` : startDate;
+}
+
+function closeEventDetails() {
+  document.getElementById('eventDetailOverlay').classList.remove('open');
+}
+
+function closeDetailOverlay(e) {
+  if (e.target === document.getElementById('eventDetailOverlay')) {
+    closeEventDetails();
+  }
+}
+
+function openModalFromDetails() {
+  if (!currentDetailEvent) return;
+  openModal(currentDetailEvent.titulo);
 }
 
 // Inicializar eventos
@@ -423,7 +519,7 @@ async function atualizaStatsInicio() {
 }
 atualizaStatsInicio();
 // ── MODAL ──
-function openModal(nomeEvento, preco) {
+function openModal(nomeEvento) {
   if (!currentUser) {
     showToast('Faça login para reservar ingressos!');
     setTimeout(() => { window.location.href = 'login.html'; }, 1500);
@@ -435,19 +531,9 @@ function openModal(nomeEvento, preco) {
   const modalCpfEl = document.getElementById('modalCPF');
   if (modalCpfEl) modalCpfEl.value = currentUser.cpf || '';
 
-  // Atualiza opções de ingresso com preço real
-  const precoNum = parseInt(preco) || 0;
   const sel = document.getElementById('modalTicket');
   if (sel) {
-    if (precoNum === 0) {
-      sel.innerHTML = '<option>Entrada Gratuita</option>';
-    } else {
-      sel.innerHTML = `
-        <option>Pista — R$ ${precoNum}</option>
-        <option>Área VIP — R$ ${precoNum * 2}</option>
-        <option>Camarote — R$ ${precoNum * 4}</option>
-      `;
-    }
+    sel.innerHTML = '<option>Entrada Gratuita</option>';
   }
 
   document.getElementById('modalForm').style.display = 'block';
