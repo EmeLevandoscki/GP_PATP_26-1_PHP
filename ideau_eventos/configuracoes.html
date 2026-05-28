@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Configurações — IDEAU Eventos</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,700;1,300&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/app.css" />
+</head>
+<body data-page="settings" class="admin-page">
+  <aside class="admin-sidebar">
+    <a class="brand admin-brand" href="dashboard.html"><span class="brand-mark">ID</span><span class="brand-text"><strong>IDEAU Eventos</strong><small>Organizador</small></span></a>
+    <nav class="admin-nav">
+      <a href="dashboard.html">Dashboard</a>
+      <a href="eventos.html">Eventos</a>
+      <a href="evento-form.html">Novo evento</a>
+      <a href="inscritos.html">Inscritos</a>
+      <a href="relatorios.html">Relatórios</a>
+      <a href="index.html" target="_blank">Ver site público</a>
+      <a class="active" href="configuracoes.html">Configurações</a>
+    </nav>
+    <button class="btn btn-danger full" id="logoutButton" type="button">Sair</button>
+  </aside>
+
+  <main class="admin-main">
+    <header class="admin-topbar">
+      <div><p class="eyebrow">Padrões do sistema</p><h1>Configurações</h1></div>
+      <div class="dashboard-actions"><a href="evento-form.html" class="btn btn-primary">Criar evento</a></div>
+    </header>
+
+    <form id="settingsForm" class="admin-form">
+      <section class="panel-card">
+        <div class="panel-heading">
+          <div>
+            <h2>Campos padrão por público</h2>
+            <p class="muted">Defina quais campos virão marcados automaticamente ao criar um novo evento de graduação ou de escola.</p>
+          </div>
+          <button class="btn btn-light small" id="resetSettingsButton" type="button">Restaurar padrões</button>
+        </div>
+
+        <div class="settings-grid">
+          <article class="settings-card">
+            <p class="eyebrow">Graduação</p>
+            <h3>Inscrição acadêmica</h3>
+            <p class="muted">Para eventos voltados a alunos da graduação, cursos e comunidade externa.</p>
+            <div class="checks-grid compact-checks">
+              <label class="check-card"><input id="settingsGradCpf" type="checkbox"><span>CPF</span></label>
+              <label class="check-card"><input id="settingsGradEmail" type="checkbox"><span>E-mail</span></label>
+              <label class="check-card"><input id="settingsGradPhone" type="checkbox"><span>Telefone</span></label>
+              <label class="check-card"><input id="settingsGradCourse" type="checkbox"><span>Curso</span></label>
+              <label class="check-card"><input id="settingsGradCommunity" type="checkbox"><span>Comunidade externa</span></label>
+              <label class="check-card"><input id="settingsGradNotes" type="checkbox"><span>Observações</span></label>
+            </div>
+            <label class="form-field wide top-gap"><span>Campos extras para graduação</span><textarea id="settingsGradExtras" rows="4" placeholder="Um campo por linha. Ex.:\nMatrícula|required\nEmpresa"></textarea></label>
+          </article>
+
+          <article class="settings-card">
+            <p class="eyebrow">Escola</p>
+            <h3>Inscrição escolar</h3>
+            <p class="muted">Para eventos onde um responsável informa os dados do educando.</p>
+            <div class="checks-grid compact-checks">
+              <label class="check-card"><input id="settingsSchoolResponsibleName" type="checkbox"><span>Nome do responsável</span></label>
+              <label class="check-card"><input id="settingsSchoolStudentName" type="checkbox"><span>Nome do educando</span></label>
+              <label class="check-card"><input id="settingsSchoolStudentClass" type="checkbox"><span>Turma do educando</span></label>
+              <label class="check-card"><input id="settingsSchoolCpf" type="checkbox"><span>CPF</span></label>
+              <label class="check-card"><input id="settingsSchoolEmail" type="checkbox"><span>E-mail</span></label>
+              <label class="check-card"><input id="settingsSchoolPhone" type="checkbox"><span>Telefone</span></label>
+              <label class="check-card"><input id="settingsSchoolNotes" type="checkbox"><span>Observações</span></label>
+            </div>
+            <label class="form-field wide top-gap"><span>Campos extras para escola</span><textarea id="settingsSchoolExtras" rows="4" placeholder="Um campo por linha. Ex.:\nAutorização de imagem|required\nRestrição alimentar"></textarea></label>
+          </article>
+        </div>
+      </section>
+
+      <section class="panel-card">
+        <div class="panel-heading"><h2>Turmas disponíveis para escola</h2><p class="muted">Essas turmas aparecem no campo “Turma do educando” quando o evento for do tipo Escola.</p></div>
+        <div class="class-badges" id="schoolClassesList"></div>
+      </section>
+
+      <section class="panel-card">
+        <div class="panel-heading"><h2>Salvar configurações</h2><p class="muted">As alterações afetam os próximos eventos criados. Eventos já existentes continuam com os campos salvos neles até serem editados.</p></div>
+        <div class="form-actions"><button class="btn btn-primary" type="submit">Salvar configurações</button><a href="dashboard.html" class="btn btn-secondary">Voltar ao dashboard</a></div>
+      </section>
+    </form>
+  </main>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="assets/js/app.js"></script>
+</body>
+</html>

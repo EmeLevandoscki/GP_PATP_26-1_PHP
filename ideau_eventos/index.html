@@ -37,7 +37,6 @@
       <aside class="hero-panel" aria-label="Resumo da plataforma">
         <div><span class="panel-number" id="statEventos">0</span><span class="panel-label">Eventos publicados</span></div>
         <div><span class="panel-number" id="statInscricoes">0</span><span class="panel-label">Inscrições registradas</span></div>
-        <div><span class="panel-number">100%</span><span class="panel-label">Responsivo</span></div>
       </aside>
     </section>
 
@@ -69,17 +68,6 @@
     </section>
 
     <section id="como-funciona" class="section-block surface-section">
-      <div class="section-head narrow">
-        <p class="eyebrow">Fluxo público</p>
-        <h2>Como a inscrição funciona</h2>
-        <p class="muted big">O organizador define quais dados serão solicitados em cada evento. A página pública exibe apenas os campos configurados, evitando formulário pesado e genérico.</p>
-      </div>
-      <div class="steps-grid">
-        <article class="info-card"><span class="step-number">01</span><h3>Organizador cria o evento</h3><p>Define título, descrição, data, vagas, categoria, imagem e publicação.</p></article>
-        <article class="info-card"><span class="step-number">02</span><h3>Configura os campos</h3><p>Escolhe CPF, e-mail, telefone, curso, comunidade e campos extras.</p></article>
-        <article class="info-card"><span class="step-number">03</span><h3>Divulga o link</h3><p>Cada evento possui link individual, como <code>evento.html?id=...</code>.</p></article>
-        <article class="info-card"><span class="step-number">04</span><h3>Acompanha inscritos</h3><p>O painel mostra totais, ocupação, inscritos recentes e exportação CSV.</p></article>
-      </div>
     </section>
   </main>
 

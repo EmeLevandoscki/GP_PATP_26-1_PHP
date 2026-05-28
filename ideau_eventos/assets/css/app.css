@@ -124,7 +124,7 @@ h3 { font-size: 1rem; margin-bottom: 8px; }
 .btn.full { width: 100%; }
 .btn.small { min-height: 34px; padding: 7px 12px; font-size: .68rem; }
 
-.hero-panel, .panel-card, .auth-card, .info-card, .event-card, .featured-card, .metric-card, .event-registration-card {
+.hero-panel, .panel-card, .auth-card, .event-card, .featured-card, .metric-card, .event-registration-card {
   background: color-mix(in srgb, var(--card) 94%, transparent);
   border: 1px solid var(--border);
   border-radius: var(--radius);
@@ -275,4 +275,147 @@ h3 { font-size: 1rem; margin-bottom: 8px; }
   .event-detail-cover { min-height: 260px; }
   .transparent-header { position: sticky; background: color-mix(in srgb, var(--bg) 88%, transparent); }
   .auth-layout { padding-top: 96px; }
+}
+
+/* Ajustes adicionados — separação de divulgação, inscrição e relatórios */
+.detail-only-layout { align-items: start; }
+.event-cta-card { display: grid; gap: 14px; }
+.compact-meta { margin: 8px 0 4px; }
+.event-form-page {
+  max-width: var(--max);
+  margin: 0 auto;
+  padding: 52px clamp(18px, 5vw, 32px) 76px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 470px;
+  gap: 24px;
+  align-items: start;
+}
+.registration-summary-card h1 { font-size: clamp(3rem, 7vw, 6.2rem); }
+.report-toolbar { grid-template-columns: 320px minmax(0, 1fr); }
+.report-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.report-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+  display: grid;
+  gap: 16px;
+}
+.report-card h3 {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.7rem;
+  letter-spacing: .04em;
+  margin: 10px 0 6px;
+  line-height: 1.05;
+}
+.report-meta-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+.report-meta-list span {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  color: var(--muted);
+  font-size: .82rem;
+}
+.report-meta-list strong { color: var(--text); }
+.report-actions { display: flex; flex-wrap: wrap; gap: 8px; border-top: 1px solid var(--border); padding-top: 14px; }
+
+@media (max-width: 1050px) {
+  .event-form-page, .report-grid { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 780px) {
+  .report-toolbar { grid-template-columns: 1fr; }
+  .report-meta-list { grid-template-columns: 1fr; }
+}
+
+/* Ajustes para separação de campos por graduação/escola */
+.field-group-title {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 14px;
+  margin: 6px 0 14px;
+  color: var(--text);
+}
+.field-group-title span {
+  font-weight: 900;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  font-size: .74rem;
+}
+.field-group-title small {
+  color: var(--muted);
+  line-height: 1.5;
+  text-align: right;
+}
+.audience-fields-block[hidden] { display: none !important; }
+.audience-pill {
+  display: inline-flex;
+  width: fit-content;
+  padding: 5px 12px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--gold) 16%, transparent);
+  color: var(--gold);
+  border: 1px solid color-mix(in srgb, var(--gold) 30%, transparent);
+  font-size: .66rem;
+  font-weight: 900;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+.settings-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+.settings-card {
+  border: 1px solid var(--border);
+  background: var(--surface);
+  border-radius: var(--radius);
+  padding: 24px;
+}
+.settings-card h3 {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 2rem;
+  letter-spacing: .04em;
+  margin-bottom: 8px;
+}
+.compact-checks {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin-top: 18px;
+}
+.class-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.class-badges span {
+  display: inline-flex;
+  align-items: center;
+  min-height: 36px;
+  padding: 7px 13px;
+  border-radius: 999px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-weight: 800;
+  font-size: .76rem;
+}
+@media (max-width: 900px) {
+  .settings-grid,
+  .compact-checks {
+    grid-template-columns: 1fr;
+  }
+  .field-group-title {
+    display: block;
+  }
+  .field-group-title small {
+    display: block;
+    margin-top: 4px;
+    text-align: left;
+  }
 }

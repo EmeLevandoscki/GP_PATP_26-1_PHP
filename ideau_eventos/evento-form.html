@@ -17,7 +17,9 @@
       <a href="eventos.html">Eventos</a>
       <a class="active" href="evento-form.html">Novo evento</a>
       <a href="inscritos.html">Inscritos</a>
+      <a href="relatorios.html">Relatórios</a>
       <a href="index.html" target="_blank">Ver site público</a>
+      <a href="configuracoes.html">Configurações</a>
     </nav>
     <button class="btn btn-danger full" id="logoutButton" type="button">Sair</button>
   </aside>
@@ -35,6 +37,7 @@
         <div class="form-grid">
           <label class="form-field wide"><span>Título do evento *</span><input id="eventTitle" required placeholder="Ex.: Semana Acadêmica de Direito"></label>
           <label class="form-field"><span>Categoria *</span><select id="eventCategory" required><option value="academico">Acadêmico</option><option value="institucional">Institucional</option><option value="comunidade">Comunidade</option><option value="cultural">Cultural</option><option value="esportivo">Esportivo</option></select></label>
+          <label class="form-field"><span>Público do evento *</span><select id="eventAudience" required><option value="graduacao">Graduação</option><option value="escola">Escola</option></select></label>
           <label class="form-field"><span>Data *</span><input id="eventDate" type="date" required></label>
           <label class="form-field"><span>Horário *</span><input id="eventTime" type="time" required></label>
           <label class="form-field"><span>Vagas *</span><input id="eventSeats" type="number" min="1" required placeholder="100"></label>
@@ -47,16 +50,43 @@
       </section>
 
       <section class="panel-card">
-        <div class="panel-heading"><h2>Campos da inscrição</h2><p class="muted">Aqui o organizador escolhe quais dados o participante deverá informar.</p></div>
+        <div class="panel-heading">
+          <div>
+            <h2>Campos da inscrição</h2>
+            <p class="muted">Escolha o tipo de público e os campos que serão solicitados no formulário separado de inscrição.</p>
+          </div>
+          <button class="btn btn-light small" id="applyAudienceDefaults" type="button">Aplicar padrão</button>
+        </div>
+
+        <div class="field-group-title"><span>Dados gerais de contato</span><small>Podem ser usados em eventos de graduação e de escola.</small></div>
         <div class="checks-grid">
           <label class="check-card"><input id="fieldCpf" type="checkbox" checked><span>Solicitar CPF</span></label>
           <label class="check-card"><input id="fieldEmail" type="checkbox" checked><span>Solicitar e-mail</span></label>
           <label class="check-card"><input id="fieldPhone" type="checkbox" checked><span>Solicitar telefone</span></label>
-          <label class="check-card"><input id="fieldCourse" type="checkbox" checked><span>Permitir seleção de curso</span></label>
-          <label class="check-card"><input id="fieldCommunity" type="checkbox" checked><span>Permitir comunidade externa</span></label>
           <label class="check-card"><input id="fieldNotes" type="checkbox"><span>Campo de observações</span></label>
         </div>
-        <label class="form-field wide top-gap"><span>Campos extras opcionais</span><textarea id="eventExtraFields" rows="4" placeholder="Um campo por linha. Ex.:\nMatrícula|required\nEmpresa\nNecessidade especial"></textarea><small>Use <b>|required</b> no final para tornar o campo obrigatório.</small></label>
+
+        <div id="graduationFieldsGroup" class="audience-fields-block top-gap">
+          <div class="field-group-title"><span>Campos para graduação</span><small>Usados quando o evento for voltado para alunos ou comunidade acadêmica.</small></div>
+          <div class="checks-grid">
+            <label class="check-card"><input id="fieldCourse" type="checkbox" checked><span>Permitir seleção de curso</span></label>
+            <label class="check-card"><input id="fieldCommunity" type="checkbox" checked><span>Permitir comunidade externa</span></label>
+          </div>
+        </div>
+
+        <div id="schoolFieldsGroup" class="audience-fields-block top-gap" hidden>
+          <div class="field-group-title"><span>Campos para escola</span><small>Usados quando a inscrição for realizada por responsável de educando.</small></div>
+          <div class="checks-grid">
+            <label class="check-card"><input id="fieldResponsibleName" type="checkbox" checked><span>Nome do responsável</span></label>
+            <label class="check-card"><input id="fieldStudentName" type="checkbox" checked><span>Nome do educando</span></label>
+            <label class="check-card"><input id="fieldStudentClass" type="checkbox" checked><span>Turma do educando</span></label>
+          </div>
+        </div>
+
+        <label class="form-field wide top-gap"><span>Campos extras opcionais</span><textarea id="eventExtraFields" rows="4" placeholder="Um campo por linha. Ex.:
+Matrícula|required
+Empresa
+Necessidade especial"></textarea><small>Use <b>|required</b> no final para tornar o campo obrigatório.</small></label>
       </section>
 
       <section class="panel-card">
