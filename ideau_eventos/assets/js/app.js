@@ -1,6 +1,13 @@
+function getPastaBase() {
+  if (PASTA_BASE === '/') {
+    return '';
+  }
+
+  return PASTA_BASE;
+}
 (function () {
   'use strict';
-
+  localStorage.clear();
   const KEYS = {
     events: 'ideauEventos.events.v3.separated',
     registrations: 'ideauEventos.registrations.v3.separated',
@@ -43,17 +50,27 @@
 
   const DEFAULT_EVENTS = [
     {
-      id: 'evt-ads-2026',
-      title: 'Semana Acadêmica de ADS',
+      id: '1',
+      title: 'Colônia de Férias de Inverno 2026',
       category: 'academico',
-      date: '2026-06-05',
-      time: '19:30',
-      location: 'Auditório principal',
+      date_begin: '2026-07-27',
+      date_end: '2026-07-31',
+      time_begin: '12:30', //será mudada a lógica na versão final
+      time_end: '18:30', //será mudada a lógica na versão final
+      location: 'Ideau Santa Clara',
       city: 'Passo Fundo',
-      seats: 180,
+      seats: '-1',
       cover: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=1200&q=80',
-      summary: 'Palestras e oficinas práticas sobre desenvolvimento de sistemas, dados e carreira em tecnologia.',
-      description: 'A Semana Acadêmica de ADS reúne estudantes, professores, egressos e comunidade interessada em tecnologia.\n\nProgramação sugerida:\n• Palestra de abertura sobre carreira em tecnologia;\n• Oficina prática de desenvolvimento web;\n• Painel sobre dados, automação e inteligência artificial;\n• Mesa de conversa com egressos do curso.\n\nO organizador pode editar esta descrição, alterar campos de inscrição e publicar o link individual do evento.',
+      summary: 'Colônia de férias com atividades lúdicas, esportivas e culturais para crianças e adolescentes.',
+      description: `🎉 Colônia de Férias Infantil 🎨⚽🌈\n
+                    Diversão, aprendizado e muitas aventuras esperam pelas crianças na nossa Colônia de Férias! Durante o evento, os participantes poderão aproveitar atividades recreativas, brincadeiras em grupo, oficinas criativas, jogos, esportes, música, dança e momentos de integração em um ambiente seguro e acolhedor.\n
+                    Nossa programação foi pensada para estimular a criatividade, a socialização e o desenvolvimento das crianças de forma leve e divertida, sempre acompanhadas por monitores preparados.\n
+                    📅 Venha viver dias inesquecíveis cheios de alegria, amizade e novas descobertas!
+                    ✨ Atividades recreativas
+                    🎨 Oficinas criativas
+                    ⚽ Jogos e esportes
+                    🎵 Música e dança
+                    🍿 Momentos de lazer e integração`,
       published: true,
       fields: {
         cpf: true,
@@ -63,29 +80,6 @@
         community: true,
         notes: false,
         extras: [{ label: 'Matrícula', required: false }]
-      }
-    },
-    {
-      id: 'evt-saude-2026',
-      title: 'Jornada Integrada da Saúde',
-      category: 'institucional',
-      date: '2026-06-12',
-      time: '08:00',
-      location: 'Campus IDEAU',
-      city: 'Getúlio Vargas',
-      seats: 220,
-      cover: 'https://images.unsplash.com/photo-1576091160550-2173dba999ef?w=1200&q=80',
-      summary: 'Atividades integradas entre cursos da área da saúde, com mesas temáticas e ações abertas.',
-      description: 'A Jornada Integrada da Saúde promove atividades conjuntas entre cursos, professores e profissionais convidados.\n\nO evento pode aceitar somente alunos ou também comunidade externa, conforme configuração definida pelo organizador.',
-      published: true,
-      fields: {
-        cpf: true,
-        email: true,
-        phone: true,
-        course: true,
-        community: false,
-        notes: true,
-        extras: []
       }
     }
   ];
@@ -235,13 +229,18 @@
 
   function eventCardTemplate(event) {
     const used = countRegistrations(event.id);
-    const remaining = Math.max(Number(event.seats || 0) - used, 0);
+    let remaining;
+    if (event.seats != -1) {
+      remaining = Math.max(Number(event.seats || 0) - used, 0);
+    } else {
+      remaining = -1;
+    }
     const cover = event.cover ? `<img src="${escapeAttr(event.cover)}" alt="${escapeAttr(event.title)}" loading="lazy">` : '';
     return `
       <article class="event-card">
         <a class="event-cover" href="evento.html?id=${encodeURIComponent(event.id)}" aria-label="Abrir evento ${escapeAttr(event.title)}">
           ${cover}
-          <div class="event-date"><strong>${datePart(event.date, 'day')}</strong><span>${datePart(event.date, 'month')}</span></div>
+          <div class="event-date"><strong>${datePart(event.date_begin, 'day')}</strong><span>${datePart(event.date_begin, 'month')}</span></div>
         </a>
         <div class="event-body">
           <span class="event-tag">${escapeHtml(CATEGORIES[event.category] || event.category)}</span>
@@ -249,8 +248,8 @@
           <div class="event-meta">${formatDate(event.date)} às ${escapeHtml(event.time)}<br>${escapeHtml(event.location)} — ${escapeHtml(event.city)}</div>
           <p class="muted">${escapeHtml(event.summary)}</p>
           <div class="event-actions">
-            <span class="seats-pill">${remaining} vagas</span>
-            <a class="btn btn-primary" href="evento.html?id=${encodeURIComponent(event.id)}">Ver evento</a>
+            <span class="seats-pill">${remaining === -1 ? 'Livre' : `${remaining} vagas`}</span>
+            <a class="btn btn-primary" href="ideau_eventos/evento.html?id=${encodeURIComponent(event.id)}">Ver evento</a>
           </div>
         </div>
       </article>`;
@@ -285,9 +284,11 @@
           <h1>${escapeHtml(event.title)}</h1>
           <p class="muted big">${escapeHtml(event.summary)}</p>
           <div class="event-detail-meta">
-            <div class="meta-row"><strong>Data</strong><span>${formatDate(event.date)} às ${escapeHtml(event.time)}</span></div>
+            <div class="meta-row"><strong>Data Início</strong><span>${formatDate(event.date_begin)}</span></div>
+            <div class="meta-row"><strong>Data Fim</strong><span>${formatDate(event.date_end)}</span></div>
+            <div class="meta-row"><strong>Horário</strong><span>Início: ${escapeHtml(event.time_begin)} - Fim: ${escapeHtml(event.time_end)}</span></div>
             <div class="meta-row"><strong>Local</strong><span>${escapeHtml(event.location)} — ${escapeHtml(event.city)}</span></div>
-            <div class="meta-row"><strong>Vagas</strong><span>${remaining} disponíveis de ${Number(event.seats || 0)}</span></div>
+            <div class="meta-row"><strong>Vagas</strong><span>${event.seats == -1 ? 'Livre' : `${remaining} disponíveis de ${Number(event.seats || 0)}`}</span></div>
           </div>
           <a class="btn btn-primary full" href="#inscricao">Fazer inscrição</a>
         </aside>
@@ -302,7 +303,9 @@
         <aside class="event-registration-card" id="inscricao">
           <p class="eyebrow">Inscrição</p>
           <h2>Participar</h2>
-          ${remaining <= 0 ? '<div class="empty-state">As vagas deste evento estão esgotadas.</div>' : registrationFormTemplate(event)}
+          ${event.seats != -1 && remaining <= 0
+            ? '<div class="empty-state">As vagas deste evento estão esgotadas.</div>'
+            : registrationFormTemplate(event)}
         </aside>
       </section>`;
 

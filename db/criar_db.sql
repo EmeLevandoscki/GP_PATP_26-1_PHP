@@ -77,14 +77,75 @@ CREATE TABLE atividades (
     CONSTRAINT fk_atividades_evento FOREIGN KEY (id_evento) REFERENCES eventos(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
-CREATE TABLE atividades_alunos (
+CREATE TABLE inscricoes (
     id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     id_atividade INT UNSIGNED NOT NULL,
     id_usuario INT UNSIGNED NOT NULL,
-    reservado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    id_responsavel INT UNSIGNED,
+    inscrito_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 
-    CONSTRAINT fk_atividades_alunos_atividade FOREIGN KEY (id_atividade) REFERENCES atividades(id),
-    CONSTRAINT fk_atividades_alunos_usuario FOREIGN KEY (id_usuario) REFERENCES usuarios(id),
+    CONSTRAINT fk_inscricoes_atividade FOREIGN KEY (id_atividade) REFERENCES atividades(id),
+    CONSTRAINT fk_inscricoes_usuario FOREIGN KEY (id_usuario) REFERENCES usuarios(id),
 
     UNIQUE KEY uq_atividade_usuario (id_atividade, id_usuario)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE usuarios_responsaveis (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+
+    id_responsavel INT UNSIGNED NOT NULL,
+    id_dependente INT UNSIGNED NOT NULL,
+
+    parentesco VARCHAR(50),
+
+    CONSTRAINT fk_resp_usuario
+        FOREIGN KEY (id_responsavel)
+        REFERENCES usuarios(id),
+
+    CONSTRAINT fk_dep_usuario
+        FOREIGN KEY (id_dependente)
+        REFERENCES usuarios(id),
+
+    UNIQUE KEY uq_responsavel_dependente (
+        id_responsavel,
+        id_dependente
+    )
+);
+
+CREATE TABLE cursos (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    nome VARCHAR(255) NOT NULL
+);
+
+CREATE TABLE turmas (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+
+    id_curso INT UNSIGNED NOT NULL,
+
+    nome VARCHAR(100) NOT NULL,
+    periodo VARCHAR(50),
+
+    CONSTRAINT fk_turmas_curso
+        FOREIGN KEY (id_curso)
+        REFERENCES cursos(id)
+);
+
+CREATE TABLE usuarios_turmas (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+
+    id_usuario INT UNSIGNED NOT NULL,
+    id_turma INT UNSIGNED NOT NULL,
+
+    data_entrada DATE,
+    data_saida DATE NULL,
+
+    ativo BOOLEAN DEFAULT TRUE,
+
+    CONSTRAINT fk_usuario_turma_usuario
+        FOREIGN KEY (id_usuario)
+        REFERENCES usuarios(id),
+
+    CONSTRAINT fk_usuario_turma_turma
+        FOREIGN KEY (id_turma)
+        REFERENCES turmas(id)
+);
