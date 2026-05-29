@@ -46,7 +46,8 @@ function getPastaBase() {
     institucional: 'Institucional',
     comunidade: 'Comunidade',
     cultural: 'Cultural',
-    esportivo: 'Esportivo'
+    esportivo: 'Esportivo',
+    recreativo: 'Recreativo'
   };
 
   const AUDIENCES = {
@@ -101,7 +102,7 @@ function getPastaBase() {
     {
       id: '1',
       title: 'Colônia de Férias de Inverno 2026',
-      category: 'academico',
+      category: 'recreativo',
       date_begin: '2026-07-27',
       date_end: '2026-07-31',
       time_begin: '12:30', //será mudada a lógica na versão final
@@ -346,7 +347,7 @@ function getPastaBase() {
         <div class="event-body">
           <span class="event-tag">${escapeHtml(CATEGORIES[event.category] || event.category)}</span>
           <h3 class="event-title">${escapeHtml(event.title)}</h3>
-          <div class="event-meta">${formatDate(event.date)} às ${escapeHtml(event.time)}<br>${escapeHtml(event.location)} — ${escapeHtml(event.city)}</div>
+          <div class="event-meta">Início: ${formatDate(event.date_begin)}<br>Fim: ${formatDate(event.date_end)}<br>${escapeHtml(event.time_begin)} — ${escapeHtml(event.time_end)}<br>${escapeHtml(event.location)} — ${escapeHtml(event.city)}</div>
           <p class="muted">${escapeHtml(event.summary)}</p>
           <div class="event-actions">
             <span class="seats-pill">${remaining === -1 ? 'Livre' : `${remaining} vagas`}</span>
