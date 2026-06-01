@@ -92,7 +92,7 @@ function doLogin(){
     role:user.role, roleLabel:user.roleLabel, org:user.org||''
   }));
   showToast('✅ Bem-vindo(a) de volta, '+user.name.split(' ')[0]+'!');
-  setTimeout(()=>{ window.location.href='index.html'; }, 1000);
+  setTimeout(()=>{ window.location.href='index.php'; }, 1000);
 }
 
 function doCadastro(){
@@ -118,5 +118,5 @@ function doCadastro(){
     role:newUser.role, roleLabel:newUser.roleLabel, org:newUser.org
   }));
   showToast('✅ Conta criada! Bem-vindo(a), '+nome.split(' ')[0]+'!');
-  setTimeout(()=>{ window.location.href='index.html'; }, 1000);
+  setTimeout(()=>{ window.location.href='index.php'; }, 1000);
 }

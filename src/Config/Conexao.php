@@ -8,7 +8,7 @@ use PDO;
         {
             if (self::$con === null) {
                 self::$con = new PDO(
-                    'mysql:host=localhost;dbname=ideaueventos_dev;charset=utf8mb4', 
+                    'mysql:host=localhost;dbname=ideaueventos_prod;charset=utf8mb4', 
                     'edu',
                     'edu',
                     [

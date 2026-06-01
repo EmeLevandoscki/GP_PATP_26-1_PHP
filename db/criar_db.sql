@@ -1,3 +1,5 @@
+drop database if exists ideaueventos_prod;
+create database ideaueventos_prod;
 use ideaueventos_prod;
 -- Tabela usuarios
 CREATE TABLE usuarios (
@@ -6,7 +8,7 @@ CREATE TABLE usuarios (
     sobrenome VARCHAR(255),
     email VARCHAR(255),
     telefone VARCHAR(255),
-    cpf VARCHAR(255),
+    cpf VARCHAR(11),
     data_nascimento DATE,
     senha VARCHAR(255),
     cargo VARCHAR(255),
@@ -86,6 +88,7 @@ CREATE TABLE inscricoes (
 
     CONSTRAINT fk_inscricoes_atividade FOREIGN KEY (id_atividade) REFERENCES atividades(id),
     CONSTRAINT fk_inscricoes_usuario FOREIGN KEY (id_usuario) REFERENCES usuarios(id),
+    CONSTRAINT fk_inscricoes_usuario_responsavel FOREIGN KEY (id_responsavel) REFERENCES usuarios(id),
 
     UNIQUE KEY uq_atividade_usuario (id_atividade, id_usuario)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
@@ -136,8 +139,8 @@ CREATE TABLE usuarios_turmas (
     id_usuario INT UNSIGNED NOT NULL,
     id_turma INT UNSIGNED NOT NULL,
 
-    data_entrada DATE,
-    data_saida DATE NULL,
+    data_entrada DATE DEFAULT NULL,
+    data_saida DATE DEFAULT NULL,
 
     ativo BOOLEAN DEFAULT TRUE,
 

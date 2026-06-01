@@ -31,6 +31,21 @@
         $_SESSION['sucesso'] = 'Reserva realizada com sucesso!';
         header('Location: ../../public/index.php');
         exit();
+    } else if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['inscrever'])) {
+        header('Content-Type: application/json');
+        try {
+            $service->realizarInscricao($_POST);
+            echo json_encode([
+                'success' => true,
+                'message' => 'Inscrição registrada com sucesso!'
+            ]);
+        } catch (\Exception $e) {
+            echo json_encode([
+                'success' => false,
+                'message' => $e->getMessage()
+            ]);
+        }
+        exit();
     } else if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         $action = $_GET['action'] ?? '';
         
@@ -58,6 +73,18 @@
                 $ativos = $service->retornaQtdAtivos();
 
                 echo json_encode($ativos);
+                exit();
+                break;
+            case 'inscricoes_evento':
+                $inscricoes = $service->listarInscricoes((int) $_GET['id']);
+
+                echo json_encode($inscricoes);
+                exit();
+                break;
+            case 'qtd_inscricoes_evento':
+                $qtdInscricoes = $service->retornaQtdInscricoes((int) $_GET['id']);
+
+                echo json_encode(['total' => $qtdInscricoes]);
                 exit();
                 break;
             default:

@@ -11,14 +11,13 @@
 </head>
 <body data-page="home">
   <header class="site-header">
-    <a class="brand" href="index.html" aria-label="Página inicial IDEAU Eventos">
+    <a class="brand" href="index.php" aria-label="Página inicial IDEAU Eventos">
       <span class="brand-mark">LOGO</span>
       <span class="brand-text"><strong>IDEAU Eventos</strong><small>Faculdades IDEAU</small></span>
     </a>
     <button class="menu-toggle" id="menuToggle" type="button" aria-label="Abrir menu" aria-expanded="false">Menu</button>
     <nav class="main-nav" id="mainNav">
       <a href="#eventos">Eventos</a>
-      <a href="#como-funciona">Inscrição</a>
       <a href="ideau_eventos/login.html" class="nav-cta">Organizador</a>
     </nav>
   </header>
@@ -36,7 +35,7 @@
       </div>
       <aside class="hero-panel" aria-label="Resumo da plataforma">
         <div><span class="panel-number" id="statEventos">0</span><span class="panel-label">Eventos publicados</span></div>
-        <div><span class="panel-number" id="statInscricoes">0</span><span class="panel-label">Inscrições registradas</span></div>
+        <div><span class="panel-number" id="statInscricdefaultoes">0</span><span class="panel-label">Inscrições registradas</span></div>
       </aside>
     </section>
 
@@ -55,11 +54,12 @@
             <span class="sr-only">Filtrar categoria</span>
             <select id="categoryFilter">
               <option value="todos">Todas as categorias</option>
-              <option value="academico">Acadêmico</option>
+              <option value="recreativo">Recreativo</option>
+              <!-- <option value="academico">Acadêmico</option>
               <option value="institucional">Institucional</option>
               <option value="comunidade">Comunidade</option>
               <option value="cultural">Cultural</option>
-              <option value="esportivo">Esportivo</option>
+              <option value="esportivo">Esportivo</option> -->
             </select>
           </label>
         </div>
@@ -72,7 +72,7 @@
   </main>
 
   <footer class="site-footer">
-    <div><strong>IDEAU Eventos</strong><p>Protótipo front-end separado em páginas públicas e páginas de organizador.</p></div>
+    <div><strong>IDEAU Eventos</strong></div>
     <div class="footer-links"><a href="ideau_eventos/login.html">Organizador</a><a href="#eventos">Eventos</a></div>
   </footer>
 

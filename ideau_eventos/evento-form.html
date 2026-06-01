@@ -18,7 +18,7 @@
       <a class="active" href="evento-form.html">Novo evento</a>
       <a href="inscritos.html">Inscritos</a>
       <a href="relatorios.html">Relatórios</a>
-      <a href="index.html" target="_blank">Ver site público</a>
+      <a href="index.php" target="_blank">Ver site público</a>
       <a href="configuracoes.html">Configurações</a>
     </nav>
     <button class="btn btn-danger full" id="logoutButton" type="button">Sair</button>
@@ -37,7 +37,7 @@
         <div class="form-grid">
           <label class="form-field wide"><span>Título do evento *</span><input id="eventTitle" required placeholder="Ex.: Semana Acadêmica de Direito"></label>
           <label class="form-field"><span>Categoria *</span><select id="eventCategory" required><option value="academico">Acadêmico</option><option value="institucional">Institucional</option><option value="comunidade">Comunidade</option><option value="cultural">Cultural</option><option value="esportivo">Esportivo</option></select></label>
-          <label class="form-field"><span>Público do evento *</span><select id="eventAudience" required><option value="graduacao">Graduação</option><option value="escola">Escola</option></select></label>
+          <label class="form-field"><span>Público do evento *</span><select id="eventAudience" required><option value="graduacao">Graduação</option><option value="escola">Educação Infantil</option></select></label>
           <label class="form-field"><span>Data *</span><input id="eventDate" type="date" required></label>
           <label class="form-field"><span>Horário *</span><input id="eventTime" type="time" required></label>
           <label class="form-field"><span>Vagas *</span><input id="eventSeats" type="number" min="1" required placeholder="100"></label>
@@ -77,7 +77,9 @@
         <div id="schoolFieldsGroup" class="audience-fields-block top-gap" hidden>
           <div class="field-group-title"><span>Campos para escola</span><small>Usados quando a inscrição for realizada por responsável de educando.</small></div>
           <div class="checks-grid">
+            <label class="check-card"><input id="fieldResponsibleCPF" type="checkbox" checked><span>CPF do responsável</span></label>
             <label class="check-card"><input id="fieldResponsibleName" type="checkbox" checked><span>Nome do responsável</span></label>
+            <label class="check-card"><input id="fieldRelationship" type="checkbox" checked><span>Grau de parentesco</span></label>
             <label class="check-card"><input id="fieldStudentName" type="checkbox" checked><span>Nome do educando</span></label>
             <label class="check-card"><input id="fieldStudentClass" type="checkbox" checked><span>Turma do educando</span></label>
           </div>

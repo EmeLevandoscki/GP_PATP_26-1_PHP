@@ -15,6 +15,8 @@ function getPastaBase() {
     settings: 'ideauEventos.settings.v1.audienceFields'
   };
 
+  const API_ENDPOINT = '../src/Controller/EventoController.php';
+
   const ORGANIZER = {
     email: 'organizador@ideau.edu.br',
     password: 'ideau2026',
@@ -77,6 +79,7 @@ function getPastaBase() {
         course: true,
         community: true,
         notes: false,
+        relationship: false,
         responsibleName: false,
         studentName: false,
         studentClass: false,
@@ -84,15 +87,13 @@ function getPastaBase() {
       },
       escola: {
         responsibleName: true,
+        relationship: true,
         studentName: true,
         studentClass: true,
         cpf: false,
         email: true,
         phone: true,
         notes: false,
-        responsibleName: false,
-        studentName: false,
-        studentClass: false,
         extras: []
       }
     }
@@ -103,6 +104,7 @@ function getPastaBase() {
       id: '1',
       title: 'Colônia de Férias de Inverno 2026',
       category: 'recreativo',
+      audience: 'escola',
       date_begin: '2026-07-27',
       date_end: '2026-07-31',
       time_begin: '12:30', //será mudada a lógica na versão final
@@ -110,7 +112,7 @@ function getPastaBase() {
       location: 'Ideau Santa Clara',
       city: 'Passo Fundo',
       seats: '-1',
-      cover: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=1200&q=80',
+      cover: 'https://plus.unsplash.com/premium_photo-1686920245950-58617c8a602e?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
       summary: 'Colônia de férias com atividades lúdicas, esportivas e culturais para crianças e adolescentes.',
       description: `🎉 Colônia de Férias Infantil 🎨⚽🌈\n
                     Diversão, aprendizado e muitas aventuras esperam pelas crianças na nossa Colônia de Férias! Durante o evento, os participantes poderão aproveitar atividades recreativas, brincadeiras em grupo, oficinas criativas, jogos, esportes, música, dança e momentos de integração em um ambiente seguro e acolhedor.\n
@@ -123,19 +125,35 @@ function getPastaBase() {
                     🍿 Momentos de lazer e integração`,
       published: true,
       fields: {
-        cpf: true,
-        email: true,
-        phone: true,
+        cpf: false,
+        email: false,
+        phone: false,
         course: true,
         community: true,
         notes: false,
-        responsibleName: false,
-        studentName: false,
-        studentClass: false,
+        responsibleName: true,
+        responsibleCPF: true,
+        studentName: true,
+        studentClass: true,
         extras: [{ label: 'Matrícula', required: false }]
       }
     }
   ];
+
+  let apiRegistrations = [];
+
+  async function fetchRegistrationsFromApi() {
+    const res = await fetch(`${API_ENDPOINT}?action=inscricoes_evento&id=1`); //charque arrumar
+    if (!res.ok) throw new Error('Falha ao carregar inscritos');
+  
+    return res.json();
+  }
+
+  async function fetchRegistrationsCount() {
+    const res = await fetch(`${API_ENDPOINT}?action=qtd_inscricoes_evento&id=1`); //charque arrumar
+    const data = await res.json();
+    return data.count;
+  }
 
   document.addEventListener('DOMContentLoaded', () => {
     seedData();
@@ -206,8 +224,10 @@ function getPastaBase() {
     });
   }
 
-  function initDashboardPage() {
+  async function initDashboardPage() {
     if (!requireAuth()) return;
+    apiRegistrations = await fetchRegistrationsFromApi();
+    console.log(apiRegistrations);
     renderDashboard();
   }
 
@@ -231,10 +251,13 @@ function getPastaBase() {
     document.getElementById('eventForm')?.addEventListener('submit', handleEventFormSubmit);
   }
 
-  function initRegistrationsPage() {
+  async function initRegistrationsPage() {
     if (!requireAuth()) return;
+
+    apiRegistrations = await fetchRegistrationsFromApi();
     renderRegistrationFilters();
     renderRegistrationsTable();
+
     document.getElementById('registrationEventFilter')?.addEventListener('change', renderRegistrationsTable);
     document.getElementById('registrationSearch')?.addEventListener('input', renderRegistrationsTable);
     document.getElementById('exportCsvButton')?.addEventListener('click', exportRegistrationsCsv);
@@ -248,10 +271,13 @@ function getPastaBase() {
     });
   }
 
-  function initReportsPage() {
+  async function initReportsPage() {
     if (!requireAuth()) return;
     renderReportEventFilter();
+
+    apiRegistrations = await fetchRegistrationsFromApi();
     renderReportsPage();
+    
     document.getElementById('reportEventFilter')?.addEventListener('change', renderReportsPage);
     document.getElementById('reportSearch')?.addEventListener('input', renderReportsPage);
     document.getElementById('exportFilteredExcel')?.addEventListener('click', () => exportEventExcel(getValue('reportEventFilter') || 'todos'));
@@ -340,7 +366,7 @@ function getPastaBase() {
     const cover = event.cover ? `<img src="${escapeAttr(event.cover)}" alt="${escapeAttr(event.title)}" loading="lazy">` : '';
     return `
       <article class="event-card">
-        <a class="event-cover" href="evento.html?id=${encodeURIComponent(event.id)}" aria-label="Abrir evento ${escapeAttr(event.title)}">
+        <a class="event-cover" href="ideau_eventos/evento.html?id=${encodeURIComponent(event.id)}" aria-label="Abrir evento ${escapeAttr(event.title)}">
           ${cover}
           <div class="event-date"><strong>${datePart(event.date_begin, 'day')}</strong><span>${datePart(event.date_begin, 'month')}</span></div>
         </a>
@@ -389,7 +415,7 @@ function getPastaBase() {
       return;
     }
 
-    const remaining = Math.max(Number(event.seats || 0) - countRegistrations(event.id), 0);
+    const remaining = event.seats != -1 ? Math.max(Number(event.seats || 0) - countRegistrations(event.id), 0) : -1;
     const cover = event.cover ? `<img src="${escapeAttr(event.cover)}" alt="${escapeAttr(event.title)}">` : '';
 
     root.innerHTML = `
@@ -406,7 +432,7 @@ function getPastaBase() {
             <div class="meta-row"><strong>Local</strong><span>${escapeHtml(event.location)} — ${escapeHtml(event.city)}</span></div>
             <div class="meta-row"><strong>Vagas</strong><span>${event.seats == -1 ? 'Livre' : `${remaining} disponíveis de ${Number(event.seats || 0)}`}</span></div>
           </div>
-          ${remaining <= 0 ? '<button class="btn btn-secondary full" type="button" disabled>Vagas esgotadas</button>' : `<a class="btn btn-primary full" href="${eventRegistrationUrl(event.id)}">Ir para inscrição</a>`}
+          ${event.seats != -1 && remaining <= 0 ? '<button class="btn btn-secondary full" type="button" disabled>Vagas esgotadas</button>' : `<a class="btn btn-primary full" href="${eventRegistrationUrl(event.id)}">Ir para inscrição</a>`}
         </aside>
       </section>
 
@@ -416,19 +442,6 @@ function getPastaBase() {
           <h2>Sobre o evento</h2>
           <div class="description-content">${escapeHtml(event.description)}</div>
         </article>
-        <aside class="event-registration-card event-cta-card">
-          <p class="eyebrow">Inscrição em página separada</p>
-          <h2>Participar</h2>
-          ${event.seats != -1 && remaining <= 0
-            ? '<div class="empty-state">As vagas deste evento estão esgotadas.</div>'
-            : registrationFormTemplate(event)}
-          <p class="muted">O formulário não fica mais embutido nesta página de divulgação. O participante acessa uma página própria para preencher os dados.</p>
-          <div class="event-detail-meta compact-meta">
-            <div class="meta-row"><strong>Solicita</strong><span>${requestedFieldsSummary(event.fields, getEventAudience(event))}</span></div>
-            <div class="meta-row"><strong>Status</strong><span>${remaining > 0 ? `${remaining} vagas disponíveis` : 'Vagas esgotadas'}</span></div>
-          </div>
-          ${remaining <= 0 ? '<button class="btn btn-secondary full" type="button" disabled>Inscrições encerradas</button>' : `<a class="btn btn-primary full" href="${eventRegistrationUrl(event.id)}">Abrir formulário</a>`}
-        </aside>
       </section>`;
   }
 
@@ -437,7 +450,7 @@ function getPastaBase() {
   }
 
   function renderRegistrationPublicPage(root, event) {
-    const remaining = Math.max(Number(event.seats || 0) - countRegistrations(event.id), 0);
+    const remaining = event.seats != -1 ? Math.max(Number(event.seats || 0) - countRegistrations(event.id), 0) : -1;
     root.innerHTML = `
       <section class="event-form-page">
         <article class="description-card registration-summary-card">
@@ -445,16 +458,16 @@ function getPastaBase() {
           <h1>${escapeHtml(event.title)}</h1>
           <p class="muted big">Preencha os dados solicitados pelo organizador para confirmar sua participação.</p>
           <div class="event-detail-meta">
-            <div class="meta-row"><strong>Data</strong><span>${formatDate(event.date)} às ${escapeHtml(event.time)}</span></div>
+            <div class="meta-row"><strong>Data</strong><span>Início: ${formatDate(event.date_begin)}<br>Fim: ${formatDate(event.date_end)}<br>Horário: ${escapeHtml(event.time_begin)} — ${escapeHtml(event.time_end)}<br></span></div>
             <div class="meta-row"><strong>Local</strong><span>${escapeHtml(event.location)} — ${escapeHtml(event.city)}</span></div>
-            <div class="meta-row"><strong>Vagas</strong><span>${remaining} disponíveis de ${Number(event.seats || 0)}</span></div>
+            <div class="meta-row"><strong>Vagas</strong><span>${remaining === -1 ? 'Ilimitadas' : `${remaining} disponíveis de ${Number(event.seats || 0)}`}</span></div>
           </div>
           <a class="btn btn-secondary" href="evento.html?id=${encodeURIComponent(event.id)}">Voltar para a página do evento</a>
         </article>
         <aside class="event-registration-card" id="inscricao">
           <p class="eyebrow">Dados do participante</p>
           <h2>Confirmar inscrição</h2>
-          ${remaining <= 0 ? '<div class="empty-state">As vagas deste evento estão esgotadas.</div>' : registrationFormTemplate(event)}
+          ${event.seats != -1 && remaining <= 0 ? '<div class="empty-state">As vagas deste evento estão esgotadas.</div>' : registrationFormTemplate(event)}
         </aside>
       </section>`;
 
@@ -467,6 +480,7 @@ function getPastaBase() {
     const names = [];
     if (audience === 'escola') {
       if (fields.responsibleName !== false) names.push('Nome do responsável');
+      if (fields.relationship !== false) names.push('Grau de parentesco');
       if (fields.studentName !== false) names.push('Nome do educando');
       if (fields.studentClass !== false) names.push('Turma do educando');
     } else {
@@ -481,12 +495,12 @@ function getPastaBase() {
     const extras = Array.isArray(fields.extras) ? fields.extras.map(extra => extra.label).filter(Boolean) : [];
     return names.concat(extras).join(', ');
   }
-
   function registrationFormTemplate(event) {
     const audience = getEventAudience(event);
     const fields = event.fields || {};
     const extras = Array.isArray(fields.extras) ? fields.extras : [];
     const courseOptions = COURSES.map(course => `<option value="${escapeAttr(course)}">${escapeHtml(course)}</option>`).join('');
+    const relationshipOptions = ['Pai', 'Mãe', 'Tio(a)', 'Avô(ó)', 'Responsável legal', 'Outro'].map(rel => `<option value="${escapeAttr(rel)}">${escapeHtml(rel)}</option>`).join('');
     const classOptions = SCHOOL_CLASSES.map(item => `<option value="${escapeAttr(item)}">${escapeHtml(item)}</option>`).join('');
     const showGraduationTypeSelect = audience === 'graduacao' && Boolean(fields.course || fields.community);
 
@@ -498,6 +512,8 @@ function getPastaBase() {
     const schoolFields = audience === 'escola' ? `
         <input type="hidden" name="participantType" value="escola">
         ${fields.responsibleName !== false ? '<label class="form-field"><span>Nome do responsável *</span><input name="responsibleName" required autocomplete="name" placeholder="Nome completo do responsável"></label>' : ''}
+        ${fields.responsibleCPF ? '<label class="form-field"><span>CPF do responsável *</span><input name="responsibleCpf" required inputmode="numeric" placeholder="000.000.000-00"></label>' : ''}
+        ${fields.relationship !== false ? `<label class="form-field"><span>Grau de Parentesco *</span><select name="relationship" required><option value="">Selecione o Grau de Parentesco</option>${relationshipOptions}</select></label>` : ''}
         ${fields.studentName !== false ? '<label class="form-field"><span>Nome do educando *</span><input name="studentName" required placeholder="Nome completo do educando"></label>' : ''}
         ${fields.studentClass !== false ? `<label class="form-field"><span>Turma do educando *</span><select name="studentClass" required><option value="">Selecione a turma</option>${classOptions}</select></label>` : ''}` : '';
 
@@ -543,8 +559,8 @@ function getPastaBase() {
     const targetEvent = getEvents().find(item => item.id === eventId);
     if (!targetEvent) return;
 
-    const remaining = Number(targetEvent.seats || 0) - countRegistrations(eventId);
-    if (remaining <= 0) {
+    const remaining = targetEvent.seats != -1 ? Number(targetEvent.seats || 0) - countRegistrations(eventId) : -1;
+    if (targetEvent.seats != -1 && remaining <= 0) {
       showToast('As vagas deste evento estão esgotadas.');
       return;
     }
@@ -556,14 +572,17 @@ function getPastaBase() {
     });
 
     const audience = getEventAudience(targetEvent);
+    const responsibleName = clean(data.responsibleName);
+    const studentName = clean(data.studentName);
     const registration = {
       id: `reg-${Date.now()}-${Math.random().toString(16).slice(2, 8)}`,
       eventId,
       createdAt: new Date().toISOString(),
       audience,
-      name: clean(data.name || data.responsibleName || data.studentName),
-      responsibleName: clean(data.responsibleName),
-      studentName: clean(data.studentName),
+      name: audience === 'escola' ? (studentName || responsibleName) : clean(data.name || responsibleName || studentName),
+      responsibleName,
+      responsibleCpf: clean(data.responsibleCpf),
+      studentName,
       studentClass: clean(data.studentClass),
       cpf: clean(data.cpf),
       email: clean(data.email),
@@ -571,16 +590,49 @@ function getPastaBase() {
       participantType: clean(data.participantType || (audience === 'escola' ? 'escola' : 'participante')),
       course: clean(data.course),
       notes: clean(data.notes),
+      relationship: clean(data.relationship),
       extras: extraValues
     };
 
-    const registrations = getRegistrations();
-    registrations.push(registration);
-    saveRegistrations(registrations);
+    const payload = new URLSearchParams();
+    payload.append('inscrever', '1');
+    payload.append('event_id', eventId);
+    payload.append('audience', audience);
+    payload.append('name', registration.name || '');
+    payload.append('responsible_name', registration.responsibleName || '');
+    payload.append('responsible_cpf', registration.responsibleCpf || '');
+    payload.append('relationship', registration.relationship || '');
+    payload.append('student_name', registration.studentName || '');
+    payload.append('student_class', registration.studentClass || '');
+    payload.append('cpf', registration.cpf || '');
+    payload.append('email', registration.email || '');
+    payload.append('phone', registration.phone || '');
+    payload.append('participant_type', registration.participantType || '');
+    payload.append('course', registration.course || '');
+    payload.append('notes', registration.notes || '');
+    payload.append('extras', JSON.stringify(registration.extras || {}));
 
-    const card = document.getElementById('inscricao');
-    card.innerHTML = `<div class="success-card"><strong>Inscrição confirmada</strong><p>Sua inscrição em <b>${escapeHtml(targetEvent.title)}</b> foi registrada.</p><a class="btn btn-secondary full" href="evento.html?id=${encodeURIComponent(targetEvent.id)}">Voltar ao evento</a><a class="btn btn-light full top-gap" href="index.html#eventos">Ver outros eventos</a></div>`;
-    showToast('Inscrição registrada com sucesso.');
+    fetch(API_ENDPOINT, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'
+      },
+      body: payload.toString()
+    })
+      .then(response => response.json())
+      .then(data => {
+        if (!data.success) {
+          showToast(data.message || 'Erro ao registrar inscrição.');
+          return;
+        }
+
+        const card = document.getElementById('inscricao');
+        card.innerHTML = `<div class="success-card"><strong>Inscrição confirmada</strong><p>Sua inscrição em <b>${escapeHtml(targetEvent.title)}</b> foi registrada.</p><a class="btn btn-secondary full" href="evento.html?id=${encodeURIComponent(targetEvent.id)}">Voltar ao evento</a><a class="btn btn-light full top-gap" href="index.html#eventos">Ver outros eventos</a></div>`;
+        showToast('Inscrição registrada com sucesso.');
+      })
+      .catch(() => {
+        showToast('Erro ao enviar inscrição. Tente novamente mais tarde.');
+      });
   }
 
   function renderDashboard() {
@@ -599,14 +651,14 @@ function getPastaBase() {
     if (dashEvents) {
       dashEvents.innerHTML = events.slice().sort(compareEventsByDate).slice(0, 5).map(event => {
         const used = countRegistrations(event.id);
-        return `<div class="mini-item"><strong>${escapeHtml(event.title)}</strong><span>${formatDate(event.date)} · ${used}/${Number(event.seats || 0)} inscritos · ${event.published ? 'Publicado' : 'Rascunho'}</span></div>`;
+        return `<div class="mini-item"><strong>${escapeHtml(event.title)}</strong><span>${formatDate(event.date_begin)} - ${formatDate(event.date_end)} · ${event.seats == -1 ? used : used + '/' + Number(event.seats || 0)} inscritos · ${event.published ? 'Publicado' : 'Rascunho'}</span></div>`;
       }).join('') || '<div class="empty-state">Nenhum evento cadastrado.</div>';
     }
 
     const dashRegs = document.getElementById('dashboardRegistrations');
     if (dashRegs) {
       dashRegs.innerHTML = regs.slice().sort((a, b) => b.createdAt.localeCompare(a.createdAt)).slice(0, 6).map(reg => {
-        const event = events.find(item => item.id === reg.eventId);
+        const event = events.find(item => item.id == reg.eventId);
         return `<div class="mini-item"><strong>${escapeHtml(reg.name)}</strong><span>${escapeHtml(event?.title || 'Evento removido')} · ${formatDateTime(reg.createdAt)}</span></div>`;
       }).join('') || '<div class="empty-state">Nenhuma inscrição registrada.</div>';
     }
@@ -626,6 +678,7 @@ function getPastaBase() {
         <tr>
           <td><strong>${escapeHtml(event.title)}</strong><br><span class="muted">${escapeHtml(CATEGORIES[event.category] || event.category)} · ${escapeHtml(AUDIENCES[getEventAudience(event)])} · ${escapeHtml(event.city)}</span></td>
           <td>${formatDate(event.date)}<br><span class="muted">${escapeHtml(event.time)}</span></td>
+          
           <td>${Number(event.seats || 0)}</td>
           <td>${used}</td>
           <td><span class="status-pill ${event.published ? '' : 'off'}">${event.published ? 'Publicado' : 'Rascunho'}</span></td>
@@ -634,9 +687,9 @@ function getPastaBase() {
               <a class="btn btn-light small" href="evento.html?id=${encodeURIComponent(event.id)}" target="_blank">Divulgação</a>
               <a class="btn btn-light small" href="${eventRegistrationUrl(event.id)}" target="_blank">Inscrição</a>
               <button class="btn btn-light small" type="button" data-copy-link="${escapeAttr(event.id)}">Copiar link</button>
-              <a class="btn btn-secondary small" href="evento-form.html?id=${encodeURIComponent(event.id)}">Editar</a>
+              <!-- TODO <a class="btn btn-secondary small" href="evento-form.html?id=${encodeURIComponent(event.id)}">Editar</a> -->
               <a class="btn btn-secondary small" href="relatorios.html?event=${encodeURIComponent(event.id)}">Relatório</a>
-              <button class="btn btn-danger small" type="button" data-delete-event="${escapeAttr(event.id)}">Excluir</button>
+              <!-- TODO <button class="btn btn-danger small" type="button" data-delete-event="${escapeAttr(event.id)}">Excluir</button> -->
             </div>
           </td>
         </tr>`;
@@ -691,6 +744,7 @@ function getPastaBase() {
     setChecked('fieldCommunity', Boolean(event.fields?.community));
     setChecked('fieldNotes', Boolean(event.fields?.notes));
     setChecked('fieldResponsibleName', event.fields?.responsibleName !== false);
+    setChecked('fieldRelationship', event.fields?.relationship !== false);
     setChecked('fieldStudentName', event.fields?.studentName !== false);
     setChecked('fieldStudentClass', event.fields?.studentClass !== false);
     setChecked('eventPublished', Boolean(event.published));
@@ -726,6 +780,7 @@ function getPastaBase() {
         community: getChecked('fieldCommunity'),
         notes: getChecked('fieldNotes'),
         responsibleName: getChecked('fieldResponsibleName'),
+        relationship: getChecked('fieldRelationship'),
         studentName: getChecked('fieldStudentName'),
         studentClass: getChecked('fieldStudentClass'),
         extras: parseExtraFields(getValue('eventExtraFields'))
@@ -846,7 +901,7 @@ function getPastaBase() {
     cards.innerHTML = scopedEvents.map(event => reportEventCardTemplate(event)).join('') || '<div class="empty-state">Nenhum evento cadastrado.</div>';
 
     if (!filteredRows.length) {
-      tbody.innerHTML = '<tr><td colspan="11">Nenhum registro encontrado para o filtro aplicado.</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="10">Nenhum registro encontrado para o filtro aplicado.</td></tr>';
       return;
     }
 
@@ -859,7 +914,7 @@ function getPastaBase() {
         <td>${escapeHtml(row.studentName || '—')}</td>
         <td>${escapeHtml(row.studentClass || '—')}</td>
         <td>${escapeHtml(row.cpf || '—')}</td>
-        <td>${escapeHtml(row.email || '—')}<br><span class="muted">${escapeHtml(row.phone || '—')}</span></td>
+        <!-- <td>${escapeHtml(row.email || '—')}<br><span class="muted">${escapeHtml(row.phone || '—')}</span></td> -->
         <td>${escapeHtml(labelParticipant(row.participantType))}</td>
         <td>${escapeHtml(row.course || '—')}</td>
         <td>${escapeHtml(row.notes || '—')}</td>
@@ -876,7 +931,7 @@ function getPastaBase() {
         <div>
           <span class="event-tag">${escapeHtml(CATEGORIES[event.category] || event.category)}</span>
           <h3>${escapeHtml(event.title)}</h3>
-          <p class="muted">${formatDate(event.date)} às ${escapeHtml(event.time)} · ${escapeHtml(event.location)} — ${escapeHtml(event.city)}</p>
+          <p class="muted">Início: ${formatDate(event.date_begin)}<br>Fim: ${formatDate(event.date_end)}<br>${escapeHtml(event.time_begin)} — ${escapeHtml(event.time_end)}<br>${escapeHtml(event.location)} — ${escapeHtml(event.city)}</p>
         </div>
         <div class="report-meta-list">
           <span><strong>${used}</strong> inscritos</span>
@@ -901,8 +956,8 @@ function getPastaBase() {
         return {
           eventId: reg.eventId,
           eventTitle: event?.title || 'Evento removido',
-          eventDate: event?.date || '',
-          eventTime: event?.time || '',
+          eventDate: event?.date_begin || '',
+          eventTime: event?.time_begin || '',
           eventLocation: event?.location || '',
           eventCity: event?.city || '',
           eventSeats: Number(event?.seats || 0),
@@ -976,12 +1031,12 @@ function getPastaBase() {
       <td>${escapeHtml(row.eventTitle)}</td>
       <td>${formatDate(row.eventDate)} ${escapeHtml(row.eventTime)}</td>
       <td>${escapeHtml(row.displayName)}</td>
+      <td>${escapeHtml(row.cpf || '')}</td>
       <td>${escapeHtml(row.responsibleName || '')}</td>
       <td>${escapeHtml(row.studentName || '')}</td>
       <td>${escapeHtml(row.studentClass || '')}</td>
-      <td>${escapeHtml(row.cpf || '')}</td>
-      <td>${escapeHtml(row.email || '')}</td>
-      <td>${escapeHtml(row.phone || '')}</td>
+      <!-- <td>${escapeHtml(row.email || '')}</td> -->
+      <!-- <td>${escapeHtml(row.phone || '')}</td> -->
       <td>${escapeHtml(labelParticipant(row.participantType))}</td>
       <td>${escapeHtml(row.course || '')}</td>
       <td>${escapeHtml(row.notes || '')}</td>
@@ -1058,6 +1113,7 @@ function getPastaBase() {
     setChecked('fieldCommunity', audience === 'graduacao' && Boolean(defaults.community));
     setChecked('fieldNotes', Boolean(defaults.notes));
     setChecked('fieldResponsibleName', audience === 'escola' && defaults.responsibleName !== false);
+    setChecked('fieldRelationship', audience === 'escola' && defaults.relationship !== false);
     setChecked('fieldStudentName', audience === 'escola' && defaults.studentName !== false);
     setChecked('fieldStudentClass', audience === 'escola' && defaults.studentClass !== false);
     setValue('eventExtraFields', (defaults.extras || []).map(extra => `${extra.label}${extra.required ? '|required' : ''}`).join('\n'));
@@ -1171,7 +1227,7 @@ function getPastaBase() {
   }
 
   function getRegistrations() {
-    return safeJson(localStorage.getItem(KEYS.registrations), []);
+    return apiRegistrations;
   }
 
   function saveRegistrations(registrations) {

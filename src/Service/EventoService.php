@@ -282,4 +282,160 @@ class EventoService
 
         $stmt->execute();
     }
+    public function verificaExistenciaInscricao(int $idAtividade, int $idUsuario): bool
+    {
+        $sql = '
+            SELECT 1
+            FROM inscricoes
+            WHERE id_atividade = :id_atividade
+            AND id_usuario = :id_usuario
+            LIMIT 1
+        ';
+
+        $stmt = $this->con->prepare($sql);
+        $stmt->bindValue(':id_atividade', $idAtividade);
+        $stmt->bindValue(':id_usuario', $idUsuario);
+        $stmt->execute();
+
+        return (bool) $stmt->fetch();       
+    }
+    public function realizarInscricao(array $params): void
+    {
+        $usuarioService = new UsuarioService();
+        if ($params['audience'] === 'escola') {
+            //verificar se o responsavel ja esta cadastrado no banco, e retornar o id caso sim
+            $idResponsavel = null;
+            $resposavel = $usuarioService->retornaPorCPF($params['responsible_cpf'] ?? '') ?: null;
+            if ($resposavel) {
+                $idResponsavel = $resposavel->id;
+                error_log(print_r('ja existe responsavel ' . $idResponsavel, true));
+            } else {
+                //cadastrar o responsavel e retornar o id
+                $idResponsavel = $usuarioService->cadastrarUsuario([
+                    'nome' => $params['responsible_name'] ?? '',
+                    'sobrenome' => '',
+                    'email' => $params['email'] ?? '',
+                    'telefone' => $params['phone'] ?? '',
+                    'cpf' => $params['responsible_cpf'] ?? '',
+                    'data_nascimento' => null,
+                    'cargo' => 'responsavel',
+                    'foto_path' => '',
+                ]);
+                error_log(print_r('novo responsavel ' . $idResponsavel, true));
+            }
+            //vincular o aluno ao responsavel
+
+            //Verifica se ja existe vinculo
+            $usuarios = $usuarioService->retornaPorNome($params['name']);
+            $vinculo = null;
+            if ($usuarios) {
+                for ($i=0; $i < count($usuarios); $i++) { 
+                    $usuario = $usuarios[$i];
+                    $vinculo = $usuarioService->verificaVinculoResponsavel($idResponsavel, $usuario->id);
+                    if ($vinculo) {
+                        break;
+                    }
+                }
+            }
+            //Caso ache, pega o id
+            if ($vinculo) {
+                $idAluno = $vinculo->id_dependente;
+            } else {
+                //Caso nao ache, cadastra o aluno e vincula ao responsavel
+                $idAluno = $usuarioService->cadastrarUsuario([
+                    'nome' => $params['name'] ?? '',
+                    'sobrenome' => '',
+                    'email' => $params['email'] ?? '',
+                    'telefone' => $params['phone'] ?? '',
+                    'cpf' => null,
+                    'data_nascimento' => null,
+                    'cargo' => 'aluno',
+                    'foto_path' => '',
+                ]);
+                error_log('vinculando aluno ao responsavel' . print_r('aluno ' . $idAluno . ' responsavel ' . $idResponsavel . ' parentesco ' . $params['relationship'] ?? '', true));
+                $usuarioService->vincularAlunoResponsavel($idAluno, $idResponsavel, $params['relationship'] ?? '');
+            }
+            //Vincular o aluno à uma turma
+            error_log('vinculando aluno à uma turma ' . print_r('aluno ' . $idAluno . ' turma ' . $params['student_class'] ?? '', true));
+            $usuarioService->vincularAlunoTurma($idAluno, $params['student_class']);
+
+            //realizar a inscricao
+            error_log('realizando inscrição ' . print_r('aluno ' . $idAluno . ' evento ' . $params['event_id'], true));
+            
+            if ($this->verificaExistenciaInscricao($params['event_id'], $idAluno)) {
+                throw new \Exception('Este aluno já está inscrito neste evento.');
+            }
+
+            $sql = 'INSERT INTO 
+                        inscricoes (
+                            id_atividade,
+                            id_usuario,
+                            id_responsavel
+                        ) 
+                    VALUES 
+                        (
+                            :id_atividade,
+                            :id_usuario,
+                            :id_responsavel
+                        )';
+            
+            $stmt = $this->con->prepare($sql);
+            $stmt->bindValue(':id_atividade', $params['event_id'], PDO::PARAM_INT); //Charque, vai ser ajustado na versao final
+            $stmt->bindValue(':id_usuario', $idAluno, PDO::PARAM_INT);              //a pessoa poderá se inscrever em apenas uma atividade
+            $stmt->bindValue(':id_responsavel', $idResponsavel, PDO::PARAM_INT);    //ex: semana academica
+                                                                                    //Por enquanto vai usar esse id ja q tem apenas 1 mesmo
+            $stmt->execute();
+        } else if ($params['audience'] === 'graduacao') {
+            # todo
+        }
+    }
+    public function listarInscricoes(int $idEvento) : array|null
+    {
+        $sql = 'SELECT
+                    i.id_atividade as eventId,
+                    atv.nome as eventTitle,
+                    atv.data_ini as date_begin,
+                    resp.nome as responsibleName,
+                    resp.cpf as cpf,
+                    vinc.parentesco as vinculo,
+                    dep.nome as studentName,
+                    t.nome as studentClass,
+                    c.nome as course,
+                    i.inscrito_em as createdAt
+                FROM
+                    inscricoes as i
+                LEFT OUTER JOIN 
+                    atividades as atv on atv.id = i.id_atividade
+                LEFT OUTER JOIN
+                    usuarios as dep on dep.id = i.id_usuario
+                LEFT OUTER JOIN
+                    usuarios as resp on resp.id = i.id_responsavel
+                LEFT OUTER JOIN
+                    usuarios_responsaveis as vinc on vinc.id_responsavel = resp.id and vinc.id_dependente = dep.id
+                LEFT OUTER JOIN
+                    usuarios_turmas as ut on ut.id_usuario = dep.id
+                LEFT OUTER JOIN
+                    turmas as t on t.id = ut.id_turma
+                LEFT OUTER JOIN
+                    cursos as c on c.id = t.id_curso
+                WHERE
+                    i.id_atividade = :id_atividade;';
+
+        $stmt = $this->con->prepare($sql);
+        $stmt->bindValue(':id_atividade', $idEvento, PDO::PARAM_INT);
+        $stmt->execute();
+
+        $result = $stmt->fetchAll(PDO::FETCH_OBJ);
+
+        return $result ?: null;
+    }
+    public function retornaQtdInscricoes(int $idEvento)
+    {
+        $sql = 'SELECT COUNT(*) AS total FROM inscricoes WHERE id_atividade = :id_atividade';
+        $stmt = $this->con->prepare($sql);
+        $stmt->bindValue(':id_atividade', $idEvento, PDO::PARAM_INT);
+        $stmt->execute();
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $result['total'];
+    }
 }
