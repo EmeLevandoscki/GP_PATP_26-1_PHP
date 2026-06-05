@@ -1,6 +1,3 @@
-drop database if exists ideaueventos_prod;
-create database ideaueventos_prod;
-use ideaueventos_prod;
 -- Tabela usuarios
 CREATE TABLE usuarios (
     id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,

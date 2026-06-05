@@ -35,7 +35,7 @@
       </div>
       <aside class="hero-panel" aria-label="Resumo da plataforma">
         <div><span class="panel-number" id="statEventos">0</span><span class="panel-label">Eventos publicados</span></div>
-        <div><span class="panel-number" id="statInscricdefaultoes">0</span><span class="panel-label">Inscrições registradas</span></div>
+        <div><span class="panel-number" id="statInscricoes">0</span><span class="panel-label">Inscrições registradas</span></div>
       </aside>
     </section>
 
@@ -77,11 +77,10 @@
   </footer>
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
-  <script src="ideau_eventos/assets/js/app.js"></script>
   <script>
     //Pegando o nome da pasta base, isso é pq o nome da pasta base do projeto no git é diferente do nome da pasta na hostinger
     const PASTA_BASE = "<?php echo dirname($_SERVER['SCRIPT_NAME']) ?>";
-  </script>
-
+    </script>
+    <script src="ideau_eventos/assets/js/app.js"></script>
 </body>
 </html>

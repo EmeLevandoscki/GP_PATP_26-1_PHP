@@ -360,31 +360,38 @@ class EventoService
             $usuarioService->vincularAlunoTurma($idAluno, $params['student_class']);
 
             //realizar a inscricao
-            error_log('realizando inscrição ' . print_r('aluno ' . $idAluno . ' evento ' . $params['event_id'], true));
             
             if ($this->verificaExistenciaInscricao($params['event_id'], $idAluno)) {
+                error_log('aluno já inscrito ' . print_r('aluno ' . $idAluno . ' evento ' . $params['event_id'], true));
                 throw new \Exception('Este aluno já está inscrito neste evento.');
             }
 
-            $sql = 'INSERT INTO 
-                        inscricoes (
-                            id_atividade,
-                            id_usuario,
-                            id_responsavel
-                        ) 
-                    VALUES 
-                        (
-                            :id_atividade,
-                            :id_usuario,
-                            :id_responsavel
-                        )';
-            
-            $stmt = $this->con->prepare($sql);
-            $stmt->bindValue(':id_atividade', $params['event_id'], PDO::PARAM_INT); //Charque, vai ser ajustado na versao final
-            $stmt->bindValue(':id_usuario', $idAluno, PDO::PARAM_INT);              //a pessoa poderá se inscrever em apenas uma atividade
-            $stmt->bindValue(':id_responsavel', $idResponsavel, PDO::PARAM_INT);    //ex: semana academica
-                                                                                    //Por enquanto vai usar esse id ja q tem apenas 1 mesmo
-            $stmt->execute();
+            error_log('realizando inscrição ' . print_r('aluno ' . $idAluno . ' evento ' . $params['event_id'], true));
+            try {
+                $sql = 'INSERT INTO 
+                            inscricoes (
+                                id_atividade,
+                                id_usuario,
+                                id_responsavel
+                            ) 
+                        VALUES 
+                            (
+                                :id_atividade,
+                                :id_usuario,
+                                :id_responsavel
+                            )';
+                
+                $stmt = $this->con->prepare($sql);
+                $stmt->bindValue(':id_atividade', $params['event_id'], PDO::PARAM_INT); //Charque, vai ser ajustado na versao final
+                $stmt->bindValue(':id_usuario', $idAluno, PDO::PARAM_INT);              //a pessoa poderá se inscrever em apenas uma atividade
+                $stmt->bindValue(':id_responsavel', $idResponsavel, PDO::PARAM_INT);    //ex: semana academica
+                                                                                        //Por enquanto vai usar esse id ja q tem apenas 1 mesmo
+                $stmt->execute();
+                error_log('inscrição realizada com sucesso ' . print_r('aluno ' . $idAluno . ' evento ' . $params['event_id'], true));
+            } catch (\Throwable $th) {
+                error_log('erro ao realizar inscrição ' . print_r('aluno ' . $idAluno . ' evento ' . $params['event_id'] . ' erro ' . $th->getMessage(), true));
+                throw $th;
+            }    
         } else if ($params['audience'] === 'graduacao') {
             # todo
         }
@@ -396,8 +403,8 @@ class EventoService
                     atv.nome as eventTitle,
                     atv.data_ini as date_begin,
                     resp.nome as responsibleName,
-                    resp.cpf as cpf,
-                    vinc.parentesco as vinculo,
+                    resp.cpf as responsiblecpf,
+                    vinc.parentesco as relationship,
                     dep.nome as studentName,
                     t.nome as studentClass,
                     c.nome as course,
@@ -431,11 +438,11 @@ class EventoService
     }
     public function retornaQtdInscricoes(int $idEvento)
     {
-        $sql = 'SELECT COUNT(*) AS total FROM inscricoes WHERE id_atividade = :id_atividade';
+        $sql = 'SELECT COUNT(*) AS count FROM inscricoes WHERE id_atividade = :id_atividade';
         $stmt = $this->con->prepare($sql);
         $stmt->bindValue(':id_atividade', $idEvento, PDO::PARAM_INT);
         $stmt->execute();
         $result = $stmt->fetch(PDO::FETCH_ASSOC);
-        return $result['total'];
+        return $result['count'];
     }
 }

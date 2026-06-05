@@ -1,5 +1,7 @@
 <?php
     namespace App\Controller;
+    ini_set('display_errors', 0);
+    error_reporting(E_ALL);
     use App\Service\EventoService;
     require_once __DIR__ . '/../../vendor/autoload.php';
 
@@ -84,7 +86,7 @@
             case 'qtd_inscricoes_evento':
                 $qtdInscricoes = $service->retornaQtdInscricoes((int) $_GET['id']);
 
-                echo json_encode(['total' => $qtdInscricoes]);
+                echo json_encode(['count' => $qtdInscricoes]);
                 exit();
                 break;
             default:

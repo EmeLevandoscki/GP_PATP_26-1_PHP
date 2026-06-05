@@ -152,8 +152,16 @@ function getPastaBase() {
   async function fetchRegistrationsCount() {
     const res = await fetch(`${API_ENDPOINT}?action=qtd_inscricoes_evento&id=1`); //charque arrumar
     const data = await res.json();
+
     return data.count;
   }
+
+  async function fetchRegistrationsCount2() { //charque só pra arrumar ligeiro, refazer depois
+    const res = await fetch(`${getPastaBase()}/src/Controller/EventoController.php?action=qtd_inscricoes_evento&id=1`); //charque arrumar
+    const data = await res.json();
+
+    return data.count;
+  }  
 
   document.addEventListener('DOMContentLoaded', () => {
     seedData();
@@ -218,16 +226,15 @@ function getPastaBase() {
       if (email !== ORGANIZER.email || password !== ORGANIZER.password) {
         showToast('E-mail ou senha incorretos.');
         return;
-      }
+      }fetchRegistrationsCount2
       sessionStorage.setItem(KEYS.session, JSON.stringify({ email, name: ORGANIZER.name, loggedAt: new Date().toISOString() }));
       window.location.href = 'dashboard.html';
-    });
+    });fetchRegistrationsCount2
   }
 
   async function initDashboardPage() {
     if (!requireAuth()) return;
     apiRegistrations = await fetchRegistrationsFromApi();
-    console.log(apiRegistrations);
     renderDashboard();
   }
 
@@ -329,10 +336,10 @@ function getPastaBase() {
     return Boolean(sessionStorage.getItem(KEYS.session));
   }
 
-  function renderPublicStats() {
+  async function renderPublicStats() {
     const published = getEvents().filter(event => event.published);
     setText('statEventos', published.length);
-    setText('statInscricoes', getRegistrations().length);
+    setText('statInscricoes', await fetchRegistrationsCount2());
   }
 
   function renderHomeEvents() {
@@ -505,16 +512,16 @@ function getPastaBase() {
     const showGraduationTypeSelect = audience === 'graduacao' && Boolean(fields.course || fields.community);
 
     const graduationFields = audience === 'graduacao' ? `
-        <label class="form-field"><span>Nome completo *</span><input name="name" required autocomplete="name" placeholder="Seu nome completo"></label>
+        <label class="form-field"><span>Nome completo *</span><input name="name" required maxlength="255" autocomplete="name" placeholder="Seu nome completo"></label>
         ${showGraduationTypeSelect ? participantTypeTemplate(fields) : ''}
         ${fields.course ? `<label class="form-field" id="courseField"><span>Curso *</span><select name="course" id="courseSelect"><option value="">Selecione o curso</option>${courseOptions}</select></label>` : ''}` : '';
 
     const schoolFields = audience === 'escola' ? `
         <input type="hidden" name="participantType" value="escola">
-        ${fields.responsibleName !== false ? '<label class="form-field"><span>Nome do responsável *</span><input name="responsibleName" required autocomplete="name" placeholder="Nome completo do responsável"></label>' : ''}
-        ${fields.responsibleCPF ? '<label class="form-field"><span>CPF do responsável *</span><input name="responsibleCpf" required inputmode="numeric" placeholder="000.000.000-00"></label>' : ''}
+        ${fields.responsibleName !== false ? '<label class="form-field"><span>Nome do responsável *</span><input name="responsibleName" required maxlength="255" autocomplete="name" placeholder="Nome completo do responsável"></label>' : ''}
+        ${fields.responsibleCPF ? '<label class="form-field"><span>CPF do responsável *</span><input name="responsibleCpf" required inputmode="numeric" pattern="[0-9]{11}" maxlength="11" minlength="11" placeholder="000.000.000-00"></label>' : ''}
         ${fields.relationship !== false ? `<label class="form-field"><span>Grau de Parentesco *</span><select name="relationship" required><option value="">Selecione o Grau de Parentesco</option>${relationshipOptions}</select></label>` : ''}
-        ${fields.studentName !== false ? '<label class="form-field"><span>Nome do educando *</span><input name="studentName" required placeholder="Nome completo do educando"></label>' : ''}
+        ${fields.studentName !== false ? '<label class="form-field"><span>Nome do educando *</span><input name="studentName" required maxlength="255" placeholder="Nome completo do educando"></label>' : ''}
         ${fields.studentClass !== false ? `<label class="form-field"><span>Turma do educando *</span><select name="studentClass" required><option value="">Selecione a turma</option>${classOptions}</select></label>` : ''}` : '';
 
     return `
@@ -522,7 +529,7 @@ function getPastaBase() {
         <div class="audience-pill">${escapeHtml(AUDIENCES[audience])}</div>
         ${graduationFields}
         ${schoolFields}
-        ${fields.cpf ? '<label class="form-field"><span>CPF *</span><input name="cpf" required inputmode="numeric" placeholder="000.000.000-00"></label>' : ''}
+        ${fields.cpf ? '<label class="form-field"><span>CPF *</span><input name="cpf" required inputmode="numeric" pattern="[0-9]{11}" maxlength="11" minlength="11" placeholder="000.000.000-00"></label>' : ''}
         ${fields.email ? '<label class="form-field"><span>E-mail *</span><input name="email" type="email" required autocomplete="email" placeholder="seu@email.com"></label>' : ''}
         ${fields.phone ? '<label class="form-field"><span>Telefone *</span><input name="phone" required inputmode="tel" autocomplete="tel" placeholder="(54) 99999-9999"></label>' : ''}
         ${extras.map(extra => `<label class="form-field"><span>${escapeHtml(extra.label)} ${extra.required ? '*' : ''}</span><input name="extra_${slugify(extra.label)}" ${extra.required ? 'required' : ''} placeholder="${escapeAttr(extra.label)}"></label>`).join('')}
@@ -630,8 +637,9 @@ function getPastaBase() {
         card.innerHTML = `<div class="success-card"><strong>Inscrição confirmada</strong><p>Sua inscrição em <b>${escapeHtml(targetEvent.title)}</b> foi registrada.</p><a class="btn btn-secondary full" href="evento.html?id=${encodeURIComponent(targetEvent.id)}">Voltar ao evento</a><a class="btn btn-light full top-gap" href="index.html#eventos">Ver outros eventos</a></div>`;
         showToast('Inscrição registrada com sucesso.');
       })
-      .catch(() => {
-        showToast('Erro ao enviar inscrição. Tente novamente mais tarde.');
+      .catch((error) => {
+        console.log(error);
+        showToast('Erro ao enviar inscrição. Tente novamente mais tarde. ' + (error.message || ''));
       });
   }
 
@@ -645,13 +653,14 @@ function getPastaBase() {
     setText('metricEvents', events.length);
     setText('metricPublished', published.length);
     setText('metricRegistrations', regs.length);
-    setText('metricSeats', `${avg}%`);
+    // setText('metricSeats', `${avg}%`);
+    setText('metricSeats', `Vagas Ilimitadas`);
 
     const dashEvents = document.getElementById('dashboardEvents');
     if (dashEvents) {
       dashEvents.innerHTML = events.slice().sort(compareEventsByDate).slice(0, 5).map(event => {
         const used = countRegistrations(event.id);
-        return `<div class="mini-item"><strong>${escapeHtml(event.title)}</strong><span>${formatDate(event.date_begin)} - ${formatDate(event.date_end)} · ${event.seats == -1 ? used : used + '/' + Number(event.seats || 0)} inscritos · ${event.published ? 'Publicado' : 'Rascunho'}</span></div>`;
+        return `<div class="mini-item"><strong>${escapeHtml(event.title)}</strong><span>${formatDate(event.date_begin)} - ${formatDate(event.date_end)} · ${event.seats == -1 ? 'Vagas Ilimitadas · ' : used + '/' + Number(event.seats || 0) + 'inscritos · '}${event.published ? 'Publicado' : 'Rascunho'}</span></div>`;
       }).join('') || '<div class="empty-state">Nenhum evento cadastrado.</div>';
     }
 
@@ -664,7 +673,7 @@ function getPastaBase() {
     }
   }
 
-  function renderAdminEventsTable() {
+  async function renderAdminEventsTable() {
     const tbody = document.getElementById('adminEventsTable');
     if (!tbody) return;
     const events = getEvents().sort(compareEventsByDate);
@@ -672,14 +681,14 @@ function getPastaBase() {
       tbody.innerHTML = '<tr><td colspan="6">Nenhum evento cadastrado.</td></tr>';
       return;
     }
+    const used = await countRegistrations(events[0].id); //charque, arrumar pois pega apenas do primeiro evento
     tbody.innerHTML = events.map(event => {
-      const used = countRegistrations(event.id);
       return `
         <tr>
           <td><strong>${escapeHtml(event.title)}</strong><br><span class="muted">${escapeHtml(CATEGORIES[event.category] || event.category)} · ${escapeHtml(AUDIENCES[getEventAudience(event)])} · ${escapeHtml(event.city)}</span></td>
-          <td>${formatDate(event.date)}<br><span class="muted">${escapeHtml(event.time)}</span></td>
+          <td>${formatDate(event.date_begin)}<br><span class="muted">${escapeHtml(event.time_begin)}</span></td>
           
-          <td>${Number(event.seats || 0)}</td>
+          <td>${event.seats == -1 ? 'Ilimitadas' : Number(event.seats || 0)}</td>
           <td>${used}</td>
           <td><span class="status-pill ${event.published ? '' : 'off'}">${event.published ? 'Publicado' : 'Rascunho'}</span></td>
           <td>
@@ -808,6 +817,7 @@ function getPastaBase() {
     const eventFilter = getValue('registrationEventFilter') || 'todos';
     const query = getValue('registrationSearch').toLowerCase();
     const events = getEvents();
+    console.log(getRegistrations());
     const rows = getRegistrations()
       .filter(reg => eventFilter === 'todos' || reg.eventId === eventFilter)
       .filter(reg => !query || [reg.name, reg.cpf, reg.email, reg.phone, reg.course].join(' ').toLowerCase().includes(query))
@@ -819,14 +829,14 @@ function getPastaBase() {
     }
 
     tbody.innerHTML = rows.map(reg => {
-      const event = events.find(item => item.id === reg.eventId);
+      const event = events.find(item => item.id == reg.eventId);
       const link = event ? `evento.html?id=${encodeURIComponent(event.id)}` : '#';
       return `
         <tr>
           <td><strong>${escapeHtml(registrationPrimaryName(reg))}</strong><br><span class="muted">${escapeHtml(registrationSecondaryLine(reg))}</span></td>
           <td><a href="${link}" target="_blank">${escapeHtml(event?.title || 'Evento removido')}</a></td>
-          <td>${escapeHtml(reg.email || '—')}<br><span class="muted">${escapeHtml(reg.phone || '—')}</span></td>
-          <td>${escapeHtml(labelParticipant(reg.participantType))}<br><span class="muted">${escapeHtml(registrationAudienceLine(reg))}</span></td>
+          <!-- <td>${escapeHtml(reg.email || '—')}<br><span class="muted">${escapeHtml(reg.phone || '—')}</span></td> -->
+          <td>${escapeHtml(labelParticipant(reg.course))}<br><span class="muted">${escapeHtml(registrationAudienceLine(reg))}</span></td>
           <td>${formatDateTime(reg.createdAt)}</td>
           <td><button class="btn btn-danger small" type="button" data-remove-registration="${escapeAttr(reg.id)}">Excluir</button></td>
         </tr>`;
@@ -836,20 +846,17 @@ function getPastaBase() {
   function exportRegistrationsCsv() {
     const events = getEvents();
     const rows = getRegistrations().map(reg => {
-      const event = events.find(item => item.id === reg.eventId);
+      const event = events.find(item => item.id == reg.eventId);
       return {
-        evento: event?.title || 'Evento removido',
-        nome: registrationPrimaryName(reg),
+        evento: event.title || 'Evento removido',
+        data_evento: formatDate(event.date_begin),
+        data_inscricao: formatDateTime(reg.createdAt),
+        educando: registrationPrimaryName(reg),
         responsavel: reg.responsibleName || '',
-        educando: reg.studentName || '',
-        turma_educando: reg.studentClass || '',
-        cpf: reg.cpf || '',
-        email: reg.email || '',
-        telefone: reg.phone || '',
-        vinculo: labelParticipant(reg.participantType),
-        curso: reg.course || '',
-        observacoes: reg.notes || '',
-        data_inscricao: formatDateTime(reg.createdAt)
+        cpf_responsavel: reg.responsiblecpf || '',
+        parentesco: reg.relationship || '',
+        turma: reg.studentClass || '',
+        curso: reg.course || ''
       };
     });
     const csv = toCsv(rows);
@@ -892,12 +899,11 @@ function getPastaBase() {
       : registrations.filter(reg => reg.eventId === eventFilter).length;
     const occupancy = totalSeats ? Math.round((totalRegs / totalSeats) * 100) : 0;
 
-    summary.innerHTML = `
-      <article class="metric-card"><span class="metric-value">${scopedEvents.length}</span><span class="metric-label">Eventos no filtro</span></article>
-      <article class="metric-card"><span class="metric-value">${totalRegs}</span><span class="metric-label">Inscrições</span></article>
-      <article class="metric-card"><span class="metric-value">${occupancy}%</span><span class="metric-label">Ocupação</span></article>
-      <article class="metric-card"><span class="metric-value">${filteredRows.length}</span><span class="metric-label">Linhas exibidas</span></article>`;
-
+   // summary.innerHTML = `
+      // <article class="metric-card"><span class="metric-value">${scopedEvents.length}</span><span class="metric-label">Eventos no filtro</span></article>
+      // <article class="metric-card"><span class="metric-value">${totalRegs}</span><span class="metric-label">Inscrições</span></article>
+      // <article class="metric-card"><span class="metric-value">${occupancy}%</span><span class="metric-label">Ocupação</span></article>
+      // <article class="metric-card"><span class="metric-value">${filteredRows.length}</span><span class="metric-label">Linhas exibidas</span></article>`;
     cards.innerHTML = scopedEvents.map(event => reportEventCardTemplate(event)).join('') || '<div class="empty-state">Nenhum evento cadastrado.</div>';
 
     if (!filteredRows.length) {
@@ -907,17 +913,18 @@ function getPastaBase() {
 
     tbody.innerHTML = filteredRows.map(row => `
       <tr>
-        <td><strong>${escapeHtml(row.eventTitle)}</strong><br><span class="muted">${formatDate(row.eventDate)} · ${escapeHtml(row.eventTime)}</span></td>
+        <td><strong>${escapeHtml(row.eventTitle)}</strong></td>
+        <td>${formatDate(row.eventDate_begin)} · ${escapeHtml(row.eventTime)}</td>
         <td>${formatDateTime(row.createdAt)}</td>
-        <td><strong>${escapeHtml(row.displayName)}</strong><br><span class="muted">${escapeHtml(row.secondaryLine)}</span></td>
+        <td><strong>${escapeHtml(row.displayName)}</strong><br>
         <td>${escapeHtml(row.responsibleName || '—')}</td>
-        <td>${escapeHtml(row.studentName || '—')}</td>
+        <td>${escapeHtml(row.responsiblecpf || '—')}</td>
+        <td>${escapeHtml(row.relationship || '—')}</td>
         <td>${escapeHtml(row.studentClass || '—')}</td>
-        <td>${escapeHtml(row.cpf || '—')}</td>
-        <!-- <td>${escapeHtml(row.email || '—')}<br><span class="muted">${escapeHtml(row.phone || '—')}</span></td> -->
-        <td>${escapeHtml(labelParticipant(row.participantType))}</td>
         <td>${escapeHtml(row.course || '—')}</td>
-        <td>${escapeHtml(row.notes || '—')}</td>
+        <!-- <td>${escapeHtml(row.email || '—')}<br><span class="muted">${escapeHtml(row.phone || '—')}</span></td> -->
+        <!-- <td>${escapeHtml(labelParticipant(row.participantType))}</td> -->
+        <!-- <td>${escapeHtml(row.notes || '—')}</td> -->
       </tr>`).join('');
   }
 
@@ -933,12 +940,12 @@ function getPastaBase() {
           <h3>${escapeHtml(event.title)}</h3>
           <p class="muted">Início: ${formatDate(event.date_begin)}<br>Fim: ${formatDate(event.date_end)}<br>${escapeHtml(event.time_begin)} — ${escapeHtml(event.time_end)}<br>${escapeHtml(event.location)} — ${escapeHtml(event.city)}</p>
         </div>
-        <div class="report-meta-list">
+        <!-- <div class="report-meta-list">
           <span><strong>${used}</strong> inscritos</span>
           <span><strong>${remaining}</strong> vagas restantes</span>
           <span><strong>${occupancy}%</strong> ocupação</span>
           <span><strong>${event.published ? 'Publicado' : 'Rascunho'}</strong> status</span>
-        </div>
+         </div> -->
         <div class="report-actions">
           <button class="btn btn-primary small" type="button" data-print-event="${escapeAttr(event.id)}">PDF</button>
           <button class="btn btn-secondary small" type="button" data-excel-event="${escapeAttr(event.id)}">Excel</button>
@@ -950,13 +957,13 @@ function getPastaBase() {
   function getReportRows(eventFilter = 'todos', query = '') {
     const events = getEvents();
     return getRegistrations()
-      .filter(reg => eventFilter === 'todos' || reg.eventId === eventFilter)
+      .filter(reg => eventFilter === 'todos' || reg.eventId == eventFilter)
       .map(reg => {
-        const event = events.find(item => item.id === reg.eventId);
+        const event = events.find(item => item.id == reg.eventId);
         return {
           eventId: reg.eventId,
           eventTitle: event?.title || 'Evento removido',
-          eventDate: event?.date_begin || '',
+          eventDate_begin: event?.date_begin || '',
           eventTime: event?.time_begin || '',
           eventLocation: event?.location || '',
           eventCity: event?.city || '',
@@ -969,7 +976,8 @@ function getPastaBase() {
           responsibleName: reg.responsibleName || '',
           studentName: reg.studentName || '',
           studentClass: reg.studentClass || '',
-          cpf: reg.cpf || '',
+          responsiblecpf: reg.responsiblecpf || '',
+          relationship: reg.relationship || 'Responsável',
           email: reg.email || '',
           phone: reg.phone || '',
           participantType: reg.participantType || '',
@@ -999,7 +1007,7 @@ function getPastaBase() {
   }
 
   function printEventReport(eventId = 'todos') {
-    const rows = getReportRows(eventId, getValue('reportSearch').toLowerCase());
+    const rows = getReportRows(eventId, '');//getValue('reportSearch').toLowerCase());
     const title = reportTitle(eventId);
     const win = window.open('', '_blank');
     if (!win) {
@@ -1028,20 +1036,19 @@ function getPastaBase() {
     }, {});
     const summaryRows = Object.values(totals).map(item => `<tr><td>${escapeHtml(item.title)}</td><td>${item.count}</td></tr>`).join('') || '<tr><td colspan="2">Nenhuma inscrição no filtro.</td></tr>';
     const tableRows = rows.map(row => `<tr>
-      <td>${escapeHtml(row.eventTitle)}</td>
-      <td>${formatDate(row.eventDate)} ${escapeHtml(row.eventTime)}</td>
-      <td>${escapeHtml(row.displayName)}</td>
-      <td>${escapeHtml(row.cpf || '')}</td>
-      <td>${escapeHtml(row.responsibleName || '')}</td>
-      <td>${escapeHtml(row.studentName || '')}</td>
-      <td>${escapeHtml(row.studentClass || '')}</td>
-      <!-- <td>${escapeHtml(row.email || '')}</td> -->
-      <!-- <td>${escapeHtml(row.phone || '')}</td> -->
-      <td>${escapeHtml(labelParticipant(row.participantType))}</td>
-      <td>${escapeHtml(row.course || '')}</td>
-      <td>${escapeHtml(row.notes || '')}</td>
-      <td>${formatDateTime(row.createdAt)}</td>
-    </tr>`).join('') || '<tr><td colspan="13">Nenhuma inscrição encontrada.</td></tr>';
+        <td><strong>${escapeHtml(row.eventTitle)}</strong></td>
+        <td>${formatDate(row.eventDate_begin)} · ${escapeHtml(row.eventTime)}</td>
+        <td>${formatDateTime(row.createdAt)}</td>
+        <td><strong>${escapeHtml(row.displayName)}</strong><br>
+        <td>${escapeHtml(row.responsibleName || '—')}</td>
+        <td>${escapeHtml(row.responsiblecpf || '—')}</td>
+        <td>${escapeHtml(row.relationship || '—')}</td>
+        <td>${escapeHtml(row.studentClass || '—')}</td>
+        <td>${escapeHtml(row.course || '—')}</td>
+        <!-- <td>${escapeHtml(row.email || '—')}<br><span class="muted">${escapeHtml(row.phone || '—')}</span></td> -->
+        <!-- <td>${escapeHtml(labelParticipant(row.participantType))}</td> -->
+        <!-- <td>${escapeHtml(row.notes || '—')}</td> -->
+      </tr>`).join('') || '<tr><td colspan="13">Nenhuma inscrição encontrada.</td></tr>';
 
     return `<!DOCTYPE html>
 <html lang="pt-BR">
@@ -1071,7 +1078,7 @@ function getPastaBase() {
   <h2>Resumo por evento</h2>
   <table><thead><tr><th>Evento</th><th>Inscrições</th></tr></thead><tbody>${summaryRows}</tbody></table>
   <h2>Lista detalhada de inscrições</h2>
-  <table><thead><tr><th>Evento</th><th>Data do evento</th><th>Nome</th><th>Responsável</th><th>Educando</th><th>Turma</th><th>CPF</th><th>E-mail</th><th>Telefone</th><th>Vínculo</th><th>Curso</th><th>Observações</th><th>Data da inscrição</th></tr></thead><tbody>${tableRows}</tbody></table>
+  <table><thead><tr><th>Evento</th><th>Data do evento</th><th>Inscrição</th><th>Educando</th><th>Responsável</th><th>CPF do Responsável</th><th>Parentesco</th><th>Turma</th><th>Curso</th></tr></thead><tbody>${tableRows}</tbody></table>
   ${excelMode ? '' : '<p class="no-print" style="margin-top:24px">Use Ctrl+P ou a janela aberta para salvar como PDF.</p>'}
 </body>
 </html>`;
@@ -1207,7 +1214,7 @@ function getPastaBase() {
     if (reg.studentName || reg.responsibleName || reg.studentClass) {
       const parts = [];
       if (reg.responsibleName) parts.push(`Responsável: ${reg.responsibleName}`);
-      if (reg.studentClass) parts.push(`Turma: ${reg.studentClass}`);
+      if (reg.relationship) parts.push(`Parentesco: ${reg.relationship}`);
       return parts.join(' · ') || 'Evento escolar';
     }
     return reg.cpf || 'CPF não solicitado';
@@ -1238,8 +1245,8 @@ function getPastaBase() {
     try { return JSON.parse(text) || fallback; } catch { return fallback; }
   }
 
-  function countRegistrations(eventId) {
-    return getRegistrations().filter(item => item.eventId === eventId).length;
+  async function countRegistrations(eventId) {
+    return await fetchRegistrationsCount(eventId);
   }
 
   function compareEventsByDate(a, b) {
