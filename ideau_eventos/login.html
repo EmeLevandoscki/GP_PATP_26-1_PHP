@@ -1,38 +1,80 @@
 <!DOCTYPE html>
 <html lang="pt-BR" data-theme="dark">
 <head>
+  <!-- INÍCIO HEAD -->
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Login do Organizador — IDEAU Eventos</title>
+  <!-- INÍCIO FONTES -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,700;1,300&display=swap" rel="stylesheet">
+  <!-- FIM FONTES -->
+  <!-- INÍCIO CSS -->
   <link rel="stylesheet" href="assets/css/app.css" />
+  <link rel="stylesheet" href="assets/css/login.css" />
+  <!-- FIM CSS -->
+  <!-- FIM HEAD -->
 </head>
+<!-- INÍCIO BODY -->
 <body data-page="login" class="auth-page">
+
+  <!-- INÍCIO HEADER -->
   <header class="site-header transparent-header">
-    <a class="brand" href="../index.html"><span class="brand-mark">ID</span><span class="brand-text"><strong>IDEAU Eventos</strong><small>Organizador</small></span></a>
+    <a class="brand" href="../index.html"><img src="assets/img/logo__ideau.png" alt="IDEAU" style="height:40px;width:auto"><span class="brand-text"><strong>IDEAU Eventos</strong><small>Organizador</small></span></a>
     <nav class="main-nav always-visible"><a href="../index.php">Página pública</a></nav>
   </header>
+  <!-- FIM HEADER -->
 
+  <!-- INÍCIO TOGGLE TEMA -->
+  <button class="corner-toggle" id="themeToggle" onclick="toggleTheme()" title="Alternar tema">☀️</button>
+  <!-- FIM TOGGLE TEMA -->
+
+  <!-- INÍCIO LAYOUT PRINCIPAL -->
   <main class="auth-layout">
-    <section class="auth-copy">
-      <p class="eyebrow">Ambiente administrativo</p>
-      <h1>PAINEL DO<br><span class="outline-word">ORGANIZADOR</span></h1>
-      <p>Entre para criar eventos, definir campos de inscrição, publicar links individuais e acompanhar inscritos.</p>
-    </section>
-    <section class="auth-card">
-      <p class="eyebrow">Acesso</p>
-      <h2>Entrar</h2>
-      <form id="loginForm" class="form-stack">
-        <label class="form-field"><span>E-mail</span><input id="loginEmail" type="email" autocomplete="email" required placeholder="Digite seu e-mail"></label>
-        <label class="form-field"><span>Senha</span><input id="loginPassword" type="password" autocomplete="current-password" required placeholder="Digite sua senha"></label>
-        <button class="btn btn-primary full" type="submit">Acessar painel</button>
-      </form>
-    </section>
-  </main>
 
+    <!-- INÍCIO PAINEL ESQUERDO -->
+    <section class="auth-copy">
+      <div>
+        <p class="eyebrow">Ambiente do organizador</p>
+        <h1>PAINEL DO<br><span class="outline-word">ORGANIZADOR</span></h1>
+        <p>Acesse o ambiente administrativo para gerenciar eventos, configurar formulários de inscrição, acompanhar participantes e emitir relatórios.</p>
+      </div>
+      <div class="left-footer">
+        <div class="left-ticker">↓ Faça login para continuar ↓</div>
+      </div>
+    </section>
+    <!-- FIM PAINEL ESQUERDO -->
+
+    <!-- INÍCIO PAINEL DIREITO -->
+    <section class="auth-card">
+      <div class="form-stack">
+
+        <!-- INÍCIO TÍTULO DO FORMULÁRIO -->
+        <p class="eyebrow">Acesso</p>
+        <h2>Entrar</h2>
+        <!-- FIM TÍTULO DO FORMULÁRIO -->
+
+        <!-- INÍCIO FORMULÁRIO DE LOGIN -->
+        <form id="loginForm" class="form-stack">
+          <label class="form-field"><span>E-mail</span><input id="loginEmail" type="email" autocomplete="email" required placeholder="Digite seu e-mail"></label>
+          <label class="form-field"><span>Senha</span><input id="loginPassword" type="password" autocomplete="current-password" required placeholder="Digite sua senha"></label>
+          <button class="btn btn-primary full" type="submit">Acessar painel</button>
+        </form>
+        <!-- FIM FORMULÁRIO DE LOGIN -->
+
+      </div>
+    </section>
+    <!-- FIM PAINEL DIREITO -->
+
+  </main>
+  <!-- FIM LAYOUT PRINCIPAL -->
+ 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
+ 
   <script src="assets/js/app.js"></script>
+  <script src="assets/js/theme.js"></script> 
+
 </body>
+<!-- FIM BODY -->
 </html>
