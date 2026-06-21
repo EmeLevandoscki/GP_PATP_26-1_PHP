@@ -73,11 +73,6 @@ code { background: var(--surface-2); border: 1px solid var(--border); border-rad
 .transparent-header { position: fixed; left: 0; right: 0; background: transparent; }
 .brand { display: inline-flex; align-items: center; gap: 12px; text-decoration: none; min-width: 0; }
 .brand img { height: 44px; width: auto; object-fit: contain; }
-.brand-mark {
-  width: 44px; height: 44px; display: grid; place-items: center; border-radius: 16px;
-  background: linear-gradient(135deg, var(--green-dark), var(--green-light)); color: #fff;
-  font-family: 'Bebas Neue', sans-serif; font-size: 1.35rem; letter-spacing: 0.08em; flex: 0 0 auto;
-}
 .brand-text { display: grid; gap: 1px; min-width: 0; }
 .brand-text strong { font-family: 'Bebas Neue', sans-serif; font-size: 1.45rem; letter-spacing: 0.1em; line-height: 1; }
 .brand-text small { color: var(--muted); font-size: 0.68rem; letter-spacing: 0.16em; text-transform: uppercase; }

@@ -1,0 +1,477 @@
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,700;1,300&display=swap');
+
+:root {
+  --bg: #e8ece0;
+  --surface: #f2f5ec;
+  --surface-2: #eef3e7;
+  --card: #f7faf3;
+  --card-hover: #eef3e7;
+  --nav-bg: rgba(232, 236, 224, 0.96);
+  --green-dark: #0d4a0d;
+  --green-mid: #1a6e1a;
+  --green-light: #2e8b2e;
+  --gold: #d4a800;
+  --gold-light: #f5c800;
+  --red: #c41a1a;
+  --text: #1e2e14;
+  --muted: #5a6e4a;
+  --border: rgba(13, 74, 13, 0.10);
+  --border-strong: rgba(13, 74, 13, 0.20);
+  --shadow: 0 2px 16px rgba(13, 74, 13, 0.07);
+  --radius: 24px;
+  --radius-sm: 14px;
+  --max: 1180px;
+}
+
+[data-theme="dark"] {
+  --bg: #0a0f08;
+  --surface: #111a0e;
+  --surface-2: #172313;
+  --card: #141f10;
+  --card-hover: #1a2916;
+  --nav-bg: rgba(10, 15, 8, 0.96);
+  --green-dark: #0d4a0d;
+  --green-mid: #2ea82e;
+  --green-light: #45c445;
+  --gold: #f5c800;
+  --gold-light: #ffd740;
+  --red: #e02020;
+  --text: #e8f0d8;
+  --muted: #7a9460;
+  --border: rgba(46, 168, 46, 0.12);
+  --border-strong: rgba(46, 168, 46, 0.25);
+  --shadow: 0 2px 16px rgba(0, 0, 0, 0.4);
+}
+
+*,*::before,*::after { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'DM Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  transition: background 0.3s, color 0.3s;
+  overflow: hidden;
+  height: 100vh;
+}
+a { color: inherit; }
+button { cursor: pointer; font: inherit; }
+button:disabled { opacity: .48; cursor: not-allowed; }
+input, select, textarea { font: inherit; }
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+
+/* ─── HEADER ─── */
+.site-header {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 500;
+  display: flex; align-items: center;
+  justify-content: space-between; gap: 24px;
+  padding: 14px clamp(18px, 5vw, 48px);
+  background: var(--nav-bg);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+}
+.brand { display: inline-flex; align-items: center; gap: 12px; text-decoration: none; }
+.brand img { height: 44px; width: auto; object-fit: contain; }
+.brand-text { display: grid; gap: 1px; }
+.brand-text strong {
+  font-family: 'Bebas Neue', sans-serif; font-size: 1.45rem;
+  letter-spacing: 0.1em; line-height: 1; color: var(--green-dark);
+}
+[data-theme="dark"] .brand-text strong { color: var(--green-light); }
+.brand-text small { color: var(--muted); font-size: 0.68rem; letter-spacing: 0.16em; text-transform: uppercase; }
+
+.main-nav { display: flex; align-items: center; gap: 18px; }
+.main-nav a {
+  border: 0; background: transparent; color: var(--muted); text-decoration: none; font-weight: 700;
+  font-size: 0.76rem; letter-spacing: 0.11em; text-transform: uppercase; transition: color 0.2s;
+}
+.main-nav a:hover { color: var(--text); }
+.main-nav a.nav-cta {
+  background: var(--green-dark); color: #fff; text-decoration: none; font-size: 0.76rem;
+  font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; padding: 8px 16px;
+  transition: background 0.2s; border: none;
+}
+.main-nav a.nav-cta:hover { background: var(--green-light); color: #fff; }
+[data-theme="dark"] .main-nav a.nav-cta { background: var(--green-mid); }
+[data-theme="dark"] .main-nav a.nav-cta:hover { background: var(--green-light); }
+.menu-toggle { display: none; }
+
+/* ─── BOTÃO TEMA ─── */
+.theme-toggle {
+  background: transparent; border: 1px solid var(--border-strong); color: var(--muted);
+  width: 36px; height: 36px; display: flex; align-items: center; justify-content: center;
+  font-size: 1.1rem; transition: all 0.2s; border-radius: 50%; cursor: pointer;
+}
+.theme-toggle:hover { border-color: var(--green-mid); color: var(--green-mid); background: rgba(46, 139, 46, 0.08); }
+
+/* ─── HERO FULLSCREEN ─── */
+.inscricao-hero {
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  padding: 88px clamp(24px, 5vw, 48px) 20px;
+  position: relative;
+}
+.inscricao-bg {
+  position: absolute; inset: 0; z-index: 0;
+  background:
+    radial-gradient(ellipse 70% 55% at 55% 35%, rgba(13,74,13,0.10) 0%, transparent 60%),
+    radial-gradient(ellipse 45% 45% at 15% 65%, rgba(212,168,0,0.06) 0%, transparent 55%),
+    radial-gradient(ellipse 40% 40% at 85% 70%, rgba(196,26,26,0.05) 0%, transparent 50%),
+    var(--bg);
+}
+[data-theme="dark"] .inscricao-bg {
+  background:
+    radial-gradient(ellipse 70% 55% at 55% 35%, rgba(46,168,46,0.09) 0%, transparent 60%),
+    radial-gradient(ellipse 45% 45% at 15% 65%, rgba(245,200,0,0.05) 0%, transparent 55%),
+    radial-gradient(ellipse 40% 40% at 85% 70%, rgba(224,32,32,0.06) 0%, transparent 50%),
+    var(--bg);
+}
+.inscricao-grid {
+  position: absolute; inset: 0; z-index: 1;
+  background-image:
+    linear-gradient(rgba(13,74,13,0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(13,74,13,0.05) 1px, transparent 1px);
+  background-size: 56px 56px;
+}
+[data-theme="dark"] .inscricao-grid {
+  background-image:
+    linear-gradient(rgba(46,168,46,0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(46,168,46,0.06) 1px, transparent 1px);
+}
+
+/* ─── LAYOUT PRINCIPAL (2 colunas) ─── */
+.inscricao-layout {
+  position: relative; z-index: 2;
+  width: 100%; max-width: var(--max); margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  gap: 32px;
+  align-items: start;
+}
+
+/* ─── COLUNA ESQUERDA: INFO DO EVENTO ─── */
+.inscricao-info {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.inscricao-eyebrow {
+  font-size: 0.72rem; font-weight: 500; letter-spacing: 0.22em; text-transform: uppercase;
+  color: var(--green-mid); margin-bottom: 14px; display: flex; align-items: center; gap: 10px;
+}
+[data-theme="dark"] .inscricao-eyebrow { color: var(--green-light); }
+.inscricao-eyebrow::before {
+  content: ''; width: 22px; height: 1px; background: var(--green-mid);
+}
+[data-theme="dark"] .inscricao-eyebrow::before { background: var(--green-light); }
+
+.inscricao-info h1 {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(2.2rem, 4vw, 3.6rem);
+  line-height: 0.92; letter-spacing: 0.02em;
+  color: var(--text); margin-bottom: 10px;
+}
+
+.inscricao-sub {
+  font-size: 0.88rem; color: var(--muted);
+  line-height: 1.55; max-width: 480px;
+  margin-bottom: 14px;
+}
+
+.inscricao-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 20px;
+  margin-bottom: 12px;
+}
+.inscricao-meta-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+.inscricao-meta-item strong {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.inscricao-seats {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.inscricao-seats .seats-pill {
+  font-size: 0.72rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+  padding: 4px 12px;
+  background: var(--card-hover);
+  border: 1px solid var(--border-strong);
+  color: var(--muted);
+  border-radius: 999px;
+}
+
+.inscricao-back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  margin-top: 16px;
+  padding: 9px 18px;
+  border: 1.5px solid var(--border-strong);
+  border-radius: 8px;
+  background: transparent;
+  transition: all 0.2s ease;
+  width: fit-content;
+}
+.inscricao-back-btn:hover {
+  border-color: var(--green-mid);
+  color: var(--text);
+  background: rgba(46, 168, 46, 0.06);
+  transform: translateX(-2px);
+}
+
+/* ─── COLUNA DIREITA: FORMULÁRIO ─── */
+.inscricao-form-wrap {
+  background: var(--card);
+  border: 1px solid var(--border-strong);
+  box-shadow: var(--shadow);
+  padding: 24px 28px;
+}
+
+.inscricao-form-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.5rem;
+  letter-spacing: 0.04em;
+  margin-bottom: 2px;
+  color: var(--text);
+}
+.inscricao-form-sub {
+  font-size: 0.76rem;
+  color: var(--muted);
+  margin-bottom: 12px;
+}
+
+.audience-pill {
+  display: inline-flex;
+  width: fit-content;
+  padding: 3px 9px;
+  background: var(--green-dark);
+  color: #fff;
+  font-size: 0.62rem;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+[data-theme="dark"] .audience-pill { background: var(--green-mid); }
+
+.form-stack { display: grid; gap: 8px; }
+.form-field { display: grid; gap: 5px; color: var(--muted); font-size: 0.72rem; font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase; }
+.form-field input, .form-field select, .form-field textarea {
+  width: 100%;
+  border: 1px solid var(--border-strong);
+  background: var(--bg);
+  color: var(--text);
+  outline: 0;
+  padding: 8px 11px;
+  text-transform: none;
+  letter-spacing: 0;
+  font-weight: 500;
+  font-size: 0.84rem;
+}
+.form-field textarea { resize: vertical; line-height: 1.5; }
+.form-field small { text-transform: none; letter-spacing: 0; font-weight: 500; color: var(--muted); }
+
+.btn-primary {
+  background: var(--green-dark); color: #fff; border: none;
+  padding: 11px 24px; font-size: 0.82rem; font-weight: 500;
+  letter-spacing: 0.06em; text-transform: uppercase; transition: all 0.2s;
+  display: inline-flex; align-items: center; text-decoration: none;
+  width: 100%; justify-content: center;
+}
+.btn-primary:hover { background: var(--green-light); }
+[data-theme="dark"] .btn-primary { background: var(--green-mid); }
+[data-theme="dark"] .btn-primary:hover { background: var(--green-light); }
+.btn-primary:disabled { opacity: .48; cursor: not-allowed; background: var(--green-dark); }
+[data-theme="dark"] .btn-primary:disabled { background: var(--green-mid); }
+
+.btn-secondary {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  background: transparent; border: 1px solid var(--border-strong); color: var(--muted);
+  padding: 10px 20px; font-size: 0.74rem; font-weight: 600;
+  letter-spacing: 0.06em; text-transform: uppercase; text-decoration: none;
+  transition: all 0.2s;
+}
+.btn-secondary:hover { border-color: var(--green-mid); color: var(--text); }
+.full { width: 100%; }
+
+.success-card {
+  text-align: center;
+  padding: 32px 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+.success-card strong {
+  display: block;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 2rem;
+  color: var(--green-light);
+}
+.success-card p {
+  font-size: 0.9rem;
+  color: var(--muted);
+  line-height: 1.6;
+}
+.top-gap { margin-top: 10px; }
+.text-muted { color: var(--muted); }
+.empty-state {
+  border: 1px dashed var(--border-strong);
+  padding: 32px 24px;
+  text-align: center;
+  color: var(--muted);
+  font-size: 0.88rem;
+}
+
+/* ─── TOAST ─── */
+.toast {
+  position: fixed; bottom: 28px; right: 28px;
+  background: var(--green-dark); color: #fff; padding: 14px 22px; z-index: 900;
+  font-size: 0.88rem; font-weight: 500; border-left: 3px solid var(--gold);
+  opacity: 0; transform: translateY(16px); transition: all 0.3s;
+  pointer-events: none; max-width: 320px;
+}
+.toast.show { opacity: 1; transform: translateY(0); }
+
+/* ─── RESPONSIVO ─── */
+@media (max-width: 1050px) {
+  body { overflow: auto; height: auto; }
+  .inscricao-layout { grid-template-columns: 1fr; height: auto; gap: 24px; }
+  .inscricao-hero { height: auto; min-height: 100vh; overflow: visible; padding: 90px 24px 40px; }
+  .inscricao-form-wrap { max-height: none; overflow-y: visible; }
+  .inscricao-info h1 { font-size: clamp(2.4rem, 8vw, 3.4rem); }
+  .inscricao-back-btn { margin-top: 20px; }
+}
+
+@media (max-width: 780px) {
+  .site-header {
+    padding: 12px 16px;
+    align-items: flex-start;
+  }
+  .theme-toggle { display: none; }
+  .menu-toggle {
+    display: inline-flex; flex-direction: column; align-items: center; justify-content: center;
+    border: 1px solid var(--border); background: var(--surface);
+    color: var(--text); border-radius: 999px; padding: 7px 10px; cursor: pointer; transition: background 0.2s;
+  }
+  .menu-toggle:hover { background: var(--card-hover); }
+  .main-nav { display: none; }
+  .inscricao-hero {
+    padding: 80px 16px 30px;
+  }
+  .inscricao-form-wrap {
+    padding: 24px 18px;
+  }
+  .inscricao-info h1 {
+    font-size: clamp(1.8rem, 8vw, 2.6rem);
+  }
+  .inscricao-meta {
+    gap: 6px 16px;
+  }
+  .inscricao-meta-item {
+    font-size: 0.78rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .site-header { padding: 8px 10px; gap: 4px; }
+  .brand-text strong { font-size: 0.9rem; }
+  .brand-text small { font-size: 0.5rem; }
+  .inscricao-hero { padding: 76px 14px 30px; }
+  .inscricao-form-wrap { padding: 18px 14px; }
+  .inscricao-info h1 { font-size: clamp(1.4rem, 10vw, 2rem); }
+  .form-field input, .form-field select, .form-field textarea { padding: 7px 10px; font-size: 0.82rem; }
+  .inscricao-back-btn { font-size: 0.68rem; padding: 8px 14px; }
+}
+
+/* ─── SIDEBAR MOBILE ─── */
+.sidebar-overlay {
+  display: none; position: fixed; inset: 0; z-index: 990;
+  background: rgba(0,0,0,0.5); opacity: 0; transition: opacity 0.3s ease;
+}
+.sidebar-overlay.open { display: block; opacity: 1; }
+
+.sidebar {
+  position: fixed; top: 0; right: 0; bottom: 0; z-index: 995;
+  width: min(300px, 78vw); background: var(--surface);
+  border-left: 1px solid var(--border); transform: translateX(100%);
+  transition: transform 0.3s ease; display: flex; flex-direction: column;
+  box-shadow: -4px 0 24px rgba(0,0,0,0.2);
+}
+.sidebar.open { transform: translateX(0); }
+
+.sidebar-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 18px 20px; border-bottom: 1px solid var(--border);
+}
+.sidebar-title {
+  font-family: 'Bebas Neue', sans-serif; font-size: 1.3rem; letter-spacing: 0.12em; color: var(--text);
+}
+.sidebar-close {
+  background: transparent; border: none; color: var(--muted);
+  font-size: 1.6rem; cursor: pointer; line-height: 1; padding: 0 4px; transition: color 0.2s;
+}
+.sidebar-close:hover { color: var(--text); }
+
+.sidebar-nav {
+  flex: 1; overflow-y: auto; padding: 12px 0; display: flex; flex-direction: column; gap: 2px;
+}
+.sidebar-link {
+  display: flex; align-items: center; gap: 14px; padding: 14px 20px; text-decoration: none;
+  color: var(--text); font-size: 0.78rem; font-weight: 700; letter-spacing: 0.08em;
+  text-transform: uppercase; background: transparent; border: none; transition: background 0.2s;
+  width: 100%; text-align: left; font-family: inherit;
+}
+.sidebar-link svg { color: var(--muted); flex-shrink: 0; }
+.sidebar-link:hover { background: var(--card-hover); }
+
+.sidebar-nav hr.sidebar-divider { border: none; border-top: 1px solid var(--border); margin: 8px 20px; }
+.sidebar-theme-btn { color: var(--muted); }
+.sidebar-theme-btn:hover { color: var(--text); }
+.sidebar-theme-icon { font-size: 1.15rem; }
+
+/* ─── HAMBÚRGUER ─── */
+.hamburger-line {
+  display: block; width: 16px; height: 1.5px; background: currentColor;
+  margin: 3px 0; transition: transform 0.3s, opacity 0.3s;
+}
+.menu-toggle.active .hamburger-line:nth-child(1) { transform: translateY(4.5px) rotate(45deg); }
+.menu-toggle.active .hamburger-line:nth-child(2) { opacity: 0; }
+.menu-toggle.active .hamburger-line:nth-child(3) { transform: translateY(-4.5px) rotate(-45deg); }
+
+@media (min-width: 781px) {
+  .sidebar, .sidebar-overlay { display: none !important; }
+}
+
+@media (max-width: 480px) {
+  .sidebar { width: min(190px, 72vw); }
+  .sidebar-header { padding: 8px 10px; }
+  .sidebar-title { font-size: 0.72rem; letter-spacing: 0.06em; }
+  .sidebar-close { font-size: 0.95rem; }
+  .sidebar-nav { padding: 2px 0; gap: 0; }
+  .sidebar-link { padding: 6px 10px; font-size: 0.66rem; gap: 6px; }
+  .sidebar-link svg { width: 12px; height: 12px; }
+  .sidebar-theme-icon { font-size: 0.7rem; }
+  .sidebar-nav hr.sidebar-divider { margin: 2px 10px; }
+  .menu-toggle { padding: 4px 7px; }
+  .hamburger-line { width: 12px; height: 1.5px; margin: 2px 0; }
+  .menu-toggle.active .hamburger-line:nth-child(1) { transform: translateY(3.5px) rotate(45deg); }
+  .menu-toggle.active .hamburger-line:nth-child(3) { transform: translateY(-3.5px) rotate(-45deg); }
+}

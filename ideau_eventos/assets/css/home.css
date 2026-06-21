@@ -1,18 +1,10 @@
-/* =========================================================
-   IDEAU EVENTOS — HOME.CSS
-   Pagina inicial (index.php) — estilo completo
-   ========================================================= */
-
-/*══════════════════════════════════════════════════════════
-  FONTES
-  ══════════════════════════════════════════════════════════*/
 /*inicia fontes*/
 @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,700;1,300&display=swap');
 /*finaliza fontes*/
 
-/*══════════════════════════════════════════════════════════
+/*
   VARIAVEIS
-  ══════════════════════════════════════════════════════════*/
+  */
 /*inicia variaveis de cor (tema claro)*/
 :root {
   --bg: #e8ece0;
@@ -60,9 +52,9 @@
 }
 /*finaliza variaveis de cor (tema escuro)*/
 
-/*══════════════════════════════════════════════════════════
+/*
   RESET E ESTILOS GLOBAIS
-  ══════════════════════════════════════════════════════════*/
+  */
 /*inicia reset*/
 *,*::before,*::after { margin: 0; padding: 0; box-sizing: border-box; }
 html { scroll-behavior: smooth; }
@@ -81,9 +73,9 @@ input, select, textarea { font: inherit; }
 .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
 /*finaliza reset*/
 
-/*══════════════════════════════════════════════════════════
+/*
   HEADER (NAV ORIGINAL)
-  ══════════════════════════════════════════════════════════*/
+  */
 /*inicia header*/
 .site-header {
   position: fixed; top: 0; left: 0; right: 0; z-index: 500;
@@ -136,9 +128,9 @@ input, select, textarea { font: inherit; }
 .theme-toggle:hover { border-color: var(--green-mid); color: var(--green-mid); background: rgba(46, 139, 46, 0.08); }
 /*finaliza botao de tema*/
 
-/*══════════════════════════════════════════════════════════
+/*
   HERO
-  ══════════════════════════════════════════════════════════*/
+  */
 /*inicia hero*/
 .hero {
   min-height: 100vh;
@@ -227,9 +219,9 @@ input, select, textarea { font: inherit; }
 }
 /*finaliza hero*/
 
-/*══════════════════════════════════════════════════════════
+/*
   MARQUEE (BARRA ROLANTE)
-  ══════════════════════════════════════════════════════════*/
+  */
 /*inicia marquee*/
 .marquee-bar {
   background: var(--green-dark); padding: 13px 0; overflow: hidden;
@@ -248,9 +240,9 @@ input, select, textarea { font: inherit; }
 }
 /*finaliza marquee*/
 
-/*══════════════════════════════════════════════════════════
+/*
   SEARCH (BUSCA)
-  ══════════════════════════════════════════════════════════*/
+  */
 /*inicia search*/
 .search-section { padding: 0 48px 56px; }
 .search-wrap {
@@ -280,9 +272,9 @@ input, select, textarea { font: inherit; }
 [data-theme="dark"] .search-wrap button:hover { background: var(--green-light); }
 /*finaliza search*/
 
-/*══════════════════════════════════════════════════════════
+/*
   SECOES GLOBAIS
-  ══════════════════════════════════════════════════════════*/
+  */
 /*inicia secoes*/
 section { padding: 96px 48px; }
 .section-label {
@@ -301,9 +293,9 @@ section { padding: 96px 48px; }
 }
 /*finaliza secoes*/
 
-/*══════════════════════════════════════════════════════════
+/*
   EVENT CARDS (CARDS DE EVENTOS)
-  ══════════════════════════════════════════════════════════*/
+  */
 /*inicia event cards*/
 .events-grid {
   display: grid;
@@ -389,9 +381,9 @@ section { padding: 96px 48px; }
 .empty-state { grid-column: 1 / -1; text-align: center; padding: 64px 24px; color: var(--muted); }
 /*finaliza event cards*/
 
-/*══════════════════════════════════════════════════════════
+/*
   BOTAO PRIMARIO
-  ══════════════════════════════════════════════════════════*/
+  */
 /*inicia botao primario*/
 .btn-primary {
   background: var(--green-dark); color: #fff; border: none;
@@ -405,9 +397,9 @@ section { padding: 96px 48px; }
 [data-theme="dark"] .btn-primary:hover { background: var(--green-light); }
 /*finaliza botao primario*/
 
-/*══════════════════════════════════════════════════════════
+/*
   DESTAQUE (FEATURED)
-  ══════════════════════════════════════════════════════════*/
+  */
 /*inicia destaque*/
 .featured-section { background: var(--surface); }
 .featured-wrap {
@@ -443,9 +435,9 @@ section { padding: 96px 48px; }
 .detail-val { font-weight: 500; color: var(--text); }
 /*finaliza destaque*/
 
-/*══════════════════════════════════════════════════════════
+/*
   FOOTER (RODAPE)
-  ══════════════════════════════════════════════════════════*/
+  */
 /*inicia footer*/
 .site-footer {
   background: var(--surface); padding: 56px 48px 28px;
@@ -470,9 +462,9 @@ section { padding: 96px 48px; }
 .social-btn:hover { border-color: var(--green-mid); color: var(--green-mid); }
 /*finaliza footer*/
 
-/*══════════════════════════════════════════════════════════
+/*
   TOAST (NOTIFICACAO)
-  ══════════════════════════════════════════════════════════*/
+  */
 /*inicia toast*/
 .toast {
   position: fixed; bottom: 28px; right: 28px;
@@ -484,17 +476,17 @@ section { padding: 96px 48px; }
 .toast.show { opacity: 1; transform: translateY(0); }
 /*finaliza toast*/
 
-/*══════════════════════════════════════════════════════════
+/*
   ANIMACOES
-  ══════════════════════════════════════════════════════════*/
+  */
 /*inicia animacoes*/
 .fade-up { opacity: 0; transform: translateY(28px); transition: opacity 0.6s ease, transform 0.6s ease; }
 .fade-up.visible { opacity: 1; transform: translateY(0); }
 /*finaliza animacoes*/
 
-/*══════════════════════════════════════════════════════════
+/*
   RESPONSIVO — MEDIA QUERIES
-  ══════════════════════════════════════════════════════════*/
+  */
 /*inicia responsivo*/
 @media (max-width: 1100px) {
   .events-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -577,9 +569,9 @@ section { padding: 96px 48px; }
 }
 /*finaliza responsivo*/
 
-/*══════════════════════════════════════════════════════════
+/*
   SIDEBAR MOBILE
-  ══════════════════════════════════════════════════════════*/
+  */
 /*inicia sidebar mobile*/
 
 /*inicia overlay escuro*/

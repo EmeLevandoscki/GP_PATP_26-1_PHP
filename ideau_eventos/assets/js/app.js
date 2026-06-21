@@ -5,6 +5,77 @@ function getPastaBase() {
 
   return PASTA_BASE;
 }
+
+/* ─── TEMA + SIDEBAR: lógica compartilhada entre todas as páginas ─── */
+(function () {
+
+  /* ─── TEMA: lê preferência salva ou detecta o sistema ─── */
+  var saved      = localStorage.getItem('ideau-theme');
+  var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+  var theme      = saved || (prefersDark ? 'dark' : 'light');
+  document.documentElement.setAttribute('data-theme', theme);
+
+  /* ─── TEMA: atualiza ícones do botão do header e do sidebar ─── */
+  function _syncIcons(t) {
+    var btn    = document.getElementById('themeToggle');
+    var sIcon  = document.getElementById('sidebarThemeIcon');
+    var sLabel = document.getElementById('sidebarThemeLabel');
+    if (btn)    btn.textContent    = t === 'dark' ? '🌙' : '☀️';
+    if (sIcon)  sIcon.textContent  = t === 'dark' ? '🌙' : '☀️';
+    if (sLabel) sLabel.textContent = t === 'dark' ? 'Tema escuro' : 'Tema claro';
+  }
+  _syncIcons(theme);
+
+  /* ─── TEMA: alterna entre claro e escuro e persiste no localStorage ─── */
+  window.toggleTheme = function () {
+    var current = document.documentElement.getAttribute('data-theme');
+    var next    = current === 'dark' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', next);
+    localStorage.setItem('ideau-theme', next);
+    _syncIcons(next);
+  };
+
+  /* ─── SIDEBAR: referências aos elementos do DOM ─── */
+  var toggle    = document.getElementById('menuToggle');
+  var sidebarEl = document.getElementById('sidebar');
+  var overlay   = document.getElementById('sidebarOverlay');
+  var closeBtn  = document.getElementById('sidebarClose');
+  var themeBtn  = document.getElementById('sidebarThemeToggle');
+
+  /* ─── SIDEBAR: só inicializa se os elementos existirem na página ─── */
+  if (!toggle || !sidebarEl) return;
+
+  /* ─── SIDEBAR: abre o painel e bloqueia scroll da página ─── */
+  function openSidebar() {
+    sidebarEl.classList.add('open');
+    overlay.classList.add('open');
+    toggle.classList.add('active');
+    toggle.setAttribute('aria-expanded', 'true');
+    document.body.style.overflow = 'hidden';
+  }
+
+  /* ─── SIDEBAR: fecha o painel e restaura scroll da página ─── */
+  function closeSidebar() {
+    sidebarEl.classList.remove('open');
+    overlay.classList.remove('open');
+    toggle.classList.remove('active');
+    toggle.setAttribute('aria-expanded', 'false');
+    document.body.style.overflow = '';
+  }
+
+  /* ─── SIDEBAR: eventos de interação (hambúrguer, overlay, fechar, tema, links) ─── */
+  toggle.addEventListener('click', function (e) {
+    e.stopPropagation();
+    sidebarEl.classList.contains('open') ? closeSidebar() : openSidebar();
+  });
+  if (overlay)  overlay.addEventListener('click', closeSidebar);
+  if (closeBtn) closeBtn.addEventListener('click', closeSidebar);
+  if (themeBtn) themeBtn.addEventListener('click', window.toggleTheme);
+  document.querySelectorAll('[data-nav-link]').forEach(function (link) {
+    link.addEventListener('click', closeSidebar);
+  });
+
+})();
 (function () {
   'use strict';
   localStorage.clear();
@@ -114,15 +185,15 @@ function getPastaBase() {
       seats: '-1',
       cover: 'https://plus.unsplash.com/premium_photo-1686920245950-58617c8a602e?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
       summary: 'Colônia de férias com atividades lúdicas, esportivas e culturais para crianças e adolescentes.',
-      description: `🎉 Colônia de Férias Infantil 🎨⚽🌈\n
+      description: `COLÔNIA DE FÉRIAS INFANTIL\n
                     Diversão, aprendizado e muitas aventuras esperam pelas crianças na nossa Colônia de Férias! Durante o evento, os participantes poderão aproveitar atividades recreativas, brincadeiras em grupo, oficinas criativas, jogos, esportes, música, dança e momentos de integração em um ambiente seguro e acolhedor.\n
                     Nossa programação foi pensada para estimular a criatividade, a socialização e o desenvolvimento das crianças de forma leve e divertida, sempre acompanhadas por monitores preparados.\n
-                    📅 Venha viver dias inesquecíveis cheios de alegria, amizade e novas descobertas!
-                    ✨ Atividades recreativas
-                    🎨 Oficinas criativas
-                    ⚽ Jogos e esportes
-                    🎵 Música e dança
-                    🍿 Momentos de lazer e integração`,
+                    Venha viver dias inesquecíveis cheios de alegria, amizade e novas descobertas!\n
+                    Atividades recreativas\n
+                    Oficinas criativas\n
+                    Jogos e esportes\n
+                    Música e dança\n
+                    Momentos de lazer e integração`,
       published: true,
       fields: {
         cpf: false,
@@ -171,6 +242,7 @@ function getPastaBase() {
 
     if (page === 'home') initHomePage();
     if (page === 'event-detail') initEventDetailPage();
+    if (page === 'registration') initRegistrationPage();
     if (page === 'login') initLoginPage();
     if (page === 'dashboard') initDashboardPage();
     if (page === 'admin-events') initAdminEventsPage();
@@ -395,88 +467,151 @@ function getPastaBase() {
     if (!root) return;
     const params = new URLSearchParams(window.location.search);
     const id = params.get('id');
-    const isRegistrationPage = params.get('inscricao') === '1';
     const event = getEvents().find(item => item.id === id && item.published);
 
     const navRegistration = document.getElementById('eventRegistrationNav');
-    const navDetails = document.getElementById('eventDetailsNav');
     if (navRegistration && id) navRegistration.href = eventRegistrationUrl(id);
-    if (navDetails && id) navDetails.href = `evento.html?id=${encodeURIComponent(id)}`;
 
     if (!event) {
-      root.innerHTML = `
-        <section class="section-block">
+      root.innerHTML += `
+        <div class="evento-layout" style="place-items:center">
           <div class="empty-state">
-            <h2>Evento não encontrado</h2>
-            <p>O evento pode estar despublicado, removido ou com link incorreto.</p>
-            <a class="btn btn-primary" href="index.html#eventos">Voltar para eventos</a>
+            <h2 style="font-family:'Bebas Neue',sans-serif;font-size:2rem">Evento não encontrado</h2>
+            <p style="margin:8px 0 18px">O evento pode estar despublicado, removido ou com link incorreto.</p>
+            <a class="btn btn-primary" href="index.html#eventos" style="display:inline-flex;width:auto;padding:10px 24px">Voltar para eventos</a>
           </div>
-        </section>`;
+        </div>`;
       return;
     }
 
-    document.title = `${isRegistrationPage ? 'Inscrição' : 'Evento'} — ${event.title}`;
-
-    if (isRegistrationPage) {
-      renderRegistrationPublicPage(root, event);
-      return;
-    }
+    document.title = `Evento — ${event.title}`;
 
     const remaining = event.seats != -1 ? Math.max(Number(event.seats || 0) - countRegistrations(event.id), 0) : -1;
+    const seatsLabel = event.seats == -1 ? 'Livre' : `${remaining} de ${Number(event.seats || 0)}`;
+    const isSoldOut = event.seats != -1 && remaining <= 0;
     const cover = event.cover ? `<img src="${escapeAttr(event.cover)}" alt="${escapeAttr(event.title)}">` : '';
+    const ICO_CAL = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>';
+    const ICO_CLK = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>';
+    const ICO_PIN = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>';
+    const categoryLabel = escapeHtml(CATEGORIES[event.category] || event.category);
 
-    root.innerHTML = `
-      <section class="event-detail-hero">
-        <div class="event-detail-cover">${cover}</div>
-        <aside class="event-detail-info">
-          <p class="eyebrow">${escapeHtml(CATEGORIES[event.category] || event.category)}</p>
-          <h1>${escapeHtml(event.title)}</h1>
-          <p class="muted big">${escapeHtml(event.summary)}</p>
-          <div class="event-detail-meta">
-            <div class="meta-row"><strong>Data Início</strong><span>${formatDate(event.date_begin)}</span></div>
-            <div class="meta-row"><strong>Data Fim</strong><span>${formatDate(event.date_end)}</span></div>
-            <div class="meta-row"><strong>Horário</strong><span>Início: ${escapeHtml(event.time_begin)} - Fim: ${escapeHtml(event.time_end)}</span></div>
-            <div class="meta-row"><strong>Local</strong><span>${escapeHtml(event.location)} — ${escapeHtml(event.city)}</span></div>
-            <div class="meta-row"><strong>Vagas</strong><span>${event.seats == -1 ? 'Livre' : `${remaining} disponíveis de ${Number(event.seats || 0)}`}</span></div>
+    root.innerHTML += `
+      <div class="evento-layout">
+        <div class="evento-visual">
+          <div class="evento-cover">
+            ${cover || '<div class="cover-placeholder"></div>'}
+            <div class="cover-overlay"></div>
+            <span class="cover-badge">${categoryLabel}</span>
           </div>
-          ${event.seats != -1 && remaining <= 0 ? '<button class="btn btn-secondary full" type="button" disabled>Vagas esgotadas</button>' : `<a class="btn btn-primary full" href="${eventRegistrationUrl(event.id)}">Ir para inscrição</a>`}
-        </aside>
-      </section>
-
-      <section class="event-public-layout detail-only-layout">
-        <article class="description-card">
-          <p class="eyebrow">Descrição completa</p>
-          <h2>Sobre o evento</h2>
-          <div class="description-content">${escapeHtml(event.description)}</div>
-        </article>
-      </section>`;
+          <div class="evento-meta-card">
+            <div class="meta-item">
+              <span class="meta-icon">${ICO_CAL}</span>
+              <div class="meta-content">
+                <span class="meta-label">Data de início</span>
+                <span class="meta-value">${formatDate(event.date_begin)}</span>
+              </div>
+            </div>
+            <div class="meta-item">
+              <span class="meta-icon">${ICO_CAL}</span>
+              <div class="meta-content">
+                <span class="meta-label">Encerramento</span>
+                <span class="meta-value">${formatDate(event.date_end)}</span>
+              </div>
+            </div>
+            <div class="meta-item">
+              <span class="meta-icon">${ICO_CLK}</span>
+              <div class="meta-content">
+                <span class="meta-label">Horário</span>
+                <span class="meta-value">${escapeHtml(event.time_begin)} — ${escapeHtml(event.time_end)}</span>
+              </div>
+            </div>
+            <div class="meta-item">
+              <span class="meta-icon">${ICO_PIN}</span>
+              <div class="meta-content">
+                <span class="meta-label">Local</span>
+                <span class="meta-value">${escapeHtml(event.location)}</span>
+                <span class="meta-sub">${escapeHtml(event.city)}</span>
+              </div>
+            </div>
+          </div>
+          <div class="evento-actions">
+            ${isSoldOut
+              ? '<button class="btn-inscricao" type="button" disabled>Vagas esgotadas</button>'
+              : `<a class="btn-inscricao" href="${eventRegistrationUrl(event.id)}">Ir para inscrição <span aria-hidden="true">→</span></a>`}
+            <a class="btn-outros" href="../index.php#eventos">Ver outros eventos</a>
+          </div>
+        </div>
+        <div class="evento-info-wrap">
+          <div class="evento-kicker">
+            <span class="vagas-pill${isSoldOut ? ' esgotada' : ''}">${isSoldOut ? 'Vagas esgotadas' : (event.seats == -1 ? 'Entrada livre' : `${remaining} vagas disponíveis`)}</span>
+          </div>
+          <h1>${escapeHtml(event.title)}</h1>
+          <p class="evento-summary">${escapeHtml(event.summary)}</p>
+          ${event.description ? `
+          <div class="evento-descricao">
+            <div class="descricao-header">
+              <span class="descricao-line"></span>
+              <span class="descricao-label">Sobre o evento</span>
+            </div>
+            <div class="descricao-text">${escapeHtml(event.description)}</div>
+          </div>` : ''}
+        </div>
+      </div>`;
   }
 
   function eventRegistrationUrl(eventId) {
-    return `evento.html?id=${encodeURIComponent(eventId)}&inscricao=1`;
+    return `inscricao.html?id=${encodeURIComponent(eventId)}`;
   }
 
-  function renderRegistrationPublicPage(root, event) {
-    const remaining = event.seats != -1 ? Math.max(Number(event.seats || 0) - countRegistrations(event.id), 0) : -1;
-    root.innerHTML = `
-      <section class="event-form-page">
-        <article class="description-card registration-summary-card">
-          <p class="eyebrow">Formulário de inscrição</p>
-          <h1>${escapeHtml(event.title)}</h1>
-          <p class="muted big">Preencha os dados solicitados pelo organizador para confirmar sua participação.</p>
-          <div class="event-detail-meta">
-            <div class="meta-row"><strong>Data</strong><span>Início: ${formatDate(event.date_begin)}<br>Fim: ${formatDate(event.date_end)}<br>Horário: ${escapeHtml(event.time_begin)} — ${escapeHtml(event.time_end)}<br></span></div>
-            <div class="meta-row"><strong>Local</strong><span>${escapeHtml(event.location)} — ${escapeHtml(event.city)}</span></div>
-            <div class="meta-row"><strong>Vagas</strong><span>${remaining === -1 ? 'Ilimitadas' : `${remaining} disponíveis de ${Number(event.seats || 0)}`}</span></div>
+  function initRegistrationPage() {
+    const root = document.getElementById('registrationRoot');
+    if (!root) return;
+    const params = new URLSearchParams(window.location.search);
+    const id = params.get('id');
+    const event = getEvents().find(item => item.id === id && item.published);
+
+    const navDetails = document.getElementById('eventDetailsNav');
+    if (navDetails && id) navDetails.href = `evento.html?id=${encodeURIComponent(id)}`;
+
+    if (!event) {
+      root.innerHTML += `
+        <div class="inscricao-layout" style="place-items:center">
+          <div class="empty-state">
+            <h2 style="font-family:'Bebas Neue',sans-serif;font-size:2rem">Evento não encontrado</h2>
+            <p style="margin:8px 0 18px">O evento pode estar despublicado, removido ou com link incorreto.</p>
+            <a class="btn-primary" href="index.html#eventos" style="display:inline-flex;width:auto;padding:10px 24px">Voltar para eventos</a>
           </div>
-          <a class="btn btn-secondary" href="evento.html?id=${encodeURIComponent(event.id)}">Voltar para a página do evento</a>
-        </article>
-        <aside class="event-registration-card" id="inscricao">
-          <p class="eyebrow">Dados do participante</p>
-          <h2>Confirmar inscrição</h2>
-          ${event.seats != -1 && remaining <= 0 ? '<div class="empty-state">As vagas deste evento estão esgotadas.</div>' : registrationFormTemplate(event)}
-        </aside>
-      </section>`;
+        </div>`;
+      return;
+    }
+
+    document.title = `Inscrição — ${event.title}`;
+
+    const remaining = event.seats != -1 ? Math.max(Number(event.seats || 0) - countRegistrations(event.id), 0) : -1;
+    const seatsLabel = remaining === -1 ? 'Ilimitadas' : `${remaining} disponíveis de ${Number(event.seats || 0)}`;
+    const isSoldOut = event.seats != -1 && remaining <= 0;
+
+    root.innerHTML += `
+      <div class="inscricao-layout">
+        <div class="inscricao-info">
+          <div class="inscricao-eyebrow">${escapeHtml(CATEGORIES[event.category] || event.category)}</div>
+          <h1>${escapeHtml(event.title)}</h1>
+          <p class="inscricao-sub">Preencha os dados ao lado para confirmar sua participação neste evento.</p>
+          <div class="inscricao-meta">
+            <div class="inscricao-meta-item"><strong>Data</strong> ${formatDate(event.date_begin)} — ${formatDate(event.date_end)}</div>
+            <div class="inscricao-meta-item"><strong>Horário</strong> ${escapeHtml(event.time_begin)} — ${escapeHtml(event.time_end)}</div>
+            <div class="inscricao-meta-item"><strong>Local</strong> ${escapeHtml(event.location)} — ${escapeHtml(event.city)}</div>
+            <div class="inscricao-meta-item inscricao-seats"><span class="seats-pill">${seatsLabel}</span></div>
+          </div>
+          <a class="inscricao-back-btn" href="evento.html?id=${encodeURIComponent(event.id)}">&larr; Voltar para o evento</a>
+        </div>
+        <div class="inscricao-form-wrap" id="inscricao">
+          <div class="audience-pill">${escapeHtml(AUDIENCES[getEventAudience(event)])}</div>
+          <h2 class="inscricao-form-title">Confirmar inscrição</h2>
+          <p class="inscricao-form-sub">Dados do participante</p>
+          ${isSoldOut ? '<div class="empty-state">As vagas deste evento estão esgotadas.</div>' : registrationFormTemplate(event)}
+        </div>
+      </div>`;
 
     document.getElementById('registrationForm')?.addEventListener('submit', submitRegistration);
     document.getElementById('participantType')?.addEventListener('change', updateCourseVisibility);
@@ -526,7 +661,6 @@ function getPastaBase() {
 
     return `
       <form class="form-stack" id="registrationForm" data-event-id="${escapeAttr(event.id)}">
-        <div class="audience-pill">${escapeHtml(AUDIENCES[audience])}</div>
         ${graduationFields}
         ${schoolFields}
         ${fields.cpf ? '<label class="form-field"><span>CPF *</span><input name="cpf" required inputmode="numeric" pattern="[0-9]{11}" maxlength="11" minlength="11" placeholder="000.000.000-00"></label>' : ''}
@@ -634,7 +768,7 @@ function getPastaBase() {
         }
 
         const card = document.getElementById('inscricao');
-        card.innerHTML = `<div class="success-card"><strong>Inscrição confirmada</strong><p>Sua inscrição em <b>${escapeHtml(targetEvent.title)}</b> foi registrada.</p><a class="btn btn-secondary full" href="evento.html?id=${encodeURIComponent(targetEvent.id)}">Voltar ao evento</a><a class="btn btn-light full top-gap" href="index.html#eventos">Ver outros eventos</a></div>`;
+        card.innerHTML = `<div class="success-card"><strong>Inscrição confirmada</strong><p>Sua inscrição em <b>${escapeHtml(targetEvent.title)}</b> foi registrada.</p><a class="btn-primary full" href="evento.html?id=${encodeURIComponent(targetEvent.id)}">Voltar ao evento</a><a class="btn-secondary full top-gap" href="index.html#eventos">Ver outros eventos</a></div>`;
         showToast('Inscrição registrada com sucesso.');
       })
       .catch((error) => {

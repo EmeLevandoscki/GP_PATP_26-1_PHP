@@ -1,11 +1,4 @@
-/* =========================================================
-   IDEAU EVENTOS — HOME.JS
-   Pagina inicial (index.php) — script completo
-   ========================================================= */
 
-/*══════════════════════════════════════════════════════════
-  TEMA CLARO / ESCURO
-  ══════════════════════════════════════════════════════════*/
 /*inicia funcoes de tema*/
 function initTheme() {
   const saved = localStorage.getItem('ideau-theme');
@@ -38,9 +31,9 @@ function updateThemeIcon(theme) {
 initTheme();
 /*finaliza inicializacao do tema*/
 
-/*══════════════════════════════════════════════════════════
+/*
   TOGGLE TEMA PELA SIDEBAR
-  ══════════════════════════════════════════════════════════*/
+  */
 /*inicia toggle tema sidebar*/
 const sidebarThemeBtn = document.getElementById('sidebarThemeToggle');
 if (sidebarThemeBtn) {
@@ -50,9 +43,9 @@ if (sidebarThemeBtn) {
 }
 /*finaliza toggle tema sidebar*/
 
-/*══════════════════════════════════════════════════════════
+/*
   SIDEBAR MOBILE
-  ══════════════════════════════════════════════════════════*/
+  */
 /*inicia sidebar mobile*/
 const menuToggle = document.getElementById('menuToggle');
 const sidebar = document.getElementById('sidebar');
@@ -94,9 +87,9 @@ document.querySelectorAll('[data-nav-link]').forEach(link => {
 });
 /*finaliza sidebar mobile*/
 
-/*══════════════════════════════════════════════════════════
+/*
   MARQUEE
-  ══════════════════════════════════════════════════════════*/
+  */
 /*inicia marquee clone*/
 const track = document.getElementById('marqueeTrack');
 if (track) {
@@ -104,9 +97,9 @@ if (track) {
 }
 /*finaliza marquee clone*/
 
-/*══════════════════════════════════════════════════════════
+/*
   FADE UP (INTERSECTION OBSERVER)
-  ══════════════════════════════════════════════════════════*/
+  */
 /*inicia fade up*/
 const observer = new IntersectionObserver(entries => {
   entries.forEach(entry => {
