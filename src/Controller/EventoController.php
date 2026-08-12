@@ -1,14 +1,15 @@
 <?php
     namespace App\Controller;
-    ini_set('display_errors', 0);
+    ini_set('display_errors', 1);
     error_reporting(E_ALL);
     use App\Service\EventoService;
     require_once __DIR__ . '/../../vendor/autoload.php';
 
     session_start();
 
+    try {
     $service = new EventoService();
-    
+
     if($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['salvar'])) {
         $service->cadastrarEvento($_POST);
         
@@ -94,5 +95,22 @@
                 exit();
                 break;
         }
+    }
+    } catch (\Throwable $e) {
+        error_log('EventoController erro: ' . $e->getMessage());
+
+        if ($_SERVER['REQUEST_METHOD'] === 'GET') {
+            http_response_code(500);
+            header('Content-Type: application/json');
+            echo json_encode([
+                'error' => true,
+                'message' => 'Erro ao acessar os dados. Tente novamente mais tarde.'
+            ]);
+            exit();
+        }
+
+        $_SESSION['erro'] = 'Ocorreu um erro ao processar sua solicitação.';
+        header('Location: ../../public/index.php');
+        exit();
     }
 ?>

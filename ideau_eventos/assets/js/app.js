@@ -6,16 +6,16 @@ function getPastaBase() {
   return PASTA_BASE;
 }
 
-/* ─── TEMA + SIDEBAR: lógica compartilhada entre todas as páginas ─── */
+/* TEMA + SIDEBAR: lógica compartilhada entre todas as páginas */
 (function () {
 
-  /* ─── TEMA: lê preferência salva ou detecta o sistema ─── */
+  /* TEMA: lê preferência salva ou detecta o sistema */
   var saved      = localStorage.getItem('ideau-theme');
   var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
   var theme      = saved || (prefersDark ? 'dark' : 'light');
   document.documentElement.setAttribute('data-theme', theme);
 
-  /* ─── TEMA: atualiza ícones do botão do header e do sidebar ─── */
+  /* TEMA: atualiza ícones do botão do header e do sidebar */
   function _syncIcons(t) {
     var btn    = document.getElementById('themeToggle');
     var sIcon  = document.getElementById('sidebarThemeIcon');
@@ -26,7 +26,7 @@ function getPastaBase() {
   }
   _syncIcons(theme);
 
-  /* ─── TEMA: alterna entre claro e escuro e persiste no localStorage ─── */
+  /* TEMA: alterna entre claro e escuro e persiste no localStorage */
   window.toggleTheme = function () {
     var current = document.documentElement.getAttribute('data-theme');
     var next    = current === 'dark' ? 'light' : 'dark';
@@ -35,17 +35,17 @@ function getPastaBase() {
     _syncIcons(next);
   };
 
-  /* ─── SIDEBAR: referências aos elementos do DOM ─── */
+  /* SIDEBAR: referências aos elementos do DOM */
   var toggle    = document.getElementById('menuToggle');
   var sidebarEl = document.getElementById('sidebar');
   var overlay   = document.getElementById('sidebarOverlay');
   var closeBtn  = document.getElementById('sidebarClose');
   var themeBtn  = document.getElementById('sidebarThemeToggle');
 
-  /* ─── SIDEBAR: só inicializa se os elementos existirem na página ─── */
+  /* SIDEBAR: só inicializa se os elementos existirem na página */
   if (!toggle || !sidebarEl) return;
 
-  /* ─── SIDEBAR: abre o painel e bloqueia scroll da página ─── */
+  /* SIDEBAR: abre o painel e bloqueia scroll da página */
   function openSidebar() {
     sidebarEl.classList.add('open');
     overlay.classList.add('open');
@@ -54,7 +54,7 @@ function getPastaBase() {
     document.body.style.overflow = 'hidden';
   }
 
-  /* ─── SIDEBAR: fecha o painel e restaura scroll da página ─── */
+  /* SIDEBAR: fecha o painel e restaura scroll da página */
   function closeSidebar() {
     sidebarEl.classList.remove('open');
     overlay.classList.remove('open');
@@ -63,7 +63,7 @@ function getPastaBase() {
     document.body.style.overflow = '';
   }
 
-  /* ─── SIDEBAR: eventos de interação (hambúrguer, overlay, fechar, tema, links) ─── */
+  /* SIDEBAR: eventos de interação (hambúrguer, overlay, fechar, tema, links) */
   toggle.addEventListener('click', function (e) {
     e.stopPropagation();
     sidebarEl.classList.contains('open') ? closeSidebar() : openSidebar();
@@ -232,7 +232,38 @@ function getPastaBase() {
     const data = await res.json();
 
     return data.count;
-  }  
+  }
+
+  /* EVENTOS REAIS (banco de dados)
+     Trazido de js/script.js: busca os eventos e categorias direto do
+     EventoController.php, em vez do localStorage mockado. */
+  function eventoApiUrl(query) {
+    return `${getPastaBase()}/src/Controller/EventoController.php?${query}`;
+  }
+
+  async function listarEventosApi() {
+    const res = await fetch(eventoApiUrl('action=eventos'));
+    if (!res.ok) throw new Error('Falha ao carregar eventos');
+    return res.json();
+  }
+
+  async function fetchTotalEventosAtivos() {
+    const res = await fetch(eventoApiUrl('action=qtdAtivos'));
+    if (!res.ok) throw new Error('Falha ao carregar total de eventos ativos');
+    return res.json();
+  }
+
+  function retornaDiaEvento(data) {
+    if (!data) return '--';
+    return data.substring(8, 10);
+  }
+
+  const NOMES_MESES_ABREV = ['', 'JAN', 'FEV', 'MAR', 'ABR', 'MAI', 'JUN', 'JUL', 'AGO', 'SET', 'OUT', 'NOV', 'DEZ'];
+  function retornaMesEvento(data) {
+    if (!data) return '';
+    const mes = parseInt(data.substring(5, 7), 10);
+    return NOMES_MESES_ABREV[mes] || '';
+  }
 
   document.addEventListener('DOMContentLoaded', () => {
     seedData();
@@ -409,22 +440,35 @@ function getPastaBase() {
   }
 
   async function renderPublicStats() {
-    const published = getEvents().filter(event => event.published);
-    setText('statEventos', published.length);
+    let totalAtivos = 0;
+    try {
+      totalAtivos = await fetchTotalEventosAtivos();
+    } catch (error) {
+      console.error(error);
+    }
+    setText('statEventos', totalAtivos);
     setText('statInscricoes', await fetchRegistrationsCount2());
   }
 
-  function renderHomeEvents() {
+  async function renderHomeEvents() {
     const grid = document.getElementById('eventsGrid');
     if (!grid) return;
     const query = getValue('searchInput').toLowerCase();
-    const category = getValue('categoryFilter') || 'todos';
+    const category = (getValue('categoryFilter') || 'todos').toLowerCase();
 
-    const events = getEvents()
-      .filter(event => event.published)
-      .filter(event => category === 'todos' || event.category === category)
-      .filter(event => !query || [event.title, event.summary, event.location, event.city, CATEGORIES[event.category]].join(' ').toLowerCase().includes(query))
-      .sort(compareEventsByDate);
+    let eventos;
+    try {
+      eventos = await listarEventosApi();
+    } catch (error) {
+      console.error(error);
+      grid.innerHTML = '<div class="empty-state">Não foi possível carregar os eventos. Tente novamente mais tarde.</div>';
+      return;
+    }
+
+    const events = eventos
+      .filter(evento => category === 'todos' || (evento.categoria || '').toLowerCase() === category)
+      .filter(evento => !query || [evento.titulo, evento.descricao, evento.nome_local, evento.cidade, evento.categoria].join(' ').toLowerCase().includes(query))
+      .sort((a, b) => String(a.data_inicio || '').localeCompare(String(b.data_inicio || '')));
 
     if (!events.length) {
       grid.innerHTML = '<div class="empty-state">Nenhum evento publicado encontrado.</div>';
@@ -434,29 +478,31 @@ function getPastaBase() {
     grid.innerHTML = events.map(eventCardTemplate).join('');
   }
 
-  function eventCardTemplate(event) {
-    const used = countRegistrations(event.id);
-    let remaining;
-    if (event.seats != -1) {
-      remaining = Math.max(Number(event.seats || 0) - used, 0);
-    } else {
-      remaining = -1;
-    }
-    const cover = event.cover ? `<img src="${escapeAttr(event.cover)}" alt="${escapeAttr(event.title)}" loading="lazy">` : '';
+  function eventCardTemplate(evento) {
+    const capaPadrao = `${getPastaBase()}/uploads/foto_generica_1.png`;
+    const preco = Number(evento.valor) > 0
+      ? `R$ ${Number(evento.valor).toFixed(2).replace('.', ',')}`
+      : 'Gratuito';
     return `
-      <article class="event-card">
-        <a class="event-cover" href="ideau_eventos/evento.html?id=${encodeURIComponent(event.id)}" aria-label="Abrir evento ${escapeAttr(event.title)}">
-          ${cover}
-          <div class="event-date"><strong>${datePart(event.date_begin, 'day')}</strong><span>${datePart(event.date_begin, 'month')}</span></div>
+      <article class="event-card fade-up">
+        <a class="card-img" href="ideau_eventos/evento.html?id=${encodeURIComponent(evento.id)}" aria-label="Abrir ${escapeAttr(evento.titulo)}">
+          <img src="${escapeAttr(evento.foto_path || capaPadrao)}" alt="${escapeAttr(evento.titulo)}" loading="lazy" onerror="this.onerror=null; this.src='${capaPadrao}'" />
+          <span class="card-tag">${escapeHtml(evento.categoria || 'Evento')}</span>
+          <div class="card-date-badge">
+            <span class="day">${retornaDiaEvento(evento.data_inicio)}</span>
+            <span class="month">${retornaMesEvento(evento.data_inicio)}</span>
+          </div>
         </a>
-        <div class="event-body">
-          <span class="event-tag">${escapeHtml(CATEGORIES[event.category] || event.category)}</span>
-          <h3 class="event-title">${escapeHtml(event.title)}</h3>
-          <div class="event-meta">Início: ${formatDate(event.date_begin)}<br>Fim: ${formatDate(event.date_end)}<br>${escapeHtml(event.time_begin)} — ${escapeHtml(event.time_end)}<br>${escapeHtml(event.location)} — ${escapeHtml(event.city)}</div>
-          <p class="muted">${escapeHtml(event.summary)}</p>
-          <div class="event-actions">
-            <span class="seats-pill">${remaining === -1 ? 'Livre' : `${remaining} vagas`}</span>
-            <a class="btn btn-primary" href="ideau_eventos/evento.html?id=${encodeURIComponent(event.id)}">Ver evento</a>
+        <div class="card-body">
+          <div class="card-meta">
+            <span>${escapeHtml(evento.cidade || '')}</span>
+            <span>${evento.nome_local ? escapeHtml(evento.nome_local) : ''}</span>
+          </div>
+          <h3 class="card-title">${escapeHtml(evento.titulo)}</h3>
+          <p class="card-desc">${escapeHtml(evento.descricao || '')}</p>
+          <div class="card-footer">
+            <span style="font-size:0.75rem;color:var(--muted);margin-right:auto">${preco}</span>
+            <a class="card-btn" href="ideau_eventos/evento.html?id=${encodeURIComponent(evento.id)}">Ver evento</a>
           </div>
         </div>
       </article>`;
