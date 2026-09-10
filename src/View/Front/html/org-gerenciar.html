@@ -231,6 +231,12 @@ nav{position:fixed;top:0;left:0;right:0;z-index:500;display:flex;align-items:cen
     {id:4,t:'Congresso de Administra\u00e7\u00e3o',cat:'Acad\u00eamico',dt:'20/06/2025',lo:'Campus GV',cap:200,ins:0,st:'rascunho',img:'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=200&q=80'},
     {id:5,t:'Corrida IDEAU 5K 2024',cat:'Esporte',dt:'10/11/2024',lo:'Campus GV',cap:300,ins:280,st:'encerrado',img:'https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=200&q=80'}
   ];
+  try {
+    var savedOrganizerEvents = JSON.parse(localStorage.getItem('ideau-organizer-events') || '[]');
+    if (Array.isArray(savedOrganizerEvents)) evs = savedOrganizerEvents.concat(evs);
+  } catch (error) {
+    console.error('Não foi possível carregar os eventos criados.', error);
+  }
   var curF='todos', curQ='';
   function render() {
     var list=document.getElementById('evList');

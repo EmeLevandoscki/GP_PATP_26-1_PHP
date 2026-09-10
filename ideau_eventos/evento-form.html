@@ -19,7 +19,7 @@
       <a class="active" href="evento-form.html">Novo evento</a>
       <a href="inscritos.html">Inscritos</a>
       <a href="relatorios.html">Relatórios</a>
-      <a href="index.php" target="_blank">Ver site público</a>
+      <a href="../index.php" target="_blank">Ver site público</a>
       <a href="configuracoes.html">Configurações</a>
     </nav>
     <button class="btn btn-danger full" id="logoutButton" type="button">Sair</button>
@@ -37,14 +37,21 @@
         <div class="panel-heading"><h2>Informações principais</h2><p class="muted">Dados que aparecem na página pública do evento.</p></div>
         <div class="form-grid">
           <label class="form-field wide"><span>Título do evento *</span><input id="eventTitle" required placeholder="Ex.: Semana Acadêmica de Direito"></label>
+          <label class="form-field"><span>Instituição responsável *</span><select id="eventInstitution" required><option value="">Selecione a instituição</option><option value="escola-ideau-santa-clara" data-type="escola">Escola IDEAU Santa Clara</option><option value="faculdade-ideau" data-type="faculdade">Faculdade IDEAU</option></select><small>Define quem organiza e responde pelo evento.</small></label>
           <label class="form-field"><span>Categoria *</span><select id="eventCategory" required><option value="academico">Acadêmico</option><option value="institucional">Institucional</option><option value="comunidade">Comunidade</option><option value="cultural">Cultural</option><option value="esportivo">Esportivo</option></select></label>
-          <label class="form-field"><span>Público do evento *</span><select id="eventAudience" required><option value="graduacao">Graduação</option><option value="escola">Educação Infantil</option></select></label>
+          <label class="form-field"><span>Público-alvo *</span><select id="eventAudience" required><option value="todos">Todos os públicos</option><option value="graduacao">Faculdade / Graduação</option><option value="escola">Escola / Educação Infantil</option></select><small>Pode ser diferente da instituição organizadora.</small></label>
           <label class="form-field"><span>Data *</span><input id="eventDate" type="date" required></label>
           <label class="form-field"><span>Horário *</span><input id="eventTime" type="time" required></label>
           <label class="form-field"><span>Vagas *</span><input id="eventSeats" type="number" min="1" required placeholder="100"></label>
           <label class="form-field"><span>Cidade *</span><input id="eventCity" required placeholder="Passo Fundo"></label>
           <label class="form-field wide"><span>Local *</span><input id="eventLocation" required placeholder="Auditório principal"></label>
-          <label class="form-field wide"><span>Imagem de capa — URL opcional</span><input id="eventCover" type="url" placeholder="https://..."></label>
+          <label class="form-field wide">
+            <span>Imagem de capa — arquivo do computador</span>
+            <input id="eventCoverFile" type="file" accept="image/png,image/jpeg,image/webp">
+            <input id="eventCover" type="hidden">
+            <small>PNG, JPG ou WEBP, com no máximo 2 MB.</small>
+            <img id="eventCoverPreview" class="event-cover-preview" alt="Pré-visualização da capa" hidden>
+          </label>
           <label class="form-field wide"><span>Resumo curto *</span><textarea id="eventSummary" required rows="3" placeholder="Texto curto usado nos cards de divulgação."></textarea></label>
           <label class="form-field wide"><span>Descrição completa *</span><textarea id="eventDescription" required rows="7" placeholder="Descreva objetivo, programação, público-alvo, regras, certificação, carga horária etc."></textarea></label>
         </div>

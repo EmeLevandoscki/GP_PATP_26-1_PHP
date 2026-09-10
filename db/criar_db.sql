@@ -13,6 +13,28 @@ CREATE TABLE usuarios (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+-- Instituicao responsavel pela organizacao dos eventos.
+-- O tipo separa escola e faculdade sem depender do e-mail do usuario.
+CREATE TABLE instituicoes (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    nome VARCHAR(255) NOT NULL,
+    tipo ENUM('escola', 'faculdade') NOT NULL,
+    ativo BOOLEAN NOT NULL DEFAULT TRUE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- Um usuario pode atuar em mais de uma instituicao e ter papeis diferentes.
+CREATE TABLE usuarios_instituicoes (
+    id_usuario INT UNSIGNED NOT NULL,
+    id_instituicao INT UNSIGNED NOT NULL,
+    papel ENUM('organizador', 'administrador', 'participante') NOT NULL DEFAULT 'participante',
+
+    PRIMARY KEY (id_usuario, id_instituicao),
+    CONSTRAINT fk_usuario_instituicao_usuario
+        FOREIGN KEY (id_usuario) REFERENCES usuarios(id),
+    CONSTRAINT fk_usuario_instituicao_instituicao
+        FOREIGN KEY (id_instituicao) REFERENCES instituicoes(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 -- Tabela categorias
 CREATE TABLE categorias (
     id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
@@ -42,6 +64,7 @@ CREATE TABLE enderecos (
 -- Tabela eventos
 CREATE TABLE eventos (
     id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    id_instituicao INT UNSIGNED NOT NULL,
     titulo VARCHAR(255) NOT NULL,
     descricao TEXT NOT NULL,
     valor DECIMAL(10,2) DEFAULT 0.00,
@@ -54,8 +77,10 @@ CREATE TABLE eventos (
     id_endereco INT UNSIGNED NOT NULL,
     criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     atualizado_em TIMESTAMP DEFAULT NULL,
-    destaque boolean DEFAULT FALSE,
+    destaque BOOLEAN DEFAULT FALSE,
+    publico_alvo ENUM('escola', 'faculdade', 'todos') NOT NULL DEFAULT 'todos',
 
+    CONSTRAINT fk_eventos_instituicao FOREIGN KEY (id_instituicao) REFERENCES instituicoes(id),
     CONSTRAINT fk_eventos_categorias FOREIGN KEY (id_categoria) REFERENCES categorias(id),
     CONSTRAINT fk_eventos_status FOREIGN KEY (id_status) REFERENCES status(id),
     CONSTRAINT fk_eventos_usuario FOREIGN KEY (id_usuario) REFERENCES usuarios(id),

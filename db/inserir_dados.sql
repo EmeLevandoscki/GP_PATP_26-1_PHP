@@ -125,6 +125,15 @@ INSERT INTO usuarios (
     ''
 );
 
+-- Instituicoes e permissoes do organizador
+INSERT INTO instituicoes (nome, tipo) VALUES
+('Escola IDEAU Santa Clara', 'escola'),
+('Faculdade IDEAU', 'faculdade');
+
+INSERT INTO usuarios_instituicoes (id_usuario, id_instituicao, papel) VALUES
+(1, 1, 'administrador'),
+(1, 2, 'administrador');
+
 -- Endereço
 INSERT INTO enderecos (
     nome_local,
@@ -148,6 +157,7 @@ INSERT INTO enderecos (
 
 -- Evento
 INSERT INTO eventos (
+    id_instituicao,
     titulo,
     descricao,
     valor,
@@ -158,8 +168,10 @@ INSERT INTO eventos (
     id_status,
     id_usuario,
     id_endereco,
-    destaque
+    destaque,
+    publico_alvo
 ) VALUES (
+    1,
     'Colônia de Férias de Inverno 2026',
     'Colônia de férias com atividades lúdicas, esportivas e culturais para crianças e adolescentes.',
     0.00,
@@ -170,7 +182,8 @@ INSERT INTO eventos (
     1,
     1,
     1,
-    TRUE
+    TRUE,
+    'escola'
 );
 
 -- Atividade principal do evento

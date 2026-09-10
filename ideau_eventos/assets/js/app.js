@@ -124,6 +124,7 @@ function getPastaBase() {
   };
 
   const AUDIENCES = {
+    todos: 'Todos os públicos',
     graduacao: 'Graduação',
     escola: 'Escola'
   };
@@ -357,8 +358,41 @@ function getPastaBase() {
   function initEventFormPage() {
     if (!requireAuth()) return;
     initEventAudienceControls();
+    initEventCoverUpload();
     populateEventForm();
     document.getElementById('eventForm')?.addEventListener('submit', handleEventFormSubmit);
+  }
+
+  function initEventCoverUpload() {
+    const input = document.getElementById('eventCoverFile');
+    if (!input) return;
+    input.addEventListener('change', () => {
+      const file = input.files?.[0];
+      if (!file) return;
+      if (!['image/png', 'image/jpeg', 'image/webp'].includes(file.type)) {
+        input.value = '';
+        showToast('Escolha uma imagem PNG, JPG ou WEBP.');
+        return;
+      }
+      if (file.size > 2 * 1024 * 1024) {
+        input.value = '';
+        showToast('A imagem deve ter no máximo 2 MB.');
+        return;
+      }
+      const reader = new FileReader();
+      reader.addEventListener('load', () => {
+        setValue('eventCover', String(reader.result || ''));
+        showEventCoverPreview(String(reader.result || ''));
+      });
+      reader.readAsDataURL(file);
+    });
+  }
+
+  function showEventCoverPreview(source) {
+    const preview = document.getElementById('eventCoverPreview');
+    if (!preview) return;
+    preview.src = source;
+    preview.hidden = !source;
   }
 
   async function initRegistrationsPage() {
@@ -916,6 +950,7 @@ function getPastaBase() {
     setText('formPageTitle', 'Editar evento');
     setValue('eventId', event.id);
     setValue('eventTitle', event.title);
+    setValue('eventInstitution', event.institution || '');
     setValue('eventCategory', event.category);
     setValue('eventAudience', getEventAudience(event));
     setValue('eventDate', event.date);
@@ -924,6 +959,7 @@ function getPastaBase() {
     setValue('eventCity', event.city);
     setValue('eventLocation', event.location);
     setValue('eventCover', event.cover);
+    showEventCoverPreview(event.cover || '');
     setValue('eventSummary', event.summary);
     setValue('eventDescription', event.description);
     setChecked('fieldCpf', Boolean(event.fields?.cpf));
@@ -950,6 +986,8 @@ function getPastaBase() {
     const nextEvent = {
       id,
       title,
+      institution: getValue('eventInstitution'),
+      institutionType: document.getElementById('eventInstitution')?.selectedOptions[0]?.dataset.type || '',
       category: getValue('eventCategory'),
       audience: getValue('eventAudience') || 'graduacao',
       date: getValue('eventDate'),
@@ -1287,22 +1325,23 @@ function getPastaBase() {
     const audience = getValue('eventAudience') || 'graduacao';
     const graduationGroup = document.getElementById('graduationFieldsGroup');
     const schoolGroup = document.getElementById('schoolFieldsGroup');
-    if (graduationGroup) graduationGroup.hidden = audience !== 'graduacao';
-    if (schoolGroup) schoolGroup.hidden = audience !== 'escola';
+    if (graduationGroup) graduationGroup.hidden = audience !== 'graduacao' && audience !== 'todos';
+    if (schoolGroup) schoolGroup.hidden = audience !== 'escola' && audience !== 'todos';
   }
 
   function applyDefaultFields(audience = 'graduacao') {
-    const defaults = getFieldDefaults(audience);
+    const defaults = getFieldDefaults(audience === 'todos' ? 'graduacao' : audience);
+    const schoolDefaults = getFieldDefaults('escola');
     setChecked('fieldCpf', Boolean(defaults.cpf));
     setChecked('fieldEmail', Boolean(defaults.email));
     setChecked('fieldPhone', Boolean(defaults.phone));
-    setChecked('fieldCourse', audience === 'graduacao' && Boolean(defaults.course));
-    setChecked('fieldCommunity', audience === 'graduacao' && Boolean(defaults.community));
+    setChecked('fieldCourse', (audience === 'graduacao' || audience === 'todos') && Boolean(defaults.course));
+    setChecked('fieldCommunity', (audience === 'graduacao' || audience === 'todos') && Boolean(defaults.community));
     setChecked('fieldNotes', Boolean(defaults.notes));
-    setChecked('fieldResponsibleName', audience === 'escola' && defaults.responsibleName !== false);
-    setChecked('fieldRelationship', audience === 'escola' && defaults.relationship !== false);
-    setChecked('fieldStudentName', audience === 'escola' && defaults.studentName !== false);
-    setChecked('fieldStudentClass', audience === 'escola' && defaults.studentClass !== false);
+    setChecked('fieldResponsibleName', (audience === 'escola' || audience === 'todos') && schoolDefaults.responsibleName !== false);
+    setChecked('fieldRelationship', (audience === 'escola' || audience === 'todos') && schoolDefaults.relationship !== false);
+    setChecked('fieldStudentName', (audience === 'escola' || audience === 'todos') && schoolDefaults.studentName !== false);
+    setChecked('fieldStudentClass', (audience === 'escola' || audience === 'todos') && schoolDefaults.studentClass !== false);
     setValue('eventExtraFields', (defaults.extras || []).map(extra => `${extra.label}${extra.required ? '|required' : ''}`).join('\n'));
   }
 

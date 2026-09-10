@@ -192,6 +192,7 @@ h3 { font-size: 1rem; margin-bottom: 8px; }
 .form-field textarea { resize: vertical; line-height: 1.6; }
 .form-field small { text-transform: none; letter-spacing: 0; font-weight: 500; color: var(--muted); }
 .form-field.wide { grid-column: 1 / -1; }
+.event-cover-preview { width: 100%; max-height: 320px; object-fit: cover; border: 1px solid var(--border); margin-top: 6px; }
 .top-gap { margin-top: 18px; }
 .form-actions { margin-top: 22px; }
 .checks-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
