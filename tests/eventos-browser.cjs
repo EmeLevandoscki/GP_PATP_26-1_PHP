@@ -35,6 +35,11 @@ $id = str_repeat('a',64); $error = ''; $cancelled = false; $_SESSION['receipt_cs
 function escapeReceipt(string $text): string { return htmlspecialchars($text, ENT_QUOTES, 'UTF-8'); }
 ?><!DOCTYPE html>` + receiptTemplate });
 
+const lookupTemplate = fs.readFileSync(path.join(root, 'ideau_eventos/consultar-inscricao.php'), 'utf8').split('<!DOCTYPE html>')[1];
+const lookupHtml = execFileSync('php', [], { cwd: root, encoding: 'utf8', input: `<?php
+$error='';$message='';$email='';$verified=null;$receipts=[];$_SESSION=['consulta_csrf'=>'test'];
+function consultaEscape(string $value): string {return htmlspecialchars($value, ENT_QUOTES, 'UTF-8');}
+?><!DOCTYPE html>` + lookupTemplate });
 const server = http.createServer(async (req, res) => {
   const url = new URL(req.url, 'http://localhost');
   const json = body => { res.setHeader('Content-Type', 'application/json'); res.end(JSON.stringify(body)); };
@@ -63,6 +68,7 @@ const server = http.createServer(async (req, res) => {
     return json(action === 'qtd_inscricoes_evento' ? { count: 80 } : action === 'qtdAtivos' ? 0 : []);
   }
   if (url.pathname.endsWith('/comprovante.php')) { res.setHeader('Content-Type', 'text/html'); return res.end(receiptHtml); }
+  if (url.pathname.endsWith('/consultar-inscricao.php')) { res.setHeader('Content-Type', 'text/html'); return res.end(lookupHtml); }
   const file = path.resolve(root, '.' + decodeURIComponent(url.pathname));
   if (!file.startsWith(root + path.sep) || !fs.existsSync(file) || !fs.statSync(file).isFile()) { res.writeHead(404); return res.end(); }
   res.setHeader('Content-Type', ({ '.js': 'text/javascript', '.css': 'text/css', '.html': 'text/html', '.php': 'text/html', '.png': 'image/png' })[path.extname(file)] || 'application/octet-stream');
@@ -141,6 +147,17 @@ const server = http.createServer(async (req, res) => {
     await until('document.querySelector("#eventsGrid .card-title")?.textContent === "Evento de teste"');
     assert.equal(await evaluate('getComputedStyle(document.querySelector("#eventsGrid .event-card")).opacity'), '1', 'Refazer a busca não deve ocultar os novos cards.');
     console.log('Página inicial conferida: evento publicado visível após carregar e refazer a busca.');
+    await until('document.querySelector("#destaque .featured-content h2")?.textContent === "Evento de teste"');
+    assert.equal(await evaluate('document.getElementById("destaque").hidden'), false);
+    assert.equal(await evaluate('document.querySelector("#destaque .featured-wrap").classList.contains("fade-up")'), false);
+    events[0].closed = true;
+    await send('Page.navigate', {url: origin + '/index.php'});
+    await until('document.getElementById("eventsGrid")?.textContent.includes("Nenhum evento publicado")');
+    assert.equal(await evaluate('document.getElementById("destaque").hidden'), true);
+    assert.equal(await evaluate('document.getElementById("destaque").textContent'), '');
+
+    events[0].closed = false;
+    console.log('Destaque usa eventos publicados e desaparece quando todos estão fora do ar.');
     await navigate('evento-form.html');
     await until('document.getElementById("eventForm").getAttribute("aria-busy") === "false"');
     console.log('Formulário carregado no navegador.');
@@ -194,7 +211,7 @@ const server = http.createServer(async (req, res) => {
     await evaluate('document.querySelector("[data-event-view=history]").click()');
     assert.match(await evaluate('document.getElementById("adminEventsTable").textContent'), /Retirado manualmente/);
     assert.equal(await evaluate('document.querySelector("[data-publish-event]")'), null);
-    assert.ok(await evaluate(`document.querySelector('a[href*="inscritos.html?event="]') !== null`));
+    assert.ok(await evaluate(`document.querySelector('a[href*="relatorios.html?event="]') !== null`));
     await send('Page.reload');
     await until('document.getElementById("historyEventsCount")?.textContent === "1"');
     console.log('Encerramento manual e histórico conferidos.');
@@ -271,6 +288,20 @@ const server = http.createServer(async (req, res) => {
     assert.equal(await evaluate('document.getElementById("reportRegistrationsTable").textContent'), '');
     assert.equal(await evaluate('document.getElementById("reportExportActions").hidden'), true);
     console.log('Relatórios conferidos: cards, navegação, evento encerrado, isolamento de participantes, busca, PDF, Excel e evento vazio/inexistente.');
+    events = [{ ...fixture, description: 'Descrição do evento. '.repeat(300) }];
+    await send('Emulation.setDeviceMetricsOverride', {width:1280,height:650,deviceScaleFactor:1,mobile:false});
+    await navigate('evento.html?id=evt-browser');
+    await until('document.querySelector(".evento-info-wrap")');
+    await evaluate('window.scrollTo({top:document.documentElement.scrollHeight,behavior:"instant"})');
+    assert.ok(await evaluate('window.scrollY > 0'), 'Página do evento deve rolar no desktop.');
+    assert.equal(await evaluate('getComputedStyle(document.querySelector(".evento-info-wrap")).maxHeight'), 'none');
+    await evaluate('document.querySelector(".btn-inscricao").scrollIntoView({block:"center",behavior:"instant"})');
+    assert.equal(await evaluate('(() => {const r=document.querySelector(".btn-inscricao").getBoundingClientRect();return r.top>=0 && r.bottom<=innerHeight;})()'), true, 'Botão de inscrição deve ficar acessível.');
+    await send('Emulation.setDeviceMetricsOverride', {width:375,height:650,deviceScaleFactor:1,mobile:true});
+    await evaluate('window.scrollTo({top:document.documentElement.scrollHeight,behavior:"instant"})');
+    assert.ok(await evaluate('window.scrollY > 0'), 'Página do evento deve rolar no celular.');
+    await send('Emulation.clearDeviceMetricsOverride');
+    console.log('Rolagem do evento conferida em desktop e celular, com descrição longa e botão acessível.');
     events = [{ ...fixture, seats: 1, registrationCount: 0 }];
     await navigate('inscricao.html?id=evt-browser');
     await until('document.getElementById("registrationForm")');
@@ -308,6 +339,22 @@ const server = http.createServer(async (req, res) => {
     await evaluate('document.querySelector("[data-registration-receipts] a").click()');
     await until('location.pathname.endsWith("/comprovante.php")');
     console.log('Comprovante conferido: primeira inscrição abre comprovante; repetição mostra aviso sem redirecionar, inclusive com vagas esgotadas.');
+    await navigate('consultar-inscricao.php');
+    await until('document.getElementById("consultaEmail")');
+    await send('Emulation.setDeviceMetricsOverride', {width:1280,height:900,deviceScaleFactor:1,mobile:false});
+    await pause(150);
+    assert.equal(await evaluate('document.documentElement.scrollWidth <= innerWidth'), true);
+    assert.match(await evaluate('document.body.textContent'), /Receber link por e-mail/);
+    await evaluate('document.querySelector(".consult-submit").click()');
+    assert.equal(await evaluate('document.activeElement.id'), 'consultaEmail');
+    const lookupShot = await send('Page.captureScreenshot', {format:'png'});
+    fs.writeFileSync(path.join(os.tmpdir(), 'ideau-consulta-preview.png'), Buffer.from(lookupShot.data, 'base64'));
+    await send('Emulation.setDeviceMetricsOverride', {width:375,height:850,deviceScaleFactor:1,mobile:true});
+    assert.equal(await evaluate('document.documentElement.scrollWidth <= innerWidth'), true, 'Consulta deve caber no celular.');
+    await evaluate('document.querySelector(".consult-submit").scrollIntoView({block:"center",behavior:"instant"})');
+    assert.equal(await evaluate('document.querySelector(".consult-submit").getBoundingClientRect().bottom <= innerHeight'), true);
+    await send('Emulation.clearDeviceMetricsOverride');
+    console.log('Consulta por e-mail conferida em desktop e celular, com formulário e navegação acessíveis.');
     assert.deepEqual(errors, []);
     console.log('OK no navegador: lista de erros visível sem subir ao topo, links para os campos, salvamento após correção, recuperação, menu, celular e encerramento.');
   } finally {

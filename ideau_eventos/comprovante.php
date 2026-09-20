@@ -73,7 +73,7 @@ function escapeReceipt(string $text): string { return htmlspecialchars($text, EN
   <p class="receipt-note">Este comprovante confirma a inscrição e não substitui o certificado de presença.</p>
   </div><aside class="receipt-ticket-side" aria-label="Gerenciar inscrição">
   <div class="receipt-document-icon" aria-hidden="true"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M8 13h8M8 17h5"/></svg></div>
-  <h2>Leve com você</h2><p>Baixe o PDF e tenha os dados da sua inscrição sempre à mão.</p>
+  <h2>Comprovante de inscrição</h2><p>Você pode baixar o PDF para consultar depois.</p>
   <div class="receipt-actions"><a class="btn-primary" href="?id=<?= escapeReceipt($id) ?>&amp;download=1">Baixar comprovante em PDF</a><a class="btn-secondary" href="../index.php#eventos">Ver eventos</a></div>
   <details class="cancel-registration" id="cancelar-inscricao" <?= isset($_GET['cancel']) ? 'open' : '' ?>>
     <summary>Cancelar minha inscrição</summary>

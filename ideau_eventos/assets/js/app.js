@@ -745,6 +745,7 @@ function getPastaBase() {
     } catch (error) {
       console.error(error);
       if (!serverEvents.some(event => event.published && !eventIsClosed(event))) {
+        renderFeaturedEvent([]);
         grid.innerHTML = '<div class="empty-state">Não foi possível carregar os eventos. Tente novamente mais tarde.</div>';
         return;
       }
@@ -755,6 +756,8 @@ function getPastaBase() {
       id: event.id, titulo: event.title, descricao: event.summary, categoria: CATEGORIES[event.category] || event.category,
       data_inicio: `${event.date} ${event.time}`, foto_path: event.cover, nome_local: event.location, cidade: event.city, valor: 0
     })));
+
+    renderFeaturedEvent(eventos);
 
     const events = eventos
       .filter(evento => category === 'todos' || (evento.categoria || '').toLowerCase() === category)
@@ -767,6 +770,25 @@ function getPastaBase() {
     }
 
     grid.innerHTML = events.map(eventCardTemplate).join('');
+  }
+
+  function renderFeaturedEvent(events) {
+    const section = document.getElementById('destaque');
+    if (!section) return;
+    const event = events.find(item => Number(item.destaque) === 1) || events[0];
+    section.hidden = !event;
+    document.querySelectorAll('a[href="#destaque"]').forEach(link => { link.hidden = !event; });
+    if (!event) { section.innerHTML = ''; return; }
+    const date = String(event.data_inicio || '').slice(0, 10);
+    const end = String(event.data_fim || '').slice(0, 10);
+    const price = Number(event.valor) > 0 ? `R$ ${Number(event.valor).toFixed(2).replace('.', ',')}` : 'Gratuita';
+    section.innerHTML = `<div class="section-label">Em destaque</div><h2 class="section-title">${escapeHtml(event.titulo)}</h2>
+      <div class="featured-wrap"><div class="featured-img"><div class="featured-badge">Destaque</div><img src="${escapeAttr(event.foto_path || `${getPastaBase()}/uploads/foto_generica_1.png`)}" alt="${escapeAttr(event.titulo)}" loading="lazy"></div>
+      <div class="featured-content"><div class="section-label">${escapeHtml(event.categoria || 'Evento')}</div><h2>${escapeHtml(event.titulo)}</h2><p>${escapeHtml(event.descricao || '')}</p>
+      <div class="featured-details"><div class="detail-row"><div><div class="detail-label">Data</div><div class="detail-val">${escapeHtml(formatDate(date))}${end && end !== date ? ` — ${escapeHtml(formatDate(end))}` : ''}</div></div></div>
+      <div class="detail-row"><div><div class="detail-label">Local</div><div class="detail-val">${escapeHtml([event.nome_local, event.cidade].filter(Boolean).join(' — '))}</div></div></div>
+      <div class="detail-row"><div><div class="detail-label">Inscrição</div><div class="detail-val">${price}</div></div></div></div>
+      <a class="btn-primary" href="ideau_eventos/evento.html?id=${encodeURIComponent(event.id)}">Ver detalhes</a></div></div>`;
   }
 
   function eventCardTemplate(evento) {
@@ -958,7 +980,7 @@ function getPastaBase() {
         <div class="inscricao-form-wrap" id="inscricao">
           <div class="audience-pill">${escapeHtml(AUDIENCES[getEventAudience(event)])}</div>
           <h2 class="inscricao-form-title">Confirmar inscrição</h2>
-          <p class="inscricao-form-sub">Dados do participante</p>
+          <p class="inscricao-form-sub">Dados do participante</p><p class="inscricao-form-sub">Já se inscreveu? <a href="consultar-inscricao.php">Consultar minha inscrição</a></p>
           ${isSoldOut ? '<div class="empty-state">Vagas esgotadas. Se você já se inscreveu, informe os mesmos dados abaixo para recuperar seu comprovante.</div>' : ''}
           ${registrationFormTemplate(event)}
         </div>
@@ -1160,6 +1182,10 @@ function getPastaBase() {
   function renderDashboard() {
     const events = getEvents();
     const regs = getRegistrations();
+    window.renderDashboardCharts?.(events.map(event => ({
+      id: event.id, title: event.title, count: countRegistrations(event.id),
+      closed: eventIsClosed(event), published: event.published, mode: event.publicationMode
+    })));
     const published = events.filter(event => event.published);
     const totalSeats = events.reduce((sum, event) => sum + Number(event.seats || 0), 0);
     const avg = totalSeats ? Math.round((regs.length / totalSeats) * 100) : 0;
@@ -1182,7 +1208,7 @@ function getPastaBase() {
     if (dashRegs) {
       dashRegs.innerHTML = regs.slice().sort((a, b) => b.createdAt.localeCompare(a.createdAt)).slice(0, 6).map(reg => {
         const event = events.find(item => item.id == reg.eventId);
-        return `<div class="mini-item"><strong>${escapeHtml(reg.name)}</strong><span>${escapeHtml(event?.title || 'Evento removido')} · ${formatDateTime(reg.createdAt)}</span></div>`;
+        return `<div class="mini-item"><strong>${escapeHtml(event?.title || 'Evento removido')}</strong><span>${formatDateTime(reg.createdAt)}</span></div>`;
       }).join('') || '<div class="empty-state">Nenhuma inscrição registrada.</div>';
     }
   }
@@ -1221,7 +1247,7 @@ function getPastaBase() {
               ${String(event.id).startsWith('evt-') && !history ? `<a class="btn btn-secondary small" href="evento-form.html?id=${encodeURIComponent(event.id)}">Editar</a>` : ''}
               ${String(event.id).startsWith('evt-') && !event.published && !history ? `<button class="btn btn-primary small" type="button" data-publish-event="${escapeAttr(event.id)}">Publicar agora</button>` : ''}
               ${!history && event.publicationMode !== 'draft' ? `<button class="btn btn-danger small" type="button" data-close-event="${escapeAttr(event.id)}">Tirar do ar</button>` : ''}
-              <a class="btn btn-secondary small" href="inscritos.html?event=${encodeURIComponent(event.id)}">Ver inscritos</a>
+              <a class="btn btn-secondary small" href="relatorios.html?event=${encodeURIComponent(event.id)}">Ver inscritos</a>
               <a class="btn btn-secondary small" href="relatorios.html?event=${encodeURIComponent(event.id)}">Relatório</a>
               <!-- TODO <button class="btn btn-danger small" type="button" data-delete-event="${escapeAttr(event.id)}">Excluir</button> -->
             </div>

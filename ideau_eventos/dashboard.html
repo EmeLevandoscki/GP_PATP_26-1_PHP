@@ -9,6 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,700;1,300&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="assets/css/app.css" />
+  <link rel="stylesheet" href="assets/css/dashboard-charts.css?v=1" />
 </head>
 <body data-page="dashboard" class="admin-page">
   <aside class="admin-sidebar">
@@ -17,8 +18,7 @@
       <a class="active" href="dashboard.html">Dashboard</a>
       <a href="eventos.html">Eventos</a>
       <a href="evento-form.html">Novo evento</a>
-      <a href="inscritos.html">Inscritos</a>
-      <a href="relatorios.html">Relatórios</a>
+      <a href="relatorios.html">Relatórios/Inscritos</a>
       <a href="configuracoes.html">Configurações</a>
     </nav>
     <div class="admin-sidebar-actions">
@@ -32,7 +32,7 @@
       <div><p class="eyebrow">Visão geral</p><h1>Dashboard</h1></div>
       <div class="dashboard-actions">
         <a href="evento-form.html" class="btn btn-primary">+ Criar evento</a>
-        <a href="inscritos.html" class="btn btn-secondary">Ver inscritos</a>
+        <a href="relatorios.html" class="btn btn-secondary">Ver inscritos</a>
       </div>
     </header>
 
@@ -49,13 +49,24 @@
         <div id="dashboardEvents" class="mini-list"></div>
       </article>
       <article class="panel-card">
-        <div class="panel-heading"><h2>Últimas inscrições</h2><a href="inscritos.html">Ver todas</a></div>
+        <div class="panel-heading"><h2>Últimas inscrições</h2><a href="relatorios.html">Ver todas</a></div>
         <div id="dashboardRegistrations" class="mini-list"></div>
       </article>
+    </section>
+    <section class="dashboard-charts" aria-labelledby="dashboardChartsTitle">
+      <div class="dashboard-charts-heading"><div><p class="eyebrow">Acompanhe seus eventos</p><h2 id="dashboardChartsTitle">Eventos em números</h2></div>
+        <label class="dashboard-chart-filter">Exibir <select id="dashboardChartScope"><option value="all">Todos os eventos</option><option value="current">Eventos atuais</option><option value="history">Histórico</option></select></label>
+      </div>
+      <div class="dashboard-chart-grid">
+        <article class="panel-card dashboard-chart-panel"><h3>Inscrições por evento</h3><p class="chart-hint">Os 5 eventos com mais inscrições. Clique para abrir o relatório.</p><div id="dashboardRegistrationChart" aria-live="polite"><p class="empty-state">Carregando dados...</p></div></article>
+        <article class="panel-card dashboard-chart-panel"><h3>Situação dos eventos</h3><p class="chart-hint">Distribuição dos eventos selecionados.</p><div id="dashboardStatusChart" aria-live="polite"><p class="empty-state">Carregando dados...</p></div></article>
+      </div>
+      <p class="chart-footnote">Os gráficos consideram as inscrições existentes. Inscrições canceladas não entram na contagem.</p>
     </section>
   </main>
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
-  <script src="assets/js/app.js"></script>
+  <script src="assets/js/dashboard-charts.js?v=1"></script>
+  <script src="assets/js/app.js?v=dashboard-charts-1"></script>
 </body>
 </html>

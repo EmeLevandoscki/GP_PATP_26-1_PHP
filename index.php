@@ -18,6 +18,7 @@
     </a>
     <nav class="main-nav" id="mainNav">
       <a href="#eventos">Eventos</a>
+      <a href="ideau_eventos/consultar-inscricao.php">Consultar minha inscrição</a>
       <a href="ideau_eventos/login.html" class="nav-cta">Organizador</a>
     </nav>
     <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="Alternar tema" aria-label="Alternar tema claro/escuro">🌙</button>
@@ -36,6 +37,7 @@
       <button class="sidebar-close" id="sidebarClose" aria-label="Fechar menu">&times;</button>
     </div>
     <nav class="sidebar-nav">
+      <a class="sidebar-link" href="ideau_eventos/consultar-inscricao.php">Consultar minha inscrição</a>
       <a href="#eventos" class="sidebar-link" data-nav-link>
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
         Eventos
@@ -111,78 +113,12 @@
       <div class="section-label">Agenda</div>
       <h2 class="section-title">PRÓXIMOS EVENTOS</h2>
       <div class="events-grid" id="eventsGrid">
-        <!-- Fallback estático enquanto o JS carrega -->
-        <article class="event-card fade-up">
-          <a class="card-img" href="ideau_eventos/evento.html?id=1" aria-label="Abrir Colônia de Férias de Inverno 2026">
-            <img src="https://plus.unsplash.com/premium_photo-1686920245950-58617c8a602e?q=80&w=600&auto=format&fit=crop" alt="Colônia de Férias de Inverno 2026" loading="lazy" />
-            <span class="card-tag">Recreativo</span>
-            <div class="card-date-badge">
-              <span class="day">27</span>
-              <span class="month">JUL</span>
-            </div>
-          </a>
-          <div class="card-body">
-            <div class="card-meta">
-              <span>Ideau Santa Clara</span>
-              <span>Passo Fundo</span>
-            </div>
-            <h3 class="card-title">Colônia de Férias de Inverno 2026</h3>
-            <p class="card-desc">Colônia de férias com atividades lúdicas, esportivas e culturais para crianças e adolescentes.</p>
-            <div class="card-footer">
-              <span style="font-size:0.75rem;color:var(--muted);margin-right:auto">Livre</span>
-              <a class="card-btn" href="ideau_eventos/evento.html?id=1">Ver evento</a>
-            </div>
-          </div>
-        </article>
+        <p class="empty-state" role="status">Carregando eventos...</p>
       </div>
     </section>
 
     <!-- DESTAQUE -->
-    <section id="destaque" class="featured-section">
-      <div class="section-label">Em destaque</div>
-      <h2 class="section-title">COLÔNIA DE FÉRIAS DE INVERNO 2026</h2>
-      <div class="featured-wrap fade-up">
-        <div class="featured-img">
-          <div class="featured-badge">Destaque</div>
-          <img src="https://plus.unsplash.com/premium_photo-1686920245950-58617c8a602e?q=80&w=800&auto=format&fit=crop" alt="Colônia de Férias" />
-        </div>
-        <div class="featured-content">
-          <div class="section-label" style="margin-bottom:8px">Recreativo</div>
-          <h2>COLÔNIA DE FÉRIAS DE INVERNO 2026</h2>
-          <p>Colônia de férias com atividades lúdicas, esportivas e culturais para crianças e adolescentes.</p>
-          <div class="featured-details">
-            <div class="detail-row">
-              <div class="detail-icon">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-              </div>
-              <div>
-                <div class="detail-label">Data</div>
-                <div class="detail-val">27 a 31 de Julho, 2026</div>
-              </div>
-            </div>
-            <div class="detail-row">
-              <div class="detail-icon">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-              </div>
-              <div>
-                <div class="detail-label">Local</div>
-                <div class="detail-val">Ideau Santa Clara — Passo Fundo</div>
-              </div>
-            </div>
-            <div class="detail-row">
-              <div class="detail-icon">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/><path d="M13 5v2"/><path d="M13 17v2"/><path d="M13 11v2"/></svg>
-              </div>
-              <div>
-                <div class="detail-label">Inscrição</div>
-                <div class="detail-val">Gratuita — Vagas limitadas</div>
-              </div>
-            </div>
-          </div>
-          <a class="btn-primary" href="ideau_eventos/evento.html?id=1" style="display:inline-flex; text-decoration:none;">Ver Detalhes</a>
-        </div>
-      </div>
-    </section>
+    <section id="destaque" class="featured-section" hidden></section>
 
   </main>
 
@@ -239,7 +175,7 @@
   <script>
     const PASTA_BASE = "<?php echo $pastaBase; ?>";
   </script>
-  <script src="ideau_eventos/assets/js/app.js?v=20260920-home-count"></script>
+  <script src="ideau_eventos/assets/js/app.js?v=published-featured-1"></script>
   <script src="ideau_eventos/assets/js/home.js"></script>
 </body>
 </html>
