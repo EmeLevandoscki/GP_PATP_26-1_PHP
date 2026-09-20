@@ -37,11 +37,7 @@
     } else if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['inscrever'])) {
         header('Content-Type: application/json');
         try {
-            $service->realizarInscricao($_POST);
-            echo json_encode([
-                'success' => true,
-                'message' => 'Inscrição registrada com sucesso!'
-            ]);
+            echo json_encode($service->realizarInscricao($_POST), JSON_UNESCAPED_UNICODE);
         } catch (\Exception $e) {
             echo json_encode([
                 'success' => false,
@@ -54,7 +50,13 @@
         
         switch ($action) {
             case 'eventos':
-                $eventos = $service->listarEventos();
+                $admin = ($_GET['scope'] ?? '') === 'admin';
+                if ($admin && !isset($_SESSION['publication_organizer'])) {
+                    http_response_code(401);
+                    echo json_encode(['message' => 'Entre como organizador para consultar o histórico.']);
+                    exit();
+                }
+                $eventos = $service->listarEventos($admin);
         
                 echo json_encode($eventos);
                 exit();

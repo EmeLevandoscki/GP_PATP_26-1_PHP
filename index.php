@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,700;1,300&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="ideau_eventos/assets/css/home.css" />
+  <link rel="stylesheet" href="ideau_eventos/assets/css/home.css?v=event-spacing-1" />
 </head>
 <body data-page="home">
   <header class="site-header">
@@ -74,7 +74,7 @@
         </div>
         <div class="stat">
           <div class="stat-number" id="statInscricoes">0</div>
-          <div class="stat-label">Inscrições registradas</div>
+          <div class="stat-label">Inscrições nos eventos publicados</div>
         </div>
       </div>
       <div class="hero-ticker">Role para explorar</div>
@@ -239,7 +239,7 @@
   <script>
     const PASTA_BASE = "<?php echo $pastaBase; ?>";
   </script>
-  <script src="ideau_eventos/assets/js/app.js"></script>
+  <script src="ideau_eventos/assets/js/app.js?v=20260920-home-count"></script>
   <script src="ideau_eventos/assets/js/home.js"></script>
 </body>
 </html>

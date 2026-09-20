@@ -1,4 +1,6 @@
+const EVENTOS_BASE = new URL('../../../', document.currentScript.src).pathname.replace(/\/$/, '');
 function getPastaBase() {
+  if (typeof PASTA_BASE === 'undefined') return EVENTOS_BASE;
   if (PASTA_BASE === '/') {
     return '';
   }
@@ -78,7 +80,6 @@ function getPastaBase() {
 })();
 (function () {
   'use strict';
-  localStorage.clear();
   const KEYS = {
     events: 'ideauEventos.events.v3.separated',
     registrations: 'ideauEventos.registrations.v3.separated',
@@ -86,11 +87,58 @@ function getPastaBase() {
     settings: 'ideauEventos.settings.v1.audienceFields'
   };
 
-  const API_ENDPOINT = '../src/Controller/EventoController.php';
+  const API_ENDPOINT = `${EVENTOS_BASE}/src/Controller/EventoController.php`;
+  const PUBLICATION_ENDPOINT = new URL('../../../src/Controller/PublicacaoController.php', document.currentScript.src).href;
+  let serverEvents = [], legacyEvents = [], serverRegistrations = [], legacyRegistrationCount = 0;
+  let serverSession = { authenticated: false, csrf: '' };
+  let eventFormDraft = null;
+  let adminEventView = 'current';
+
+  async function publicationRequest(action, data) {
+    const response = await fetch(`${PUBLICATION_ENDPOINT}?action=${action}`, {
+      credentials: 'same-origin',
+      cache: 'no-store',
+      ...(data === undefined ? {} : {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': serverSession.csrf },
+        body: JSON.stringify(data)
+      })
+    });
+    const result = await response.json();
+    if (!response.ok) throw new Error(result.message || 'Não foi possível acessar as publicações.');
+    return result;
+  }
+
+  async function loadServerEvents() {
+    const adminPage = !['home', 'event-detail', 'registration', 'login'].includes(document.body.dataset.page);
+    const scope = adminPage && serverSession.authenticated ? '&scope=admin' : '';
+    serverEvents = await publicationRequest(`events${scope}`);
+    const legacy = await listarEventosApi(Boolean(scope));
+    legacyEvents = legacy.map(event => ({
+      ...(DEFAULT_EVENTS.find(item => item.id === String(event.id)) || {}),
+      id: String(event.id), title: event.titulo, category: event.categoria,
+      createdAt: event.criado_timestamp ? new Date(Number(event.criado_timestamp) * 1000).toISOString() : null,
+      date: event.data_inicio.slice(0, 10), time: event.data_inicio.slice(11, 16),
+      date_begin: event.data_inicio.slice(0, 10), date_end: event.data_fim.slice(0, 10),
+      time_begin: event.data_inicio.slice(11, 16), time_end: event.data_fim.slice(11, 16),
+      location: event.nome_local || '', city: event.cidade || '', seats: -1,
+      cover: event.foto_path || DEFAULT_EVENTS.find(item => item.id === String(event.id))?.cover || '',
+      summary: event.descricao || '', description: event.descricao || '',
+      publicationMode: 'published', published: event.published, closed: event.closed,
+      closedAt: event.closedAt, closeReason: event.closeReason, effectiveEndAt: event.effectiveEndAt,
+      registrationCount: Number(event.inscritos || 0)
+    }));
+    if (scope) serverRegistrations = await publicationRequest('registrations');
+  }
+
+  async function saveServerEvent(event) {
+    const saved = await publicationRequest('save', event);
+    serverEvents = serverEvents.filter(item => item.id !== saved.id).concat(saved);
+    return saved;
+  }
 
   const ORGANIZER = {
     email: 'organizador@ideau.edu.br',
-    password: 'ideau2026',
     name: 'Organizador IDEAU'
   };
 
@@ -158,6 +206,7 @@ function getPastaBase() {
         extras: []
       },
       escola: {
+        responsibleCPF: true,
         responsibleName: true,
         relationship: true,
         studentName: true,
@@ -228,13 +277,6 @@ function getPastaBase() {
     return data.count;
   }
 
-  async function fetchRegistrationsCount2() { //charque só pra arrumar ligeiro, refazer depois
-    const res = await fetch(`${getPastaBase()}/src/Controller/EventoController.php?action=qtd_inscricoes_evento&id=1`); //charque arrumar
-    const data = await res.json();
-
-    return data.count;
-  }
-
   /* EVENTOS REAIS (banco de dados)
      Trazido de js/script.js: busca os eventos e categorias direto do
      EventoController.php, em vez do localStorage mockado. */
@@ -242,8 +284,8 @@ function getPastaBase() {
     return `${getPastaBase()}/src/Controller/EventoController.php?${query}`;
   }
 
-  async function listarEventosApi() {
-    const res = await fetch(eventoApiUrl('action=eventos'));
+  async function listarEventosApi(admin = false) {
+    const res = await fetch(eventoApiUrl(`action=eventos${admin ? '&scope=admin' : ''}`), { cache: 'no-store' });
     if (!res.ok) throw new Error('Falha ao carregar eventos');
     return res.json();
   }
@@ -266,11 +308,19 @@ function getPastaBase() {
     return NOMES_MESES_ABREV[mes] || '';
   }
 
-  document.addEventListener('DOMContentLoaded', () => {
+  document.addEventListener('DOMContentLoaded', async () => {
     seedData();
     initMenu();
     initLogout();
     const page = document.body.dataset.page;
+    try {
+      serverSession = await publicationRequest('session');
+      await loadServerEvents();
+    } catch (error) {
+      showToast(error.message);
+    }
+    try { legacyRegistrationCount = Number(await fetchRegistrationsCount()) || 0; }
+    catch (error) { console.error(error); }
 
     if (page === 'home') initHomePage();
     if (page === 'event-detail') initEventDetailPage();
@@ -282,6 +332,42 @@ function getPastaBase() {
     if (page === 'registrations') initRegistrationsPage();
     if (page === 'reports') initReportsPage();
     if (page === 'settings') initSettingsPage();
+    if (['home', 'event-detail', 'registration', 'admin-events', 'dashboard'].includes(page)) {
+      let visibleState = '';
+      setInterval(() => {
+        if (document.hidden) return;
+        document.querySelectorAll('[data-countdown]').forEach(element => {
+          element.textContent = countdownLabel(element.dataset.countdown);
+        });
+        const currentId = new URLSearchParams(window.location.search).get('id');
+        const relevantEvents = ['event-detail', 'registration'].includes(page) ? getEvents().filter(event => event.id === currentId) : getEvents();
+        const state = JSON.stringify(relevantEvents.map(event => [event.id, event.published, eventIsClosed(event)]));
+        if (state === visibleState) return;
+        const previousState = visibleState;
+        visibleState = state;
+        if (!previousState) return;
+        if (page === 'home') { renderHomeEvents(); renderPublicStats(); }
+        if (page === 'event-detail') renderEventDetail();
+        if (page === 'registration') initRegistrationPage();
+        if (page === 'admin-events') renderAdminEventsTable();
+        if (page === 'dashboard') renderDashboard();
+      }, 1000);
+      setInterval(async () => {
+        if (document.hidden) return;
+        const previous = JSON.stringify(serverEvents.concat(legacyEvents));
+        try {
+          await loadServerEvents();
+          if (previous === JSON.stringify(serverEvents.concat(legacyEvents))) return;
+          if (page === 'home') { renderHomeEvents(); renderPublicStats(); }
+          const id = new URLSearchParams(window.location.search).get('id');
+          const currentChanged = JSON.stringify(JSON.parse(previous).find(event => event.id === id)) !== JSON.stringify(getEvents().find(event => event.id === id));
+          if (page === 'event-detail' && currentChanged) renderEventDetail();
+          if (page === 'registration' && JSON.parse(previous).find(event => event.id === id)?.published !== getEvents().find(event => event.id === id)?.published) initRegistrationPage();
+          if (page === 'admin-events') renderAdminEventsTable();
+          if (page === 'dashboard') renderDashboard();
+        } catch (error) { console.error(error); }
+      }, 30000);
+    }
   });
 
   function seedData() {
@@ -301,7 +387,9 @@ function getPastaBase() {
   }
 
   function initLogout() {
-    document.getElementById('logoutButton')?.addEventListener('click', () => {
+    document.getElementById('logoutButton')?.addEventListener('click', async () => {
+      try { await publicationRequest('logout', {}); }
+      catch (error) { showToast(error.message); return; }
       sessionStorage.removeItem(KEYS.session);
       window.location.href = 'login.html';
     });
@@ -323,17 +411,20 @@ function getPastaBase() {
       window.location.href = 'dashboard.html';
       return;
     }
-    document.getElementById('loginForm')?.addEventListener('submit', event => {
+    document.getElementById('loginForm')?.addEventListener('submit', async event => {
       event.preventDefault();
       const email = getValue('loginEmail').trim().toLowerCase();
       const password = getValue('loginPassword');
-      if (email !== ORGANIZER.email || password !== ORGANIZER.password) {
-        showToast('E-mail ou senha incorretos.');
+      try {
+        serverSession = await publicationRequest('session');
+        await publicationRequest('login', { email, password });
+      } catch (error) {
+        showToast(error.message);
         return;
-      }fetchRegistrationsCount2
+      }
       sessionStorage.setItem(KEYS.session, JSON.stringify({ email, name: ORGANIZER.name, loggedAt: new Date().toISOString() }));
       window.location.href = 'dashboard.html';
-    });fetchRegistrationsCount2
+    });
   }
 
   async function initDashboardPage() {
@@ -345,6 +436,12 @@ function getPastaBase() {
   function initAdminEventsPage() {
     if (!requireAuth()) return;
     renderAdminEventsTable();
+    document.querySelectorAll('[data-event-view]').forEach(button => {
+      button.addEventListener('click', () => {
+        adminEventView = button.dataset.eventView;
+        renderAdminEventsTable();
+      });
+    });
     document.getElementById('resetDemoData')?.addEventListener('click', () => {
       if (!confirm('Restaurar eventos de demonstração? Isso remove alterações locais.')) return;
       saveEvents(DEFAULT_EVENTS);
@@ -357,10 +454,114 @@ function getPastaBase() {
 
   function initEventFormPage() {
     if (!requireAuth()) return;
+    const editing = getEvents().find(event => event.id === new URLSearchParams(window.location.search).get('id'));
+    if (editing && eventIsClosed(editing)) {
+      document.getElementById('eventForm').innerHTML = '<section class="panel-card"><h2>Evento encerrado</h2><p class="muted">Este evento está no histórico. Os dados e as inscrições foram preservados.</p><a class="btn btn-secondary" href="eventos.html">Voltar para eventos</a></section>';
+      return;
+    }
     initEventAudienceControls();
     initEventCoverUpload();
+    document.querySelectorAll('input[name="publicationMode"]').forEach(option => {
+      option.addEventListener('change', () => {
+        setValue('eventPublicationMode', option.value);
+        togglePublicationFields();
+      });
+    });
+    togglePublicationFields();
     populateEventForm();
-    document.getElementById('eventForm')?.addEventListener('submit', handleEventFormSubmit);
+    eventFormDraft = initEventFormDraft();
+    const form = document.getElementById('eventForm');
+    form.noValidate = true;
+    form?.addEventListener('input', event => {
+      if (event.target.matches('input:not([type="file"]), select, textarea')) {
+        event.target.setCustomValidity('');
+      }
+      showEventFormErrors(false);
+    });
+    form.addEventListener('change', () => showEventFormErrors(false));
+    form.addEventListener('click', event => {
+      const link = event.target.closest('[data-error-field]');
+      if (!link) return;
+      event.preventDefault();
+      const field = document.getElementById(link.dataset.errorField);
+      field?.focus({ preventScroll: true });
+      field?.scrollIntoView({ block: 'center', behavior: 'instant' });
+    });
+    form?.addEventListener('submit', handleEventFormSubmit);
+    form.setAttribute('aria-busy', 'false');
+    const submitButton = form.querySelector('button[type="submit"]');
+    submitButton.disabled = false;
+    submitButton.textContent = 'Salvar evento';
+  }
+
+  function initEventFormDraft() {
+    const form = document.getElementById('eventForm');
+    const eventId = new URLSearchParams(window.location.search).get('id') || 'new';
+    const key = `ideauEventos.eventForm.v1:${window.location.pathname}:${eventId}`;
+    const coverKey = `${key}:cover`;
+    const fields = [...form.querySelectorAll('input[id], select[id], textarea[id]')]
+      .filter(field => !['eventId', 'eventCover', 'eventCoverFile', 'eventAudience'].includes(field.id));
+    let active = true;
+    let warned = false;
+    let storedCover = null;
+    const warn = () => {
+      if (warned) return;
+      warned = true;
+      showToast('Não foi possível guardar todo o preenchimento nesta aba. Salve o evento antes de atualizar.');
+    };
+
+    try {
+      const draft = JSON.parse(sessionStorage.getItem(key) || 'null');
+      storedCover = sessionStorage.getItem(coverKey);
+      if (draft && typeof draft === 'object' && !Array.isArray(draft)) {
+        fields.filter(field => field.type !== 'checkbox').forEach(field => {
+          if (typeof draft[field.id] === 'string') field.value = draft[field.id];
+        });
+        // A instituição define as opções disponíveis antes de restaurar as escolhas.
+        syncEventInstitution();
+        fields.filter(field => field.type === 'checkbox').forEach(field => {
+          if (typeof draft[field.id] === 'boolean') field.checked = draft[field.id];
+        });
+        toggleAudienceFieldGroups();
+        togglePublicationFields();
+        if (storedCover !== null) {
+          setValue('eventCover', storedCover);
+          showEventCoverPreview(storedCover);
+        }
+      }
+    } catch { warn(); }
+
+    function save() {
+      if (!active) return;
+      const draft = Object.fromEntries(fields.map(field => [field.id, field.type === 'checkbox' ? field.checked : field.value]));
+      // O evento input do rádio ocorre antes do change que atualiza o campo oculto.
+      draft.eventPublicationMode = form.querySelector('input[name="publicationMode"]:checked')?.value || getValue('eventPublicationMode');
+      try {
+        sessionStorage.setItem(key, JSON.stringify(draft));
+        const cover = getValue('eventCover');
+        if (cover !== storedCover) {
+          // Evita gravar a imagem novamente a cada tecla digitada.
+          sessionStorage.removeItem(coverKey);
+          storedCover = null;
+          sessionStorage.setItem(coverKey, cover);
+          storedCover = cover;
+        }
+      } catch { warn(); }
+    }
+
+    function clear() {
+      active = false;
+      try {
+        sessionStorage.removeItem(key);
+        sessionStorage.removeItem(coverKey);
+      } catch { /* O evento já foi salvo no servidor. */ }
+    }
+
+    form.addEventListener('input', save);
+    form.addEventListener('change', save);
+    document.getElementById('applyAudienceDefaults')?.addEventListener('click', save);
+    window.addEventListener('pagehide', save);
+    return { save, clear };
   }
 
   function initEventCoverUpload() {
@@ -368,27 +569,48 @@ function getPastaBase() {
     if (!input) return;
     input.addEventListener('change', () => {
       const file = input.files?.[0];
-      if (!file) return;
+      input.setCustomValidity('');
+      if (!file) {
+        input.required = !getValue('eventCover');
+        return;
+      }
+      setValue('eventCover', '');
+      showEventCoverPreview('');
       if (!['image/png', 'image/jpeg', 'image/webp'].includes(file.type)) {
         input.value = '';
+        input.setCustomValidity('Escolha uma imagem PNG, JPG ou WEBP.');
         showToast('Escolha uma imagem PNG, JPG ou WEBP.');
         return;
       }
       if (file.size > 2 * 1024 * 1024) {
         input.value = '';
+        input.setCustomValidity('A imagem deve ter no máximo 2 MB.');
         showToast('A imagem deve ter no máximo 2 MB.');
         return;
       }
       const reader = new FileReader();
+      input.setCustomValidity('Aguarde o carregamento da imagem antes de salvar.');
       reader.addEventListener('load', () => {
+        if (input.files?.[0] !== file) return;
         setValue('eventCover', String(reader.result || ''));
         showEventCoverPreview(String(reader.result || ''));
+        input.setCustomValidity('');
+        eventFormDraft?.save();
+        showEventFormErrors(false);
+      });
+      reader.addEventListener('error', () => {
+        if (input.files?.[0] !== file) return;
+        input.value = '';
+        input.setCustomValidity('Não foi possível carregar a imagem. Selecione o arquivo novamente.');
+        showToast('Não foi possível carregar a imagem. Selecione o arquivo novamente.');
       });
       reader.readAsDataURL(file);
     });
   }
 
   function showEventCoverPreview(source) {
+    const input = document.getElementById('eventCoverFile');
+    if (input) input.required = !source;
     const preview = document.getElementById('eventCoverPreview');
     if (!preview) return;
     preview.src = source;
@@ -400,6 +622,7 @@ function getPastaBase() {
 
     apiRegistrations = await fetchRegistrationsFromApi();
     renderRegistrationFilters();
+    setValue('registrationEventFilter', new URLSearchParams(window.location.search).get('event') || 'todos');
     renderRegistrationsTable();
 
     document.getElementById('registrationEventFilter')?.addEventListener('change', renderRegistrationsTable);
@@ -417,23 +640,26 @@ function getPastaBase() {
 
   async function initReportsPage() {
     if (!requireAuth()) return;
-    renderReportEventFilter();
 
     apiRegistrations = await fetchRegistrationsFromApi();
     renderReportsPage();
     
-    document.getElementById('reportEventFilter')?.addEventListener('change', renderReportsPage);
+    document.getElementById('reportEventSearch')?.addEventListener('input', renderReportsPage);
     document.getElementById('reportSearch')?.addEventListener('input', renderReportsPage);
-    document.getElementById('exportFilteredExcel')?.addEventListener('click', () => exportEventExcel(getValue('reportEventFilter') || 'todos'));
-    document.getElementById('printFilteredPdf')?.addEventListener('click', () => printEventReport(getValue('reportEventFilter') || 'todos'));
-    document.addEventListener('click', event => {
-      const printId = event.target.closest('[data-print-event]')?.dataset.printEvent;
-      if (printId) {
-        printEventReport(printId);
-        return;
-      }
-      const excelId = event.target.closest('[data-excel-event]')?.dataset.excelEvent;
-      if (excelId) exportEventExcel(excelId);
+    const selectedId = new URLSearchParams(window.location.search).get('event');
+    document.getElementById('exportFilteredExcel')?.addEventListener('click', () => {
+      if (getEvents().some(event => String(event.id) === selectedId)) exportEventExcel(selectedId);
+    });
+    document.getElementById('printFilteredPdf')?.addEventListener('click', () => {
+      if (getEvents().some(event => String(event.id) === selectedId)) printEventReport(selectedId);
+    });
+    document.getElementById('reportEventCards')?.addEventListener('click', event => {
+      const button = event.target.closest('[data-report-export]');
+      if (!button) return;
+      const eventId = button.dataset.eventId;
+      if (!getEvents().some(item => String(item.id) === eventId)) return;
+      if (button.dataset.reportExport === 'pdf') printEventReport(eventId);
+      if (button.dataset.reportExport === 'excel') exportEventExcel(eventId);
     });
   }
 
@@ -441,13 +667,35 @@ function getPastaBase() {
     const select = document.getElementById('eventAudience');
     if (!select) return;
     select.addEventListener('change', () => {
-      toggleAudienceFieldGroups();
-      applyDefaultFields(select.value || 'graduacao');
+      syncEventInstitution();
     });
+    document.getElementById('eventInstitution')?.addEventListener('change', () => syncEventInstitution());
     document.getElementById('applyAudienceDefaults')?.addEventListener('click', () => {
-      applyDefaultFields(select.value || 'graduacao');
+      if (!select.value) return;
+      applyDefaultFields(select.value);
+      toggleAudienceFieldGroups();
       showToast('Padrão de campos aplicado.');
     });
+    syncEventInstitution();
+  }
+
+  function syncEventInstitution() {
+    const institution = document.getElementById('eventInstitution');
+    const select = document.getElementById('eventAudience');
+    if (!institution || !select) return;
+    const type = institution.selectedOptions[0]?.dataset.type;
+    const audience = type === 'escola' ? 'escola' : type === 'faculdade' ? 'graduacao' : '';
+    const changed = select.value !== audience;
+    const label = audience === 'escola' ? 'Escola / Educação Infantil'
+      : audience === 'graduacao' ? 'Faculdade / Graduação' : 'Selecione primeiro a instituição';
+    select.replaceChildren(new Option(label, audience));
+    select.disabled = !audience;
+    document.getElementById('applyAudienceDefaults').disabled = !audience;
+    setText('eventAudienceHint', audience === 'escola'
+      ? 'Os pais ou responsáveis fazem a inscrição, informando seus dados e os do educando.'
+      : audience === 'graduacao' ? 'O participante faz a própria inscrição com seus dados acadêmicos.'
+      : 'Selecione a instituição para ver os campos de inscrição.');
+    if (changed && audience) applyDefaultFields(audience);
     toggleAudienceFieldGroups();
   }
 
@@ -470,7 +718,7 @@ function getPastaBase() {
   }
 
   function isLogged() {
-    return Boolean(sessionStorage.getItem(KEYS.session));
+    return serverSession.authenticated;
   }
 
   async function renderPublicStats() {
@@ -480,8 +728,9 @@ function getPastaBase() {
     } catch (error) {
       console.error(error);
     }
-    setText('statEventos', totalAtivos);
-    setText('statInscricoes', await fetchRegistrationsCount2());
+    setText('statEventos', Number(totalAtivos) + serverEvents.filter(event => event.published && !eventIsClosed(event)).length);
+    const publishedEvents = getEvents().filter(event => event.published && !eventIsClosed(event));
+    setText('statInscricoes', publishedEvents.reduce((total, event) => total + countRegistrations(event.id), 0));
   }
 
   async function renderHomeEvents() {
@@ -495,9 +744,17 @@ function getPastaBase() {
       eventos = await listarEventosApi();
     } catch (error) {
       console.error(error);
-      grid.innerHTML = '<div class="empty-state">Não foi possível carregar os eventos. Tente novamente mais tarde.</div>';
-      return;
+      if (!serverEvents.some(event => event.published && !eventIsClosed(event))) {
+        grid.innerHTML = '<div class="empty-state">Não foi possível carregar os eventos. Tente novamente mais tarde.</div>';
+        return;
+      }
+      eventos = [];
     }
+
+    eventos = eventos.concat(serverEvents.filter(event => event.published && !eventIsClosed(event)).map(event => ({
+      id: event.id, titulo: event.title, descricao: event.summary, categoria: CATEGORIES[event.category] || event.category,
+      data_inicio: `${event.date} ${event.time}`, foto_path: event.cover, nome_local: event.location, cidade: event.city, valor: 0
+    })));
 
     const events = eventos
       .filter(evento => category === 'todos' || (evento.categoria || '').toLowerCase() === category)
@@ -518,7 +775,7 @@ function getPastaBase() {
       ? `R$ ${Number(evento.valor).toFixed(2).replace('.', ',')}`
       : 'Gratuito';
     return `
-      <article class="event-card fade-up">
+      <article class="event-card">
         <a class="card-img" href="ideau_eventos/evento.html?id=${encodeURIComponent(evento.id)}" aria-label="Abrir ${escapeAttr(evento.titulo)}">
           <img src="${escapeAttr(evento.foto_path || capaPadrao)}" alt="${escapeAttr(evento.titulo)}" loading="lazy" onerror="this.onerror=null; this.src='${capaPadrao}'" />
           <span class="card-tag">${escapeHtml(evento.categoria || 'Evento')}</span>
@@ -545,6 +802,7 @@ function getPastaBase() {
   function renderEventDetail() {
     const root = document.getElementById('eventDetailRoot');
     if (!root) return;
+    root.querySelector('.evento-layout')?.remove();
     const params = new URLSearchParams(window.location.search);
     const id = params.get('id');
     const event = getEvents().find(item => item.id === id && item.published);
@@ -556,9 +814,9 @@ function getPastaBase() {
       root.innerHTML += `
         <div class="evento-layout" style="place-items:center">
           <div class="empty-state">
-            <h2 style="font-family:'Bebas Neue',sans-serif;font-size:2rem">Evento não encontrado</h2>
-            <p style="margin:8px 0 18px">O evento pode estar despublicado, removido ou com link incorreto.</p>
-            <a class="btn btn-primary" href="index.html#eventos" style="display:inline-flex;width:auto;padding:10px 24px">Voltar para eventos</a>
+            <h2 style="font-family:'Bebas Neue',sans-serif;font-size:2rem">Evento indisponível</h2>
+            <p style="margin:8px 0 18px">O evento pode ter sido encerrado ou retirado do ar. As inscrições não estão disponíveis.</p>
+            <a class="btn btn-primary" href="../index.php#eventos" style="display:inline-flex;width:auto;padding:10px 24px">Voltar para eventos</a>
           </div>
         </div>`;
       return;
@@ -626,6 +884,7 @@ function getPastaBase() {
             <span class="vagas-pill${isSoldOut ? ' esgotada' : ''}">${isSoldOut ? 'Vagas esgotadas' : (event.seats == -1 ? 'Entrada livre' : `${remaining} vagas disponíveis`)}</span>
           </div>
           <h1>${escapeHtml(event.title)}</h1>
+          ${event.effectiveEndAt ? `<p class="muted">Inscrições até ${escapeHtml(formatDateTime(event.effectiveEndAt))}<br><span data-countdown="${escapeAttr(event.effectiveEndAt)}">${countdownLabel(event.effectiveEndAt)}</span></p>` : ''}
           <p class="evento-summary">${escapeHtml(event.summary)}</p>
           ${event.description ? `
           <div class="evento-descricao">
@@ -646,9 +905,17 @@ function getPastaBase() {
   function initRegistrationPage() {
     const root = document.getElementById('registrationRoot');
     if (!root) return;
+    root.querySelector('.inscricao-layout')?.remove();
     const params = new URLSearchParams(window.location.search);
     const id = params.get('id');
     const event = getEvents().find(item => item.id === id && item.published);
+    const receipts = (serverSession.receipts || []).filter(item => item.eventId === id);
+    const receiptLinks = receipts.length ? `<section class="confirmed-registration" data-registration-receipts>
+      <div class="confirmed-registration-heading">
+        <span class="confirmed-registration-icon" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 4 4L19 6"/></svg></span>
+        <div><h2>Inscrição confirmada</h2><p>Seu comprovante está disponível para download.</p></div>
+      </div>` + receipts.map(item =>
+      `<div class="confirmed-registration-person"><div><span>Participante</span><strong>${escapeHtml(item.name)}</strong></div><nav class="confirmed-registration-actions" aria-label="Ações da inscrição de ${escapeAttr(item.name)}"><a class="confirmed-registration-link" href="comprovante.php?id=${encodeURIComponent(item.id)}" aria-label="Ver comprovante de ${escapeAttr(item.name)}">Ver comprovante <span aria-hidden="true">→</span></a><a class="confirmed-registration-link confirmed-registration-cancel" href="comprovante.php?id=${encodeURIComponent(item.id)}&amp;cancel=1#cancelar-inscricao" aria-label="Cancelar inscrição de ${escapeAttr(item.name)}">Cancelar inscrição</a></nav></div>`).join('') + '</section>' : '';
 
     const navDetails = document.getElementById('eventDetailsNav');
     if (navDetails && id) navDetails.href = `evento.html?id=${encodeURIComponent(id)}`;
@@ -657,9 +924,10 @@ function getPastaBase() {
       root.innerHTML += `
         <div class="inscricao-layout" style="place-items:center">
           <div class="empty-state">
-            <h2 style="font-family:'Bebas Neue',sans-serif;font-size:2rem">Evento não encontrado</h2>
-            <p style="margin:8px 0 18px">O evento pode estar despublicado, removido ou com link incorreto.</p>
-            <a class="btn-primary" href="index.html#eventos" style="display:inline-flex;width:auto;padding:10px 24px">Voltar para eventos</a>
+            ${receiptLinks}
+            <h2 style="font-family:'Bebas Neue',sans-serif;font-size:2rem">Inscrições encerradas ou indisponíveis</h2>
+            <p style="margin:8px 0 18px">O evento pode ter sido encerrado ou retirado do ar.</p>
+            <a class="btn-primary" href="../index.php#eventos" style="display:inline-flex;width:auto;padding:10px 24px">Voltar para eventos</a>
           </div>
         </div>`;
       return;
@@ -677,6 +945,7 @@ function getPastaBase() {
           <div class="inscricao-eyebrow">${escapeHtml(CATEGORIES[event.category] || event.category)}</div>
           <h1>${escapeHtml(event.title)}</h1>
           <p class="inscricao-sub">Preencha os dados ao lado para confirmar sua participação neste evento.</p>
+          ${event.effectiveEndAt ? `<p>Inscrições até ${escapeHtml(formatDateTime(event.effectiveEndAt))}<br><span data-countdown="${escapeAttr(event.effectiveEndAt)}">${countdownLabel(event.effectiveEndAt)}</span></p>` : ''}
           <div class="inscricao-meta">
             <div class="inscricao-meta-item"><strong>Data</strong> ${formatDate(event.date_begin)} — ${formatDate(event.date_end)}</div>
             <div class="inscricao-meta-item"><strong>Horário</strong> ${escapeHtml(event.time_begin)} — ${escapeHtml(event.time_end)}</div>
@@ -684,12 +953,14 @@ function getPastaBase() {
             <div class="inscricao-meta-item inscricao-seats"><span class="seats-pill">${seatsLabel}</span></div>
           </div>
           <a class="inscricao-back-btn" href="evento.html?id=${encodeURIComponent(event.id)}">&larr; Voltar para o evento</a>
+          ${receiptLinks}
         </div>
         <div class="inscricao-form-wrap" id="inscricao">
           <div class="audience-pill">${escapeHtml(AUDIENCES[getEventAudience(event)])}</div>
           <h2 class="inscricao-form-title">Confirmar inscrição</h2>
           <p class="inscricao-form-sub">Dados do participante</p>
-          ${isSoldOut ? '<div class="empty-state">As vagas deste evento estão esgotadas.</div>' : registrationFormTemplate(event)}
+          ${isSoldOut ? '<div class="empty-state">Vagas esgotadas. Se você já se inscreveu, informe os mesmos dados abaixo para recuperar seu comprovante.</div>' : ''}
+          ${registrationFormTemplate(event)}
         </div>
       </div>`;
 
@@ -701,6 +972,7 @@ function getPastaBase() {
   function requestedFieldsSummary(fields = {}, audience = 'graduacao') {
     const names = [];
     if (audience === 'escola') {
+      if (fields.responsibleCPF) names.push('CPF do responsável');
       if (fields.responsibleName !== false) names.push('Nome do responsável');
       if (fields.relationship !== false) names.push('Grau de parentesco');
       if (fields.studentName !== false) names.push('Nome do educando');
@@ -773,18 +1045,34 @@ function getPastaBase() {
     if (isCommunity) courseSelect.value = '';
   }
 
-  function submitRegistration(event) {
+  function openRegistrationReceipt(result, form) {
+    if (!result.success || !/^comprovante\.php\?id=[a-f0-9]{64}$/.test(result.receiptUrl || '')) {
+      throw new Error('Não foi possível abrir o comprovante. Tente novamente com os mesmos dados.');
+    }
+    if (result.alreadyRegistered) {
+      let notice = form.querySelector('[data-registration-notice]');
+      if (!notice) {
+        notice = document.createElement('div');
+        notice.dataset.registrationNotice = '';
+        notice.className = 'registration-notice';
+        notice.setAttribute('role', 'status');
+        notice.tabIndex = -1;
+        form.querySelector('button[type="submit"]').before(notice);
+      }
+      notice.innerHTML = `<strong>Você já está inscrito neste evento.</strong><p>Sua inscrição continua confirmada. Não é necessário enviar novamente.</p><div class="registration-notice-actions"><a href="${escapeAttr(result.receiptUrl)}">Ver meu comprovante <span aria-hidden="true">→</span></a><a class="registration-notice-cancel" href="${escapeAttr(result.receiptUrl)}&amp;cancel=1#cancelar-inscricao">Cancelar inscrição</a></div>`;
+      form.querySelector('button[type="submit"]').disabled = false;
+      notice.focus();
+      return;
+    }
+    window.location.assign(result.receiptUrl);
+  }
+
+  async function submitRegistration(event) {
     event.preventDefault();
     const form = event.currentTarget;
     const eventId = form.dataset.eventId;
     const targetEvent = getEvents().find(item => item.id === eventId);
     if (!targetEvent) return;
-
-    const remaining = targetEvent.seats != -1 ? Number(targetEvent.seats || 0) - countRegistrations(eventId) : -1;
-    if (targetEvent.seats != -1 && remaining <= 0) {
-      showToast('As vagas deste evento estão esgotadas.');
-      return;
-    }
 
     const data = Object.fromEntries(new FormData(form).entries());
     const extraValues = {};
@@ -815,6 +1103,16 @@ function getPastaBase() {
       extras: extraValues
     };
 
+    if (String(eventId).startsWith('evt-')) {
+      const button = form.querySelector('button[type="submit"]');
+      button.disabled = true;
+      try {
+        const result = await publicationRequest('register', registration);
+        openRegistrationReceipt(result, form);
+      } catch (error) { showToast(error.message); button.disabled = false; }
+      return;
+    }
+
     const payload = new URLSearchParams();
     payload.append('inscrever', '1');
     payload.append('event_id', eventId);
@@ -833,6 +1131,8 @@ function getPastaBase() {
     payload.append('notes', registration.notes || '');
     payload.append('extras', JSON.stringify(registration.extras || {}));
 
+    const button = form.querySelector('button[type=submit]');
+    button.disabled = true;
     fetch(API_ENDPOINT, {
       method: 'POST',
       headers: {
@@ -843,16 +1143,16 @@ function getPastaBase() {
       .then(response => response.json())
       .then(data => {
         if (!data.success) {
+          button.disabled = false;
           showToast(data.message || 'Erro ao registrar inscrição.');
           return;
         }
 
-        const card = document.getElementById('inscricao');
-        card.innerHTML = `<div class="success-card"><strong>Inscrição confirmada</strong><p>Sua inscrição em <b>${escapeHtml(targetEvent.title)}</b> foi registrada.</p><a class="btn-primary full" href="evento.html?id=${encodeURIComponent(targetEvent.id)}">Voltar ao evento</a><a class="btn-secondary full top-gap" href="index.html#eventos">Ver outros eventos</a></div>`;
-        showToast('Inscrição registrada com sucesso.');
+        openRegistrationReceipt(data, form);
       })
       .catch((error) => {
         console.log(error);
+        button.disabled = false;
         showToast('Erro ao enviar inscrição. Tente novamente mais tarde. ' + (error.message || ''));
       });
   }
@@ -874,7 +1174,7 @@ function getPastaBase() {
     if (dashEvents) {
       dashEvents.innerHTML = events.slice().sort(compareEventsByDate).slice(0, 5).map(event => {
         const used = countRegistrations(event.id);
-        return `<div class="mini-item"><strong>${escapeHtml(event.title)}</strong><span>${formatDate(event.date_begin)} - ${formatDate(event.date_end)} · ${event.seats == -1 ? 'Vagas Ilimitadas · ' : used + '/' + Number(event.seats || 0) + 'inscritos · '}${event.published ? 'Publicado' : 'Rascunho'}</span></div>`;
+        return `<div class="mini-item"><strong>${escapeHtml(event.title)}</strong><span>${formatDate(event.date_begin || event.date)} - ${formatDate(event.date_end || event.date)} · ${event.seats == -1 ? 'Vagas Ilimitadas · ' : used + '/' + Number(event.seats || 0) + 'inscritos · '}${publicationLabel(event)}</span></div>`;
       }).join('') || '<div class="empty-state">Nenhum evento cadastrado.</div>';
     }
 
@@ -890,27 +1190,38 @@ function getPastaBase() {
   async function renderAdminEventsTable() {
     const tbody = document.getElementById('adminEventsTable');
     if (!tbody) return;
-    const events = getEvents().sort(compareEventsByDate);
+    const allEvents = getEvents();
+    const history = adminEventView === 'history';
+    setText('currentEventsCount', allEvents.filter(event => !eventIsClosed(event)).length);
+    setText('historyEventsCount', allEvents.filter(eventIsClosed).length);
+    setText('eventsListTitle', history ? 'Histórico de eventos' : 'Eventos atuais');
+    setText('eventsListHint', history ? 'Eventos encerrados. Os inscritos e relatórios continuam disponíveis.' : 'Publicados, agendados e rascunhos.');
+    document.querySelectorAll('[data-event-view]').forEach(button => button.setAttribute('aria-pressed', String(button.dataset.eventView === adminEventView)));
+    const events = allEvents.filter(event => eventIsClosed(event) === history)
+      .sort(history ? (a, b) => String(b.closedAt || b.effectiveEndAt || '').localeCompare(String(a.closedAt || a.effectiveEndAt || '')) : compareEventsByDate);
     if (!events.length) {
-      tbody.innerHTML = '<tr><td colspan="6">Nenhum evento cadastrado.</td></tr>';
+      tbody.innerHTML = `<tr><td colspan="6">${history ? 'Nenhum evento encerrado ainda.' : 'Nenhum evento atual. Consulte o histórico para ver eventos encerrados.'}</td></tr>`;
       return;
     }
-    const used = await countRegistrations(events[0].id); //charque, arrumar pois pega apenas do primeiro evento
     tbody.innerHTML = events.map(event => {
+      const used = countRegistrations(event.id);
       return `
         <tr>
           <td><strong>${escapeHtml(event.title)}</strong><br><span class="muted">${escapeHtml(CATEGORIES[event.category] || event.category)} · ${escapeHtml(AUDIENCES[getEventAudience(event)])} · ${escapeHtml(event.city)}</span></td>
-          <td>${formatDate(event.date_begin)}<br><span class="muted">${escapeHtml(event.time_begin)}</span></td>
+          <td>${formatDate(event.date_begin || event.date)}<br><span class="muted">${escapeHtml(event.time_begin || event.time)}</span></td>
           
           <td>${event.seats == -1 ? 'Ilimitadas' : Number(event.seats || 0)}</td>
           <td>${used}</td>
-          <td><span class="status-pill ${event.published ? '' : 'off'}">${event.published ? 'Publicado' : 'Rascunho'}</span></td>
+          <td><span class="status-pill ${history ? 'closed' : event.published ? '' : 'off'}">${publicationLabel(event)}</span>
+            ${history ? `<br><small>${event.closeReason === 'manual' ? 'Retirado manualmente' : 'Prazo encerrado'}<br>${escapeHtml(formatDateTime(event.closedAt || event.effectiveEndAt))}</small>`
+              : `${event.publicationMode === 'automatic' ? `<br><small>Publicação: ${escapeHtml(formatDateTime(event.publishAt))}</small>` : ''}${event.publicationMode !== 'draft' && event.effectiveEndAt ? `<br><small>Limite: ${escapeHtml(formatDateTime(event.effectiveEndAt))}</small><span class="event-countdown" data-countdown="${escapeAttr(event.effectiveEndAt)}">${countdownLabel(event.effectiveEndAt)}</span>` : ''}`}</td>
           <td>
             <div class="row-actions">
-              <a class="btn btn-light small" href="evento.html?id=${encodeURIComponent(event.id)}" target="_blank">Divulgação</a>
-              <a class="btn btn-light small" href="${eventRegistrationUrl(event.id)}" target="_blank">Inscrição</a>
-              <button class="btn btn-light small" type="button" data-copy-link="${escapeAttr(event.id)}">Copiar link</button>
-              <!-- TODO <a class="btn btn-secondary small" href="evento-form.html?id=${encodeURIComponent(event.id)}">Editar</a> -->
+              ${event.published && !history ? `<a class="btn btn-light small" href="evento.html?id=${encodeURIComponent(event.id)}" target="_blank">Divulgação</a><a class="btn btn-light small" href="${eventRegistrationUrl(event.id)}" target="_blank">Inscrição</a><button class="btn btn-light small" type="button" data-copy-link="${escapeAttr(event.id)}">Copiar link</button>` : ''}
+              ${String(event.id).startsWith('evt-') && !history ? `<a class="btn btn-secondary small" href="evento-form.html?id=${encodeURIComponent(event.id)}">Editar</a>` : ''}
+              ${String(event.id).startsWith('evt-') && !event.published && !history ? `<button class="btn btn-primary small" type="button" data-publish-event="${escapeAttr(event.id)}">Publicar agora</button>` : ''}
+              ${!history && event.publicationMode !== 'draft' ? `<button class="btn btn-danger small" type="button" data-close-event="${escapeAttr(event.id)}">Tirar do ar</button>` : ''}
+              <a class="btn btn-secondary small" href="inscritos.html?event=${encodeURIComponent(event.id)}">Ver inscritos</a>
               <a class="btn btn-secondary small" href="relatorios.html?event=${encodeURIComponent(event.id)}">Relatório</a>
               <!-- TODO <button class="btn btn-danger small" type="button" data-delete-event="${escapeAttr(event.id)}">Excluir</button> -->
             </div>
@@ -919,7 +1230,35 @@ function getPastaBase() {
     }).join('');
   }
 
-  function handleAdminEventActions(event) {
+  async function handleAdminEventActions(event) {
+    const closeButton = event.target.closest('[data-close-event]');
+    if (closeButton) {
+      if (closeButton.disabled) return;
+      const target = getEvents().find(item => item.id === closeButton.dataset.closeEvent);
+      if (!target || eventIsClosed(target)) return;
+      if (!confirm(`Tirar "${target.title}" do ar e encerrar as inscrições? O evento ficará no histórico com os inscritos e relatórios preservados.`)) return;
+      closeButton.disabled = true;
+      try {
+        await publicationRequest('close', { id: target.id });
+        await loadServerEvents();
+        await renderAdminEventsTable();
+        showToast('Evento encerrado. Você pode consultá-lo no histórico.');
+      } catch (error) { showToast(error.message); closeButton.disabled = false; }
+      return;
+    }
+    const publishButton = event.target.closest('[data-publish-event]');
+    if (publishButton) {
+      if (publishButton.disabled) return;
+      const target = getEvents().find(item => item.id === publishButton.dataset.publishEvent);
+      if (!target || eventIsClosed(target)) return;
+      publishButton.disabled = true;
+      try {
+        await saveServerEvent({ ...target, publicationMode: 'published', publishAt: null });
+        await renderAdminEventsTable();
+        showToast('Evento publicado.');
+      } catch (error) { showToast(error.message); publishButton.disabled = false; }
+      return;
+    }
     const copyId = event.target.closest('[data-copy-link]')?.dataset.copyLink;
     if (copyId) {
       const link = `${window.location.origin}${window.location.pathname.replace('eventos.html', '')}evento.html?id=${encodeURIComponent(copyId)}`;
@@ -942,8 +1281,7 @@ function getPastaBase() {
     const id = new URLSearchParams(window.location.search).get('id');
     const event = getEvents().find(item => item.id === id);
     if (!event) {
-      applyDefaultFields(getValue('eventAudience') || 'graduacao');
-      toggleAudienceFieldGroups();
+      syncEventInstitution();
       return;
     }
 
@@ -952,10 +1290,10 @@ function getPastaBase() {
     setValue('eventTitle', event.title);
     setValue('eventInstitution', event.institution || '');
     setValue('eventCategory', event.category);
-    setValue('eventAudience', getEventAudience(event));
+    syncEventInstitution();
     setValue('eventDate', event.date);
     setValue('eventTime', event.time);
-    setValue('eventSeats', event.seats);
+    setValue('eventSeats', event.seats == -1 ? '' : event.seats);
     setValue('eventCity', event.city);
     setValue('eventLocation', event.location);
     setValue('eventCover', event.cover);
@@ -968,21 +1306,144 @@ function getPastaBase() {
     setChecked('fieldCourse', Boolean(event.fields?.course));
     setChecked('fieldCommunity', Boolean(event.fields?.community));
     setChecked('fieldNotes', Boolean(event.fields?.notes));
+    setChecked('fieldResponsibleCPF', event.fields?.responsibleCPF !== false);
     setChecked('fieldResponsibleName', event.fields?.responsibleName !== false);
     setChecked('fieldRelationship', event.fields?.relationship !== false);
     setChecked('fieldStudentName', event.fields?.studentName !== false);
     setChecked('fieldStudentClass', event.fields?.studentClass !== false);
-    setChecked('eventPublished', Boolean(event.published));
+    setValue('eventPublicationMode', event.publicationMode || (event.published ? 'published' : 'draft'));
+    setValue('eventPublishAt', toLocalDateTime(event.publishAt));
+    setValue('eventEndAt', toLocalDateTime(event.endAt));
+    togglePublicationFields();
     setValue('eventExtraFields', (event.fields?.extras || []).map(extra => `${extra.label}${extra.required ? '|required' : ''}`).join('\n'));
     toggleAudienceFieldGroups();
   }
 
-  function handleEventFormSubmit(event) {
+  function toLocalDateTime(value) {
+    if (!value) return '';
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return '';
+    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}T${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
+  }
+
+  function publicationLabel(event) {
+    if (eventIsClosed(event)) return 'Encerrado';
+    if (event.published) return 'Publicado';
+    if (event.publicationMode === 'automatic') return 'Agendado — automático';
+    if (event.publicationMode === 'scheduled') return 'Agendado — manual';
+    return 'Rascunho';
+  }
+
+  function eventIsClosed(event) {
+    return Boolean(event.closed || event.closedAt || (event.publicationMode !== 'draft' && event.effectiveEndAt && new Date(event.effectiveEndAt).getTime() <= Date.now()));
+  }
+
+  function countdownLabel(endAt) {
+    const remaining = Math.ceil((new Date(endAt).getTime() - Date.now()) / 1000);
+    if (!Number.isFinite(remaining) || remaining <= 0) return 'Prazo encerrado';
+    const days = Math.floor(remaining / 86400);
+    const hours = String(Math.floor(remaining % 86400 / 3600)).padStart(2, '0');
+    const minutes = String(Math.floor(remaining % 3600 / 60)).padStart(2, '0');
+    const seconds = String(remaining % 60).padStart(2, '0');
+    return `Encerra em ${days ? days + 'd ' : ''}${hours}:${minutes}:${seconds}`;
+  }
+
+  function togglePublicationFields() {
+    const mode = getValue('eventPublicationMode');
+    document.querySelectorAll('input[name="publicationMode"]').forEach(option => {
+      option.checked = option.value === mode;
+    });
+    const automatic = mode === 'automatic';
+    const input = document.getElementById('eventPublishAt');
+    document.getElementById('eventPublishAtGroup').hidden = !automatic;
+    input.disabled = !automatic;
+    input.required = automatic;
+    input.setCustomValidity('');
+    input.min = toLocalDateTime(Date.now() + 60000);
+    const hints = {
+      published: 'O evento ficará disponível assim que você salvar.',
+      scheduled: 'O evento fica agendado e oculto ao público até você clicar em Publicar agora na lista de eventos.',
+      automatic: 'O evento será liberado no horário escolhido, mesmo com o navegador fechado.',
+      draft: 'O evento fica salvo e oculto ao público até você decidir publicar.'
+    };
+    setText('eventPublicationHint', hints[getValue('eventPublicationMode')] || '');
+  }
+
+  function validateEventForm() {
+    const form = document.getElementById('eventForm');
+    form.querySelectorAll('input[required], select[required], textarea[required]').forEach(field => {
+      if (field.disabled || field.type === 'file') return;
+      field.setCustomValidity(field.value.trim() ? '' : 'Preencha este campo.');
+    });
+    const cover = document.getElementById('eventCoverFile');
+    if (!getValue('eventCover') && !cover.files?.length && !cover.validity?.customError) {
+      cover.setCustomValidity('Selecione uma imagem de capa.');
+    }
+    if (getValue('eventPublicationMode') === 'automatic') {
+      const time = new Date(getValue('eventPublishAt')).getTime();
+      document.getElementById('eventPublishAt').setCustomValidity(Number.isFinite(time) && time > Date.now()
+        ? '' : 'Escolha uma data e horário futuros para a publicação.');
+    }
+    const endInput = document.getElementById('eventEndAt');
+    if (endInput) {
+      const endTime = new Date(endInput.value).getTime();
+      const publishTime = getValue('eventPublicationMode') === 'automatic' ? new Date(getValue('eventPublishAt')).getTime() : Date.now();
+      endInput.setCustomValidity(!endInput.value || (Number.isFinite(endTime) && endTime > Date.now() && endTime > publishTime)
+        ? '' : 'Escolha um limite futuro e posterior à publicação.');
+    }
+    return form.checkValidity();
+  }
+
+  function showEventFormErrors(focus = true) {
+    const form = document.getElementById('eventForm');
+    const summary = document.getElementById('eventFormErrors');
+    if (!summary || (!focus && summary.hidden)) return;
+    const errors = [];
+    form.querySelectorAll('input[id], select[id], textarea[id]').forEach(field => {
+      const errorId = `${field.id}Error`;
+      document.getElementById(errorId)?.remove();
+      const descriptions = (field.getAttribute('aria-describedby') || '').split(' ').filter(id => id && id !== errorId);
+      field.removeAttribute('aria-invalid');
+      if (field.willValidate && !field.validity.valid) {
+        field.setAttribute('aria-invalid', 'true');
+        const label = field.closest('.form-field');
+        const name = label?.querySelector('span')?.textContent.replace(/\s*\*$/, '') || 'Campo';
+        const message = field.validationMessage || 'Verifique este campo.';
+        const hint = document.createElement('small');
+        hint.id = errorId;
+        hint.className = 'field-error';
+        hint.textContent = `${name}: ${message}`;
+        label?.append(hint);
+        descriptions.push(errorId);
+        errors.push({ field, name, message });
+      }
+      if (descriptions.length) field.setAttribute('aria-describedby', descriptions.join(' '));
+      else field.removeAttribute('aria-describedby');
+    });
+    summary.hidden = !errors.length;
+    summary.innerHTML = errors.length ? `<strong>O evento ainda não foi salvo. Corrija ${errors.length === 1 ? 'o campo indicado' : 'os campos indicados'}:</strong><p>Clique no nome do campo para ir até ele.</p><ul>${errors.map(({ field, name, message }) => `<li><a href="#${escapeAttr(field.id)}" data-error-field="${escapeAttr(field.id)}">${escapeHtml(name)}: ${escapeHtml(message)}</a></li>`).join('')}</ul>` : '';
+    if (focus && errors.length) {
+      summary.focus({ preventScroll: true });
+      summary.scrollIntoView({ block: 'nearest', behavior: 'instant' });
+    }
+  }
+
+  async function handleEventFormSubmit(event) {
     event.preventDefault();
+    const button = document.querySelector('#eventForm button[type="submit"]');
+    if (button.disabled) return;
+    syncEventInstitution();
+    if (!validateEventForm()) {
+      showEventFormErrors();
+      return;
+    }
+    if (!getValue('eventInstitution') || !getValue('eventAudience')) {
+      showToast('Selecione a instituição responsável.');
+      return;
+    }
     const existingId = getValue('eventId');
     const title = clean(getValue('eventTitle'));
     const id = existingId || `evt-${slugify(title)}-${Date.now().toString(36)}`;
-    const events = getEvents();
     const nextEvent = {
       id,
       title,
@@ -992,13 +1453,16 @@ function getPastaBase() {
       audience: getValue('eventAudience') || 'graduacao',
       date: getValue('eventDate'),
       time: getValue('eventTime'),
-      seats: Number(getValue('eventSeats') || 0),
+      seats: getValue('eventSeats') === '' ? -1 : Number(getValue('eventSeats')),
       city: clean(getValue('eventCity')),
       location: clean(getValue('eventLocation')),
       cover: clean(getValue('eventCover')),
       summary: clean(getValue('eventSummary')),
       description: clean(getValue('eventDescription')),
-      published: getChecked('eventPublished'),
+      publicationMode: getValue('eventPublicationMode'),
+      published: getValue('eventPublicationMode') === 'published',
+      publishAt: getValue('eventPublicationMode') === 'automatic' ? new Date(getValue('eventPublishAt')).toISOString() : null,
+      endAt: getValue('eventEndAt') ? new Date(getValue('eventEndAt')).toISOString() : null,
       fields: {
         cpf: getChecked('fieldCpf'),
         email: getChecked('fieldEmail'),
@@ -1006,6 +1470,7 @@ function getPastaBase() {
         course: getChecked('fieldCourse'),
         community: getChecked('fieldCommunity'),
         notes: getChecked('fieldNotes'),
+        responsibleCPF: getChecked('fieldResponsibleCPF'),
         responsibleName: getChecked('fieldResponsibleName'),
         relationship: getChecked('fieldRelationship'),
         studentName: getChecked('fieldStudentName'),
@@ -1014,12 +1479,20 @@ function getPastaBase() {
       }
     };
 
-    const index = events.findIndex(item => item.id === id);
-    if (index >= 0) events[index] = nextEvent;
-    else events.push(nextEvent);
-    saveEvents(events);
-    showToast('Evento salvo com sucesso.');
-    setTimeout(() => window.location.href = 'eventos.html', 500);
+    button.disabled = true;
+    try {
+      await saveServerEvent(nextEvent);
+      eventFormDraft?.clear();
+      showToast(['scheduled', 'automatic'].includes(nextEvent.publicationMode) ? 'Evento agendado com sucesso.' : 'Evento salvo com sucesso.');
+      setTimeout(() => window.location.href = 'eventos.html', 500);
+    } catch (error) {
+      showToast(error.message);
+      button.disabled = false;
+      const summary = document.getElementById('eventFormErrors');
+      summary.textContent = error.message;
+      summary.hidden = false;
+      summary.focus();
+    }
   }
 
   function renderRegistrationFilters() {
@@ -1090,85 +1563,79 @@ function getPastaBase() {
     showToast('CSV exportado.');
   }
 
-  function renderReportEventFilter() {
-    const select = document.getElementById('reportEventFilter');
-    if (!select) return;
-    const selected = new URLSearchParams(window.location.search).get('event') || 'todos';
-    const events = getEvents().sort(compareEventsByDate);
-    select.innerHTML = '<option value="todos">Todos os eventos</option>' + events.map(event => `<option value="${escapeAttr(event.id)}">${escapeHtml(event.title)}</option>`).join('');
-    select.value = events.some(event => event.id === selected) ? selected : 'todos';
-  }
-
   function renderReportsPage() {
-    const summary = document.getElementById('reportSummary');
     const cards = document.getElementById('reportEventCards');
     const tbody = document.getElementById('reportRegistrationsTable');
-    if (!summary || !cards || !tbody) return;
+    if (!cards || !tbody) return;
 
-    const eventFilter = getValue('reportEventFilter') || 'todos';
-    const query = getValue('reportSearch').toLowerCase();
-    const events = getEvents().sort(compareEventsByDate);
-    const registrations = getRegistrations();
-    const filteredRows = getReportRows(eventFilter, query);
-    const scopedEvents = eventFilter === 'todos' ? events : events.filter(event => event.id === eventFilter);
-    const totalSeats = scopedEvents.reduce((sum, event) => sum + Number(event.seats || 0), 0);
-    const totalRegs = eventFilter === 'todos'
-      ? registrations.length
-      : registrations.filter(reg => reg.eventId === eventFilter).length;
-    const occupancy = totalSeats ? Math.round((totalRegs / totalSeats) * 100) : 0;
+    const selectedId = new URLSearchParams(window.location.search).get('event');
+    const events = getEvents().sort(compareEventsByNewest);
+    const selected = events.find(event => String(event.id) === selectedId);
+    document.getElementById('reportEventsOverview').hidden = Boolean(selectedId);
+    document.getElementById('reportEventDetail').hidden = !selectedId;
+    document.getElementById('reportExportActions').hidden = !selected;
+    document.getElementById('reportParticipantSearch').hidden = !selected;
+    document.getElementById('exportFilteredExcel').disabled = !selected;
+    document.getElementById('printFilteredPdf').disabled = !selected;
+    tbody.innerHTML = '';
+    cards.innerHTML = '';
 
-   // summary.innerHTML = `
-      // <article class="metric-card"><span class="metric-value">${scopedEvents.length}</span><span class="metric-label">Eventos no filtro</span></article>
-      // <article class="metric-card"><span class="metric-value">${totalRegs}</span><span class="metric-label">Inscrições</span></article>
-      // <article class="metric-card"><span class="metric-value">${occupancy}%</span><span class="metric-label">Ocupação</span></article>
-      // <article class="metric-card"><span class="metric-value">${filteredRows.length}</span><span class="metric-label">Linhas exibidas</span></article>`;
-    cards.innerHTML = scopedEvents.map(event => reportEventCardTemplate(event)).join('') || '<div class="empty-state">Nenhum evento cadastrado.</div>';
-
-    if (!filteredRows.length) {
-      tbody.innerHTML = '<tr><td colspan="10">Nenhum registro encontrado para o filtro aplicado.</td></tr>';
+    if (!selectedId) {
+      document.title = 'Relatórios — IDEAU Eventos';
+      const query = getValue('reportEventSearch').trim().toLowerCase();
+      const visibleEvents = events.filter(event => event.title.toLowerCase().includes(query));
+      cards.innerHTML = visibleEvents.map(reportEventCardTemplate).join('') ||
+        '<div class="empty-state">Nenhum evento encontrado.</div>';
+      return;
+    }
+    if (!selected) {
+      setText('reportSelectedTitle', 'Evento não encontrado');
+      setText('reportSelectedMeta', 'Volte aos eventos e escolha um relatório disponível.');
+      setText('reportSelectedCount', '');
       return;
     }
 
-    tbody.innerHTML = filteredRows.map(row => `
+    document.title = `Relatório — ${selected.title}`;
+    setText('reportSelectedTitle', selected.title);
+    setText('reportSelectedMeta', `${formatDate(selected.date_begin || selected.date)} · ${selected.location || ''} · ${publicationLabel(selected)}`);
+    const allRows = getReportRows(selectedId);
+    const query = getValue('reportSearch').trim().toLowerCase();
+    const rows = getReportRows(selectedId, query);
+    setText('reportSelectedCount', query
+      ? `Exibindo ${rows.length} de ${allRows.length} inscritos neste evento.`
+      : `${allRows.length} ${allRows.length === 1 ? 'inscrito neste evento' : 'inscritos neste evento'}`);
+    tbody.innerHTML = rows.map(row => `
       <tr>
-        <td><strong>${escapeHtml(row.eventTitle)}</strong></td>
-        <td>${formatDate(row.eventDate_begin)} · ${escapeHtml(row.eventTime)}</td>
         <td>${formatDateTime(row.createdAt)}</td>
-        <td><strong>${escapeHtml(row.displayName)}</strong><br>
+        <td><strong>${escapeHtml(row.displayName)}</strong></td>
         <td>${escapeHtml(row.responsibleName || '—')}</td>
         <td>${escapeHtml(row.responsiblecpf || '—')}</td>
         <td>${escapeHtml(row.relationship || '—')}</td>
         <td>${escapeHtml(row.studentClass || '—')}</td>
         <td>${escapeHtml(row.course || '—')}</td>
-        <!-- <td>${escapeHtml(row.email || '—')}<br><span class="muted">${escapeHtml(row.phone || '—')}</span></td> -->
-        <!-- <td>${escapeHtml(labelParticipant(row.participantType))}</td> -->
-        <!-- <td>${escapeHtml(row.notes || '—')}</td> -->
-      </tr>`).join('');
+      </tr>`).join('') || `<tr><td colspan="7">${query ? 'Nenhum inscrito corresponde à busca neste evento.' : 'Este evento ainda não tem inscritos.'}</td></tr>`;
   }
 
   function reportEventCardTemplate(event) {
     const used = countRegistrations(event.id);
-    const seats = Number(event.seats || 0);
-    const remaining = Math.max(seats - used, 0);
-    const occupancy = seats ? Math.round((used / seats) * 100) : 0;
     return `
       <article class="report-card">
+      <a class="report-event-link" href="relatorios.html?event=${encodeURIComponent(event.id)}">
         <div>
           <span class="event-tag">${escapeHtml(CATEGORIES[event.category] || event.category)}</span>
           <h3>${escapeHtml(event.title)}</h3>
-          <p class="muted">Início: ${formatDate(event.date_begin)}<br>Fim: ${formatDate(event.date_end)}<br>${escapeHtml(event.time_begin)} — ${escapeHtml(event.time_end)}<br>${escapeHtml(event.location)} — ${escapeHtml(event.city)}</p>
+          <p class="muted">${formatDate(event.date_begin || event.date)} · ${escapeHtml(event.location || '')}</p>
+          <span class="status-pill ${eventIsClosed(event) ? 'closed' : ''}">${publicationLabel(event)}</span>
         </div>
-        <!-- <div class="report-meta-list">
-          <span><strong>${used}</strong> inscritos</span>
-          <span><strong>${remaining}</strong> vagas restantes</span>
-          <span><strong>${occupancy}%</strong> ocupação</span>
-          <span><strong>${event.published ? 'Publicado' : 'Rascunho'}</strong> status</span>
-         </div> -->
-        <div class="report-actions">
-          <button class="btn btn-primary small" type="button" data-print-event="${escapeAttr(event.id)}">PDF</button>
-          <button class="btn btn-secondary small" type="button" data-excel-event="${escapeAttr(event.id)}">Excel</button>
-          <a class="btn btn-light small" href="inscritos.html">Ver inscritos</a>
+        <div class="report-card-entry">
+          <strong>${used} ${used === 1 ? 'inscrito' : 'inscritos'}</strong>
         </div>
+      </a>
+      <div class="report-actions">
+        <button class="btn btn-primary small" type="button" data-report-export="pdf" data-event-id="${escapeAttr(event.id)}">Gerar PDF</button>
+        <button class="btn btn-secondary small" type="button" data-report-export="excel" data-event-id="${escapeAttr(event.id)}">Exportar Excel</button>
+        <a class="btn btn-light small" href="relatorios.html?event=${encodeURIComponent(event.id)}">Ver inscritos →</a>
+      </div>
       </article>`;
   }
 
@@ -1194,7 +1661,7 @@ function getPastaBase() {
           responsibleName: reg.responsibleName || '',
           studentName: reg.studentName || '',
           studentClass: reg.studentClass || '',
-          responsiblecpf: reg.responsiblecpf || '',
+          responsiblecpf: reg.responsiblecpf || reg.responsibleCpf || '',
           relationship: reg.relationship || 'Responsável',
           email: reg.email || '',
           phone: reg.phone || '',
@@ -1204,8 +1671,8 @@ function getPastaBase() {
           extras: reg.extras || {}
         };
       })
-      .filter(row => !query || [row.eventTitle, row.name, row.displayName, row.responsibleName, row.studentName, row.studentClass, row.cpf, row.email, row.phone, row.course, row.eventCity].join(' ').toLowerCase().includes(query))
-      .sort((a, b) => `${a.eventDate} ${a.eventTime}`.localeCompare(`${b.eventDate} ${b.eventTime}`) || a.name.localeCompare(b.name));
+      .filter(row => !query || [row.eventTitle, row.name, row.displayName, row.responsibleName, row.studentName, row.studentClass, row.responsiblecpf, row.email, row.phone, row.course, row.eventCity].join(' ').toLowerCase().includes(query))
+      .sort((a, b) => `${a.eventDate_begin} ${a.eventTime}`.localeCompare(`${b.eventDate_begin} ${b.eventTime}`) || a.displayName.localeCompare(b.displayName));
   }
 
   function exportEventExcel(eventId = 'todos') {
@@ -1225,7 +1692,7 @@ function getPastaBase() {
   }
 
   function printEventReport(eventId = 'todos') {
-    const rows = getReportRows(eventId, '');//getValue('reportSearch').toLowerCase());
+    const rows = getReportRows(eventId, getValue('reportSearch').trim().toLowerCase());
     const title = reportTitle(eventId);
     const win = window.open('', '_blank');
     if (!win) {
@@ -1257,7 +1724,7 @@ function getPastaBase() {
         <td><strong>${escapeHtml(row.eventTitle)}</strong></td>
         <td>${formatDate(row.eventDate_begin)} · ${escapeHtml(row.eventTime)}</td>
         <td>${formatDateTime(row.createdAt)}</td>
-        <td><strong>${escapeHtml(row.displayName)}</strong><br>
+        <td><strong>${escapeHtml(row.displayName)}</strong></td>
         <td>${escapeHtml(row.responsibleName || '—')}</td>
         <td>${escapeHtml(row.responsiblecpf || '—')}</td>
         <td>${escapeHtml(row.relationship || '—')}</td>
@@ -1266,7 +1733,7 @@ function getPastaBase() {
         <!-- <td>${escapeHtml(row.email || '—')}<br><span class="muted">${escapeHtml(row.phone || '—')}</span></td> -->
         <!-- <td>${escapeHtml(labelParticipant(row.participantType))}</td> -->
         <!-- <td>${escapeHtml(row.notes || '—')}</td> -->
-      </tr>`).join('') || '<tr><td colspan="13">Nenhuma inscrição encontrada.</td></tr>';
+      </tr>`).join('') || '<tr><td colspan="9">Nenhuma inscrição encontrada.</td></tr>';
 
     return `<!DOCTYPE html>
 <html lang="pt-BR">
@@ -1322,11 +1789,25 @@ function getPastaBase() {
   }
 
   function toggleAudienceFieldGroups() {
-    const audience = getValue('eventAudience') || 'graduacao';
+    const audience = getValue('eventAudience');
     const graduationGroup = document.getElementById('graduationFieldsGroup');
     const schoolGroup = document.getElementById('schoolFieldsGroup');
-    if (graduationGroup) graduationGroup.hidden = audience !== 'graduacao' && audience !== 'todos';
-    if (schoolGroup) schoolGroup.hidden = audience !== 'escola' && audience !== 'todos';
+    [[graduationGroup, 'graduacao'], [schoolGroup, 'escola']].forEach(([group, type]) => {
+      if (!group) return;
+      group.hidden = audience !== type;
+      group.querySelectorAll('input').forEach(input => {
+        const required = type === 'escola' && ['fieldResponsibleName', 'fieldStudentName'].includes(input.id);
+        input.disabled = group.hidden || required;
+        if (group.hidden) input.checked = false;
+        else if (required) input.checked = true;
+      });
+    });
+    const cpf = document.getElementById('fieldCpf');
+    if (cpf) {
+      cpf.closest('label').hidden = audience !== 'graduacao';
+      cpf.disabled = audience !== 'graduacao';
+      if (cpf.disabled) cpf.checked = false;
+    }
   }
 
   function applyDefaultFields(audience = 'graduacao') {
@@ -1338,6 +1819,7 @@ function getPastaBase() {
     setChecked('fieldCourse', (audience === 'graduacao' || audience === 'todos') && Boolean(defaults.course));
     setChecked('fieldCommunity', (audience === 'graduacao' || audience === 'todos') && Boolean(defaults.community));
     setChecked('fieldNotes', Boolean(defaults.notes));
+    setChecked('fieldResponsibleCPF', (audience === 'escola' || audience === 'todos') && schoolDefaults.responsibleCPF !== false);
     setChecked('fieldResponsibleName', (audience === 'escola' || audience === 'todos') && schoolDefaults.responsibleName !== false);
     setChecked('fieldRelationship', (audience === 'escola' || audience === 'todos') && schoolDefaults.relationship !== false);
     setChecked('fieldStudentName', (audience === 'escola' || audience === 'todos') && schoolDefaults.studentName !== false);
@@ -1404,6 +1886,8 @@ function getPastaBase() {
   }
 
   function getEventAudience(event) {
+    if (event?.institutionType === 'escola' || event?.institution === 'escola-ideau-santa-clara') return 'escola';
+    if (event?.institutionType === 'faculdade' || event?.institution === 'faculdade-ideau') return 'graduacao';
     return event?.audience === 'escola' ? 'escola' : 'graduacao';
   }
 
@@ -1445,7 +1929,8 @@ function getPastaBase() {
   }
 
   function getEvents() {
-    return safeJson(localStorage.getItem(KEYS.events), []);
+    return legacyEvents.concat(serverEvents).map(event => eventIsClosed(event)
+      ? { ...event, closed: true, published: false, closedAt: event.closedAt || event.effectiveEndAt } : event);
   }
 
   function saveEvents(events) {
@@ -1453,7 +1938,7 @@ function getPastaBase() {
   }
 
   function getRegistrations() {
-    return apiRegistrations;
+    return apiRegistrations.concat(serverRegistrations);
   }
 
   function saveRegistrations(registrations) {
@@ -1464,12 +1949,20 @@ function getPastaBase() {
     try { return JSON.parse(text) || fallback; } catch { return fallback; }
   }
 
-  async function countRegistrations(eventId) {
-    return await fetchRegistrationsCount(eventId);
+  function countRegistrations(eventId) {
+    const managed = serverEvents.concat(legacyEvents).find(event => event.id === eventId);
+    if (managed) return Number(managed.registrationCount || 0);
+    return String(eventId) === '1' ? legacyRegistrationCount : 0;
   }
 
   function compareEventsByDate(a, b) {
-    return `${a.date} ${a.time}`.localeCompare(`${b.date} ${b.time}`);
+    return `${a.date || a.date_begin} ${a.time || a.time_begin}`.localeCompare(`${b.date || b.date_begin} ${b.time || b.time_begin}`);
+  }
+
+  function compareEventsByNewest(a, b) {
+    const createdA = Date.parse(a.createdAt) || 0;
+    const createdB = Date.parse(b.createdAt) || 0;
+    return createdB - createdA || String(b.id).localeCompare(String(a.id));
   }
 
   function datePart(date, part) {

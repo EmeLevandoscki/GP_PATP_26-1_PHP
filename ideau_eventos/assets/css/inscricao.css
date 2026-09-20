@@ -236,6 +236,46 @@ input, select, textarea { font: inherit; }
   transform: translateX(-2px);
 }
 
+.confirmed-registration {
+  margin-top: 24px;
+  padding: 22px;
+  border: 1px solid var(--border-strong);
+  border-radius: 16px;
+  background: var(--card);
+  text-align: left;
+}
+.confirmed-registration-heading { display: flex; align-items: flex-start; gap: 12px; }
+.confirmed-registration-icon {
+  display: grid; place-items: center; flex: 0 0 36px; height: 36px;
+  border-radius: 50%; background: var(--card-hover); color: var(--green-mid);
+  border: 1px solid var(--border-strong);
+}
+.confirmed-registration h2 { margin: 0; font: 700 1rem/1.4 'DM Sans', sans-serif; color: var(--text); }
+.confirmed-registration-heading p { margin: 4px 0 0; font-size: 0.8rem; line-height: 1.6; color: var(--muted); }
+.confirmed-registration-person {
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
+  gap: 14px; margin-top: 18px; padding-top: 18px; border-top: 1px solid var(--border);
+}
+.confirmed-registration-person > div { flex: 1 1 160px; min-width: 0; }
+.confirmed-registration-person > div > span { display: block; margin-bottom: 4px; font-size: 0.7rem; color: var(--muted); }
+.confirmed-registration-person strong { display: block; font-size: 0.9rem; line-height: 1.5; overflow-wrap: anywhere; }
+.confirmed-registration-link {
+  display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+  padding: 11px 14px; border: 1px solid var(--border-strong); border-radius: 9px;
+  background: var(--card-hover); color: var(--text); text-decoration: none;
+  font-size: 0.78rem; font-weight: 700; transition: border-color 0.2s, background 0.2s;
+}
+.confirmed-registration-link:hover { border-color: var(--green-mid); background: var(--surface-2); }
+.confirmed-registration-link:focus-visible { outline: 2px solid var(--green-mid); outline-offset: 4px; }
+.confirmed-registration-actions { display: flex; flex-wrap: wrap; gap: 10px; }
+.confirmed-registration-cancel { color: #d89999; border-color: #a54a4a66; background: transparent; }
+.confirmed-registration-cancel:hover { color: #f0b4b4; border-color: #a54a4a; background: #a54a4a12; }
+@media (max-width: 480px) {
+  .confirmed-registration { padding: 18px; }
+  .confirmed-registration-actions { width: 100%; }
+  .confirmed-registration-link { width: 100%; }
+}
+
 /* ─── COLUNA DIREITA: FORMULÁRIO ─── */
 .inscricao-form-wrap {
   background: var(--card);
@@ -475,3 +515,12 @@ input, select, textarea { font: inherit; }
   .menu-toggle.active .hamburger-line:nth-child(1) { transform: translateY(3.5px) rotate(45deg); }
   .menu-toggle.active .hamburger-line:nth-child(3) { transform: translateY(-3.5px) rotate(-45deg); }
 }
+
+.registration-notice { padding:18px; border:1px solid var(--green-mid); border-radius:12px; background:var(--card-hover); line-height:1.6; }
+.registration-notice strong { display:block; color:var(--text); font-size:.95rem; }
+.registration-notice p { margin:6px 0 12px; color:var(--muted); font-size:.85rem; }
+.registration-notice a { color:var(--text); font-size:.85rem; font-weight:700; text-underline-offset:4px; }
+.registration-notice-actions { display:flex; flex-wrap:wrap; align-items:center; gap:12px 24px; }
+.registration-notice a.registration-notice-cancel { color:#e5aaaa; }
+.registration-notice a.registration-notice-cancel:hover { color:#ffd0d0; }
+.registration-notice:focus { outline:2px solid var(--green-mid); outline-offset:3px; }

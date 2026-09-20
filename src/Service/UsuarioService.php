@@ -68,7 +68,7 @@ class UsuarioService
         $stmt->bindValue(':telefone', $params['telefone']);
         $stmt->bindValue(':cpf', $cpf);
         $stmt->bindValue(':data_nascimento', null);//$params['data_nascimento']); não implementado no momento
-        $stmt->bindValue(':senha', password_hash($params['senha'], PASSWORD_DEFAULT));
+        $stmt->bindValue(':senha', password_hash($params['senha'] ?? bin2hex(random_bytes(32)), PASSWORD_DEFAULT));
         $stmt->bindValue(':cargo', $params['cargo']);
         $stmt->bindValue(':foto_path', $params['foto_path']);
         $stmt->bindValue(':created_at', (new DateTime())->format('Y-m-d H:i:s'));

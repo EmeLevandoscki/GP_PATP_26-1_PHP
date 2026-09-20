@@ -76,7 +76,7 @@ class EventoService
 
         $stmt->execute();
     }
-    public function listarEventos(): array
+    public function listarEventos(bool $incluirEncerrados = false): array
     {
         $sql = 'SELECT 
                     e.id,
@@ -90,7 +90,11 @@ class EventoService
                     e.valor,
                     e.descricao,
                     e.foto_path,
-                    e.destaque
+                    e.destaque,
+                    e.id_status,
+                    e.atualizado_em,
+                    UNIX_TIMESTAMP(e.criado_em) AS criado_timestamp,
+                    (SELECT COUNT(*) FROM inscricoes i JOIN atividades a ON a.id = i.id_atividade WHERE a.id_evento = e.id) AS inscritos
                 FROM
                     eventos as e
                 LEFT OUTER JOIN 
@@ -101,7 +105,8 @@ class EventoService
         $stmt = $this->con->prepare($sql);
         $stmt->execute();
 
-        return $stmt->fetchAll(PDO::FETCH_OBJ);
+        $events = array_map(fn ($event) => $this->estadoEvento($event), $stmt->fetchAll(PDO::FETCH_OBJ));
+        return $incluirEncerrados ? $events : array_values(array_filter($events, fn ($event) => $event->published));
     }
     public function retornaDetalhesEvento(int $id): ?array
     {
@@ -114,6 +119,8 @@ class EventoService
                     e.data_fim,
                     e.foto_path,
                     e.destaque,
+                    e.id_status,
+                    e.atualizado_em,
                     cat.nome AS categoria,
                     ender.nome_local,
                     ender.cidade,
@@ -128,7 +135,7 @@ class EventoService
         $stmt->execute();
 
         $result = $stmt->fetch(PDO::FETCH_OBJ);
-        if (!$result) {
+        if (!$result || !$this->estadoEvento($result)->published) {
             return null;
         }
 
@@ -157,6 +164,45 @@ class EventoService
         $resultado = $stmt->fetch();
 
         return $resultado->total_eventos;
+    }
+
+    private function estadoEvento(object $event): object
+    {
+        $zone = new \DateTimeZone('America/Sao_Paulo');
+        $end = new \DateTimeImmutable($event->data_fim, $zone);
+        $manual = (int) $event->id_status !== 1;
+        // A data do evento antigo não é uma autorização para tirá-lo do ar.
+        $event->closed = $manual;
+        $event->published = !$event->closed;
+        $event->closeReason = $event->closed ? ($manual ? 'manual' : 'automatic') : null;
+        $closedAt = $manual && $event->atualizado_em ? new \DateTimeImmutable($event->atualizado_em, $zone) : $end;
+        $event->closedAt = $event->closed ? $closedAt->setTimezone(new \DateTimeZone('UTC'))->format('Y-m-d\TH:i:s.v\Z') : null;
+        $event->effectiveEndAt = null;
+        return $event;
+    }
+
+    public function encerrarEvento(int $id): void
+    {
+        $this->con->beginTransaction();
+        try {
+            $stmt = $this->con->prepare('SELECT id_status, data_fim, atualizado_em FROM eventos WHERE id = ? FOR UPDATE');
+            $stmt->execute([$id]);
+            $event = $stmt->fetch(PDO::FETCH_OBJ);
+            if (!$event) throw new \InvalidArgumentException('Evento não encontrado.');
+            if (!$this->estadoEvento($event)->closed) {
+                $status = $this->con->query("SELECT id FROM status WHERE nome = 'Encerrado' LIMIT 1")->fetchColumn();
+                if (!$status) {
+                    $this->con->exec("INSERT INTO status (nome) VALUES ('Encerrado')");
+                    $status = $this->con->lastInsertId();
+                }
+                $stmt = $this->con->prepare('UPDATE eventos SET id_status = ?, atualizado_em = ? WHERE id = ?');
+                $stmt->execute([$status, (new \DateTimeImmutable('now', new \DateTimeZone('America/Sao_Paulo')))->format('Y-m-d H:i:s'), $id]);
+            }
+            $this->con->commit();
+        } catch (\Throwable $error) {
+            $this->con->rollBack();
+            throw $error;
+        }
     }
     public function listarCategorias(): array
     {
@@ -299,7 +345,32 @@ class EventoService
 
         return (bool) $stmt->fetch();       
     }
-    public function realizarInscricao(array $params): void
+    public function realizarInscricao(array $params): array
+    {
+        $this->con->beginTransaction();
+        try {
+            $this->validarInscricaoAberta((int) ($params['event_id'] ?? 0));
+            $result = $this->realizarInscricaoAberta($params);
+            $this->con->commit();
+            return $result;
+        } catch (\Throwable $error) {
+            $this->con->rollBack();
+            throw $error;
+        }
+    }
+
+    private function validarInscricaoAberta(int $idAtividade): void
+    {
+        $stmt = $this->con->prepare('SELECT e.id_status, e.data_fim, e.atualizado_em
+            FROM eventos e JOIN atividades a ON a.id_evento = e.id WHERE a.id = ? FOR UPDATE');
+        $stmt->execute([$idAtividade]);
+        $event = $stmt->fetch(PDO::FETCH_OBJ);
+        if (!$event || !$this->estadoEvento($event)->published) {
+            throw new \InvalidArgumentException('Este evento foi encerrado. As inscrições estão fechadas.');
+        }
+    }
+
+    private function realizarInscricaoAberta(array $params): array
     {
         $usuarioService = new UsuarioService();
         if ($params['audience'] === 'escola') {
@@ -345,7 +416,7 @@ class EventoService
                 $idAluno = $usuarioService->cadastrarUsuario([
                     'nome' => $params['name'] ?? '',
                     'sobrenome' => '',
-                    'email' => $params['email'] ?? '',
+                    'email' => '',
                     'telefone' => $params['phone'] ?? '',
                     'cpf' => null,
                     'data_nascimento' => null,
@@ -355,18 +426,17 @@ class EventoService
                 error_log('vinculando aluno ao responsavel' . print_r('aluno ' . $idAluno . ' responsavel ' . $idResponsavel . ' parentesco ' . $params['relationship'] ?? '', true));
                 $usuarioService->vincularAlunoResponsavel($idAluno, $idResponsavel, $params['relationship'] ?? '');
             }
+            if ($this->verificaExistenciaInscricao($params['event_id'], $idAluno)) {
+                error_log('aluno já inscrito ' . print_r('aluno ' . $idAluno . ' evento ' . $params['event_id'], true));
+                return $this->comprovanteInscricao((int) $params['event_id'], (int) $idAluno, true);
+            }
             //Vincular o aluno à uma turma
             error_log('vinculando aluno à uma turma ' . print_r('aluno ' . $idAluno . ' turma ' . $params['student_class'] ?? '', true));
             $usuarioService->vincularAlunoTurma($idAluno, $params['student_class']);
 
-            //realizar a inscricao
-            
-            if ($this->verificaExistenciaInscricao($params['event_id'], $idAluno)) {
-                error_log('aluno já inscrito ' . print_r('aluno ' . $idAluno . ' evento ' . $params['event_id'], true));
-                throw new \Exception('Este aluno já está inscrito neste evento.');
-            }
-
+            // Realizar a inscrição.
             error_log('realizando inscrição ' . print_r('aluno ' . $idAluno . ' evento ' . $params['event_id'], true));
+            $this->validarInscricaoAberta((int) $params['event_id']);
             try {
                 $sql = 'INSERT INTO 
                             inscricoes (
@@ -392,9 +462,23 @@ class EventoService
                 error_log('erro ao realizar inscrição ' . print_r('aluno ' . $idAluno . ' evento ' . $params['event_id'] . ' erro ' . $th->getMessage(), true));
                 throw $th;
             }    
-        } else if ($params['audience'] === 'graduacao') {
-            # todo
+            return $this->comprovanteInscricao((int) $params['event_id'], (int) $idAluno);
         }
+        throw new \InvalidArgumentException('Este evento não aceita esse tipo de inscrição.');
+    }
+    private function comprovanteInscricao(int $activity, int $student, bool $existing = false): array
+    {
+        $stmt = $this->con->prepare('SELECT i.id, i.inscrito_em, u.nome, a.nome AS evento, a.data_ini, a.local_atv
+            FROM inscricoes i JOIN usuarios u ON u.id = i.id_usuario
+            JOIN atividades a ON a.id = i.id_atividade WHERE i.id_atividade = ? AND i.id_usuario = ?');
+        $stmt->execute([$activity, $student]);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        if (!$row) throw new \RuntimeException('Não foi possível localizar a inscrição.');
+        return ComprovanteService::resposta(['protocol' => 'IDEAU-' . $row['id'],
+            'eventId' => (string) $activity, 'name' => $row['nome'], 'eventTitle' => $row['evento'],
+            'date' => substr(ComprovanteService::data($row['data_ini']), 0, 10),
+            'time' => substr($row['data_ini'], 11, 5), 'location' => $row['local_atv'],
+            'registeredAt' => ComprovanteService::data($row['inscrito_em'])], $existing);
     }
     public function listarInscricoes(int $idEvento) : array|null
     {

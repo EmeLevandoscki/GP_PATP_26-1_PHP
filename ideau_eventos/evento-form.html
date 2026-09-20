@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,700;1,300&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="assets/css/app.css" />
+  <link rel="stylesheet" href="assets/css/app.css?v=20260920-validation-2" />
 </head>
 <body data-page="event-form" class="admin-page">
   <aside class="admin-sidebar">
@@ -19,10 +19,12 @@
       <a class="active" href="evento-form.html">Novo evento</a>
       <a href="inscritos.html">Inscritos</a>
       <a href="relatorios.html">Relatórios</a>
-      <a href="../index.php" target="_blank">Ver site público</a>
       <a href="configuracoes.html">Configurações</a>
     </nav>
-    <button class="btn btn-danger full" id="logoutButton" type="button">Sair</button>
+    <div class="admin-sidebar-actions">
+      <a class="btn admin-public-link full" href="../index.php"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 19-7-7 7-7M5 12h14"/></svg>Voltar ao site público</a>
+      <button class="btn btn-danger full" id="logoutButton" type="button">Sair</button>
+    </div>
   </aside>
 
   <main class="admin-main">
@@ -31,29 +33,29 @@
       <div class="dashboard-actions"><a href="eventos.html" class="btn btn-secondary">Voltar para eventos</a></div>
     </header>
 
-    <form id="eventForm" class="admin-form">
+    <form id="eventForm" class="admin-form" novalidate aria-busy="true">
       <input type="hidden" id="eventId">
       <section class="panel-card">
         <div class="panel-heading"><h2>Informações principais</h2><p class="muted">Dados que aparecem na página pública do evento.</p></div>
         <div class="form-grid">
           <label class="form-field wide"><span>Título do evento *</span><input id="eventTitle" required placeholder="Ex.: Semana Acadêmica de Direito"></label>
           <label class="form-field"><span>Instituição responsável *</span><select id="eventInstitution" required><option value="">Selecione a instituição</option><option value="escola-ideau-santa-clara" data-type="escola">Escola IDEAU Santa Clara</option><option value="faculdade-ideau" data-type="faculdade">Faculdade IDEAU</option></select><small>Define quem organiza e responde pelo evento.</small></label>
-          <label class="form-field"><span>Categoria *</span><select id="eventCategory" required><option value="academico">Acadêmico</option><option value="institucional">Institucional</option><option value="comunidade">Comunidade</option><option value="cultural">Cultural</option><option value="esportivo">Esportivo</option></select></label>
-          <label class="form-field"><span>Público-alvo *</span><select id="eventAudience" required><option value="todos">Todos os públicos</option><option value="graduacao">Faculdade / Graduação</option><option value="escola">Escola / Educação Infantil</option></select><small>Pode ser diferente da instituição organizadora.</small></label>
+          <label class="form-field"><span>Categoria *</span><select id="eventCategory" required><option value="">Selecione a categoria</option><option value="academico">Acadêmico</option><option value="institucional">Institucional</option><option value="comunidade">Comunidade</option><option value="cultural">Cultural</option><option value="esportivo">Esportivo</option></select></label>
+          <label class="form-field"><span>Público-alvo *</span><select id="eventAudience" required disabled><option value="">Selecione primeiro a instituição</option></select><small id="eventAudienceHint" aria-live="polite">As opções de inscrição dependem da instituição selecionada.</small></label>
           <label class="form-field"><span>Data *</span><input id="eventDate" type="date" required></label>
           <label class="form-field"><span>Horário *</span><input id="eventTime" type="time" required></label>
-          <label class="form-field"><span>Vagas *</span><input id="eventSeats" type="number" min="1" required placeholder="100"></label>
-          <label class="form-field"><span>Cidade *</span><input id="eventCity" required placeholder="Passo Fundo"></label>
+          <label class="form-field"><span>Vagas (opcional)</span><input id="eventSeats" type="number" min="1" step="1" placeholder="Ex.: 100"><small>Deixe vazio para vagas ilimitadas.</small></label>
+          <label class="form-field"><span>Cidade (opcional)</span><input id="eventCity" placeholder="Ex.: Passo Fundo"></label>
           <label class="form-field wide"><span>Local *</span><input id="eventLocation" required placeholder="Auditório principal"></label>
           <label class="form-field wide">
-            <span>Imagem de capa — arquivo do computador</span>
-            <input id="eventCoverFile" type="file" accept="image/png,image/jpeg,image/webp">
+            <span>Imagem de capa — arquivo do computador *</span>
+            <input id="eventCoverFile" type="file" accept="image/png,image/jpeg,image/webp" required>
             <input id="eventCover" type="hidden">
             <small>PNG, JPG ou WEBP, com no máximo 2 MB.</small>
             <img id="eventCoverPreview" class="event-cover-preview" alt="Pré-visualização da capa" hidden>
           </label>
-          <label class="form-field wide"><span>Resumo curto *</span><textarea id="eventSummary" required rows="3" placeholder="Texto curto usado nos cards de divulgação."></textarea></label>
-          <label class="form-field wide"><span>Descrição completa *</span><textarea id="eventDescription" required rows="7" placeholder="Descreva objetivo, programação, público-alvo, regras, certificação, carga horária etc."></textarea></label>
+          <label class="form-field wide"><span>Resumo curto (opcional)</span><textarea id="eventSummary" rows="3" placeholder="Texto curto usado nos cards de divulgação."></textarea></label>
+          <label class="form-field wide"><span>Descrição completa (opcional)</span><textarea id="eventDescription" rows="7" placeholder="Descreva objetivo, programação, público-alvo, regras, certificação, carga horária etc."></textarea></label>
         </div>
       </section>
 
@@ -61,7 +63,7 @@
         <div class="panel-heading">
           <div>
             <h2>Campos da inscrição</h2>
-            <p class="muted">Escolha o tipo de público e os campos que serão solicitados no formulário separado de inscrição.</p>
+            <p class="muted">Os campos abaixo acompanham a instituição selecionada. Na escola, os pais ou responsáveis fazem a inscrição do educando.</p>
           </div>
           <button class="btn btn-light small" id="applyAudienceDefaults" type="button">Aplicar padrão</button>
         </div>
@@ -74,7 +76,7 @@
           <label class="check-card"><input id="fieldNotes" type="checkbox"><span>Campo de observações</span></label>
         </div>
 
-        <div id="graduationFieldsGroup" class="audience-fields-block top-gap">
+        <div id="graduationFieldsGroup" class="audience-fields-block top-gap" hidden>
           <div class="field-group-title"><span>Campos para graduação</span><small>Usados quando o evento for voltado para alunos ou comunidade acadêmica.</small></div>
           <div class="checks-grid">
             <label class="check-card"><input id="fieldCourse" type="checkbox" checked><span>Permitir seleção de curso</span></label>
@@ -83,12 +85,12 @@
         </div>
 
         <div id="schoolFieldsGroup" class="audience-fields-block top-gap" hidden>
-          <div class="field-group-title"><span>Campos para escola</span><small>Usados quando a inscrição for realizada por responsável de educando.</small></div>
+          <div class="field-group-title"><span>Campos para escola</span><small>A inscrição deve identificar o responsável e o educando.</small></div>
           <div class="checks-grid">
             <label class="check-card"><input id="fieldResponsibleCPF" type="checkbox" checked><span>CPF do responsável</span></label>
-            <label class="check-card"><input id="fieldResponsibleName" type="checkbox" checked><span>Nome do responsável</span></label>
+            <label class="check-card"><input id="fieldResponsibleName" type="checkbox" checked disabled><span>Nome do responsável (obrigatório)</span></label>
             <label class="check-card"><input id="fieldRelationship" type="checkbox" checked><span>Grau de parentesco</span></label>
-            <label class="check-card"><input id="fieldStudentName" type="checkbox" checked><span>Nome do educando</span></label>
+            <label class="check-card"><input id="fieldStudentName" type="checkbox" checked disabled><span>Nome do educando (obrigatório)</span></label>
             <label class="check-card"><input id="fieldStudentClass" type="checkbox" checked><span>Turma do educando</span></label>
           </div>
         </div>
@@ -101,13 +103,44 @@ Necessidade especial"></textarea><small>Use <b>|required</b> no final para torna
 
       <section class="panel-card">
         <div class="panel-heading"><h2>Publicação</h2><p class="muted">Evento publicado aparece na página inicial e possui link público individual.</p></div>
-        <label class="check-card inline-check"><input id="eventPublished" type="checkbox" checked><span>Publicar evento agora</span></label>
-        <div class="form-actions"><button class="btn btn-primary" type="submit">Salvar evento</button><a href="eventos.html" class="btn btn-secondary">Cancelar</a></div>
+        <input type="hidden" id="eventPublicationMode" value="published">
+        <fieldset class="publication-options" aria-describedby="eventPublicationHint">
+          <legend>Como deseja publicar? *</legend>
+          <div class="publication-grid">
+            <label class="publication-option">
+              <input type="radio" name="publicationMode" value="published" checked required>
+              <span class="publication-copy"><strong>Publicar agora</strong><small>Disponível para o público assim que salvar.</small></span>
+            </label>
+            <label class="publication-option">
+              <input type="radio" name="publicationMode" value="scheduled" required>
+              <span class="publication-copy"><strong>Publicar manualmente depois</strong><small>Deixe preparado e publique quando quiser.</small></span>
+            </label>
+            <label class="publication-option">
+              <input type="radio" name="publicationMode" value="automatic" required>
+              <span class="publication-copy"><strong>Agendar publicação</strong><small>Escolha a data e a hora para publicar automaticamente.</small></span>
+            </label>
+            <label class="publication-option">
+              <input type="radio" name="publicationMode" value="draft" required>
+              <span class="publication-copy"><strong>Salvar como rascunho</strong><small>Guarde para continuar editando depois.</small></span>
+            </label>
+          </div>
+        </fieldset>
+        <label class="form-field publication-schedule" id="eventPublishAtGroup" hidden><span>Data e horário da publicação *</span>
+          <input id="eventPublishAt" type="datetime-local" disabled>
+          <small>Use o horário local do seu dispositivo. O evento ficará disponível a partir desse momento.</small>
+        </label>
+        <p class="muted publication-hint" id="eventPublicationHint" aria-live="polite"></p>
+        <label class="form-field publication-schedule"><span>Data e horário limite (opcional)</span>
+          <input id="eventEndAt" type="datetime-local">
+          <small>Preencha apenas se quiser tirar o evento do ar automaticamente neste horário. Deixe vazio para manter em Atuais até você clicar em Tirar do ar.</small>
+        </label>
+        <div class="form-error-summary" id="eventFormErrors" role="alert" tabindex="-1" hidden></div>
+        <div class="form-actions"><button class="btn btn-primary" type="submit" disabled>Carregando formulário…</button><a href="eventos.html" class="btn btn-secondary">Cancelar</a></div>
       </section>
     </form>
   </main>
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
-  <script src="assets/js/app.js"></script>
+  <script src="assets/js/app.js?v=20260920-validation-2"></script>
 </body>
 </html>
