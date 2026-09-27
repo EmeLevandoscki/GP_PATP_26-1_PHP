@@ -64,10 +64,11 @@ if ($verified && !isset($_SESSION['consulta_pending'])) {
 function consultaEscape(string $value): string { return htmlspecialchars($value, ENT_QUOTES, 'UTF-8'); }
 ?>
 <!DOCTYPE html><html lang="pt-BR" data-theme="dark"><head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta charset="UTF-8">
+  <script src="assets/js/theme.js?v=browser-theme-1"></script><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Consultar minha inscrição — IDEAU Eventos</title>
 <link rel="icon" href="assets/img/logo__ideau.png"><link rel="stylesheet" href="assets/css/inscricao.css">
-<link rel="stylesheet" href="assets/css/comprovante.css?v=4"><link rel="stylesheet" href="assets/css/consulta-inscricao.css?v=1">
+<link rel="stylesheet" href="assets/css/comprovante.css?v=browser-theme-1"><link rel="stylesheet" href="assets/css/consulta-inscricao.css?v=browser-theme-1">
 </head><body><main class="consult-page">
 <header class="receipt-nav"><a class="receipt-brand" href="../index.php"><img src="assets/img/logo__ideau.png" alt="Logo IDEAU"><span>IDEAU <b>Eventos</b></span></a><a class="receipt-back" href="../index.php#eventos">← Voltar aos eventos</a></header>
 <div class="consult-layout"><section class="consult-intro"><span class="consult-eyebrow">SUA PARTICIPAÇÃO</span><h1>Já se inscreveu?<br>Consulte por aqui.</h1><p>Mesmo em outro navegador ou celular, você pode acessar sua inscrição com o e-mail usado no cadastro.</p><ul><li>Confira se sua inscrição está ativa</li><li>Baixe seu comprovante em PDF</li><li>Cancele sua inscrição, se precisar</li></ul><p class="consult-help">Não informou um e-mail na inscrição? Entre em contato com o organizador do evento.</p></section>

@@ -4,6 +4,7 @@ require __DIR__ . '/../vendor/autoload.php';
 use App\Config\Conexao;
 use App\Service\EventoService;
 $db = Conexao::getConexao();
+require __DIR__ . '/dashboard-temporary.php';
 foreach (['eventos', 'atividades', 'usuarios', 'inscricoes', 'usuarios_responsaveis', 'turmas', 'usuarios_turmas'] as $table) {
     $ddl = $db->query("SHOW CREATE TABLE `$table`")->fetch(PDO::FETCH_NUM)[1];
     $ddl = preg_replace('/^CREATE TABLE/', 'CREATE TEMPORARY TABLE', $ddl);

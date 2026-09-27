@@ -2,13 +2,14 @@
 <html lang="pt-BR" data-theme="dark">
 <head>
   <meta charset="UTF-8" />
+  <script src="assets/js/theme.js?v=browser-theme-1"></script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Eventos — Organizador IDEAU</title>
   <link rel="icon" type="image/png" href="assets/img/logo__ideau.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,700;1,300&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="assets/css/app.css" />
+  <link rel="stylesheet" href="assets/css/app.css?v=event-search-1" />
 </head>
 <body data-page="admin-events" class="admin-page">
   <aside class="admin-sidebar">
@@ -38,11 +39,18 @@
         <button type="button" class="btn btn-secondary" data-event-view="history" aria-pressed="false">Histórico <span id="historyEventsCount">0</span></button>
       </div>
       <div class="panel-heading"><h2 id="eventsListTitle">Eventos atuais</h2><p class="muted" id="eventsListHint">Publicados, agendados e rascunhos.</p></div>
+      <div class="admin-event-search">
+        <label class="form-field" for="adminEventSearch">Pesquisar eventos
+          <input type="search" id="adminEventSearch" placeholder="Buscar por nome, cidade ou local" aria-controls="adminEventsTable" autocomplete="off">
+        </label>
+        <button type="button" class="btn btn-secondary" id="clearAdminEventSearch">Limpar busca</button>
+      </div>
+      <p class="muted" id="adminEventSearchCount" role="status" aria-live="polite"></p>
       <div class="table-wrap"><table class="data-table"><thead><tr><th>Evento</th><th>Data</th><th>Vagas</th><th>Inscritos</th><th>Status</th><th>Ações</th></tr></thead><tbody id="adminEventsTable"></tbody></table></div>
     </section>
   </main>
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
-  <script src="assets/js/app.js"></script>
+  <script src="assets/js/app.js?v=event-search-1"></script>
 </body>
 </html>

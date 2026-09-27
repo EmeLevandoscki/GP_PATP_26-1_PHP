@@ -2,6 +2,7 @@
 <html lang="pt-BR" data-theme="dark">
 <head>
   <meta charset="UTF-8" />
+  <script src="assets/js/theme.js?v=browser-theme-1"></script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Cadastrar Evento — IDEAU Eventos</title>
   <link rel="icon" type="image/png" href="assets/img/logo__ideau.png" />
@@ -129,7 +130,11 @@ Necessidade especial"></textarea><small>Use <b>|required</b> no final para torna
           <small>Use o horário local do seu dispositivo. O evento ficará disponível a partir desse momento.</small>
         </label>
         <p class="muted publication-hint" id="eventPublicationHint" aria-live="polite"></p>
-        <label class="form-field publication-schedule"><span>Data e horário limite (opcional)</span>
+        <label class="form-field publication-schedule"><span>Encerrar inscrições em (opcional)</span>
+          <input id="eventRegistrationEndAt" type="datetime-local">
+          <small>Use o horário local do seu dispositivo. Após esse prazo, novas inscrições serão bloqueadas e o evento continuará no site. Deixe vazio para não definir prazo. Uma data passada encerra as inscrições imediatamente.</small>
+        </label>
+        <label class="form-field publication-schedule"><span>Tirar o evento do ar em (opcional)</span>
           <input id="eventEndAt" type="datetime-local">
           <small>Preencha apenas se quiser tirar o evento do ar automaticamente neste horário. Deixe vazio para manter em Atuais até você clicar em Tirar do ar.</small>
         </label>
@@ -140,6 +145,6 @@ Necessidade especial"></textarea><small>Use <b>|required</b> no final para torna
   </main>
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
-  <script src="assets/js/app.js?v=20260920-validation-2"></script>
+  <script src="assets/js/app.js?v=browser-theme-1"></script>
 </body>
 </html>

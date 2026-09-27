@@ -74,6 +74,10 @@ try {
             responder($service->encerrar($data['id'], $_SESSION['publication_organizer']));
         }
     }
+    if ($method === 'GET' && $action === 'dashboard') {
+        if (!isset($_SESSION['publication_organizer'])) responder(['message' => 'Entre como organizador para continuar.'], 401);
+        responder((new \App\Service\DashboardService(Conexao::getConexao()))->resumo($_SESSION['publication_organizer'], $_GET));
+    }
     if ($method === 'GET' && $action === 'registrations') {
         if (!isset($_SESSION['publication_organizer'])) responder(['message' => 'Entre como organizador para continuar.'], 401);
         $service = new PublicacaoService(Conexao::getConexao());

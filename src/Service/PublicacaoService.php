@@ -89,6 +89,16 @@ class PublicacaoService
             throw new InvalidArgumentException('Informe um número positivo de vagas ou deixe o campo vazio.');
         }
         $event['seats'] = (int) $seats;
+        $registrationEnd = $event['registrationEndAt'] ?? null;
+        if ($registrationEnd !== null && $registrationEnd !== '') {
+            $deadline = is_string($registrationEnd) ? DateTimeImmutable::createFromFormat('!Y-m-d\TH:i:s.v\Z', $registrationEnd, new DateTimeZone('UTC')) : false;
+            if (!$deadline || $deadline->format('Y-m-d\TH:i:s.v\Z') !== $registrationEnd) {
+                throw new InvalidArgumentException('Informe uma data e horário válidos para encerrar as inscrições.');
+            }
+            $event['registrationEndAt'] = $registrationEnd;
+        } else {
+            $event['registrationEndAt'] = null;
+        }
         $endAt = $event['endAt'] ?? null;
         if ($endAt !== null && $endAt !== '') {
             $end = is_string($endAt) ? DateTimeImmutable::createFromFormat('!Y-m-d\TH:i:s.v\Z', $endAt, new DateTimeZone('UTC')) : false;
@@ -136,6 +146,9 @@ class PublicacaoService
         $event['publicationMode'] = $mode;
         $event['published'] = $mode === 'published';
         $event['publishAt'] = $publishAt?->format('Y-m-d\TH:i:s\Z');
+        if ($publishAt && !empty($event['registrationEndAt']) && $publishAt >= new DateTimeImmutable($event['registrationEndAt'])) {
+            throw new InvalidArgumentException('A publicação deve ocorrer antes do limite das inscrições.');
+        }
         $effectiveEnd = $this->limite($event);
         if ($publishAt && $effectiveEnd && $publishAt >= $effectiveEnd) {
             throw new InvalidArgumentException('A publicação deve ocorrer antes do encerramento.');
@@ -168,7 +181,7 @@ class PublicacaoService
         return null;
     }
 
-    private function estado(array $event, string $mode, ?string $publishAt): array
+    public function estado(array $event, string $mode, ?string $publishAt): array
     {
         $now = new DateTimeImmutable('now', new DateTimeZone('UTC'));
         $limit = $this->limite($event);
@@ -180,6 +193,7 @@ class PublicacaoService
         $event['closeReason'] = $closedAt ? ($event['closeReason'] ?? 'automatic') : null;
         $event['effectiveEndAt'] = $limit?->setTimezone(new DateTimeZone('UTC'))->format('Y-m-d\TH:i:s.v\Z');
         $event['published'] = $released && !$event['closed'];
+        $event['registrationClosed'] = !$event['published'] || (!empty($event['registrationEndAt']) && new DateTimeImmutable($event['registrationEndAt']) <= $now);
         $event['publicationMode'] = $released ? 'published' : $mode;
         $event['publishAt'] = $publishAt ? (new DateTimeImmutable($publishAt, new DateTimeZone('UTC')))->format('Y-m-d\TH:i:s.v\Z') : null;
         return $event;
@@ -227,6 +241,7 @@ class PublicacaoService
             if (!$row) throw new InvalidArgumentException('Este evento não está disponível para inscrição.');
             $event = $this->estado(json_decode($row['dados'], true, 512, JSON_THROW_ON_ERROR), $row['modo'], $row['publicar_em']);
             if (!$event['published']) throw new InvalidArgumentException('Este evento foi encerrado. As inscrições estão fechadas.');
+            if ($event['registrationClosed']) throw new InvalidArgumentException('O prazo para inscrição neste evento terminou. Consulte sua inscrição pelo link Consultar minha inscrição.');
             $required = $event['audience'] === 'escola' ? ['responsibleName', 'studentName'] : ['name'];
             foreach (['cpf', 'email', 'phone', 'relationship', 'studentClass'] as $field) {
                 if ($event['fields'][$field] ?? false) $required[] = $field;

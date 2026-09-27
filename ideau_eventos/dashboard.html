@@ -2,6 +2,7 @@
 <html lang="pt-BR" data-theme="dark">
 <head>
   <meta charset="UTF-8" />
+  <script src="assets/js/theme.js?v=browser-theme-1"></script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Dashboard — IDEAU Eventos</title>
   <link rel="icon" type="image/png" href="assets/img/logo__ideau.png" />
@@ -9,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,700;1,300&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="assets/css/app.css" />
-  <link rel="stylesheet" href="assets/css/dashboard-charts.css?v=1" />
+  <link rel="stylesheet" href="assets/css/dashboard-charts.css?v=2" />
 </head>
 <body data-page="dashboard" class="admin-page">
   <aside class="admin-sidebar">
@@ -36,37 +37,45 @@
       </div>
     </header>
 
-    <section class="metrics-grid">
-      <article class="metric-card"><span class="metric-value" id="metricEvents">0</span><span class="metric-label">Eventos cadastrados</span></article>
-      <article class="metric-card"><span class="metric-value" id="metricPublished">0</span><span class="metric-label">Eventos publicados</span></article>
-      <article class="metric-card"><span class="metric-value" id="metricRegistrations">0</span><span class="metric-label">Inscrições totais</span></article>
-      <article class="metric-card"><span class="metric-value" id="metricSeats">0%</span><span class="metric-label">Ocupação média</span></article>
-    </section>
-
-    <section class="admin-grid two-cols">
-      <article class="panel-card">
-        <div class="panel-heading"><h2>Eventos recentes</h2><a href="eventos.html">Gerenciar</a></div>
-        <div id="dashboardEvents" class="mini-list"></div>
-      </article>
-      <article class="panel-card">
-        <div class="panel-heading"><h2>Últimas inscrições</h2><a href="relatorios.html">Ver todas</a></div>
-        <div id="dashboardRegistrations" class="mini-list"></div>
-      </article>
-    </section>
-    <section class="dashboard-charts" aria-labelledby="dashboardChartsTitle">
-      <div class="dashboard-charts-heading"><div><p class="eyebrow">Acompanhe seus eventos</p><h2 id="dashboardChartsTitle">Eventos em números</h2></div>
-        <label class="dashboard-chart-filter">Exibir <select id="dashboardChartScope"><option value="all">Todos os eventos</option><option value="current">Eventos atuais</option><option value="history">Histórico</option></select></label>
-      </div>
-      <div class="dashboard-chart-grid">
-        <article class="panel-card dashboard-chart-panel"><h3>Inscrições por evento</h3><p class="chart-hint">Os 5 eventos com mais inscrições. Clique para abrir o relatório.</p><div id="dashboardRegistrationChart" aria-live="polite"><p class="empty-state">Carregando dados...</p></div></article>
-        <article class="panel-card dashboard-chart-panel"><h3>Situação dos eventos</h3><p class="chart-hint">Distribuição dos eventos selecionados.</p><div id="dashboardStatusChart" aria-live="polite"><p class="empty-state">Carregando dados...</p></div></article>
-      </div>
-      <p class="chart-footnote">Os gráficos consideram as inscrições existentes. Inscrições canceladas não entram na contagem.</p>
-    </section>
+    <p class="dashboard-welcome">Bem-vindo ao seu painel. Acompanhe seus eventos e as inscrições em um só lugar.</p>
+    <form id="dashboardFilters" class="panel-card dashboard-filters">
+      <label>Período das inscrições<select name="period" id="dashboardPeriod"><option value="all">Todo o período</option><option value="today">Hoje</option><option value="7">Últimos 7 dias</option><option value="30">Últimos 30 dias</option><option value="custom">Personalizado</option></select></label>
+      <div id="dashboardCustomDates" class="dashboard-date-range" hidden><label>De<input name="from" type="date"></label><label>Até<input name="to" type="date"></label></div>
+      <label>Evento<select name="event" id="dashboardEvent"><option value="">Todos os eventos</option></select></label>
+      <label>Instituição<select name="institution" id="dashboardInstitution"><option value="">Todas as instituições</option></select></label>
+      <label>Público<select name="audience"><option value="all">Todos os públicos</option><option value="escola">Escola</option><option value="faculdade">Faculdade</option><option value="unknown">Não informado</option></select></label>
+      <label>Situação<select name="scope" id="dashboardChartScope"><option value="all">Todos os eventos</option><option value="current">Atuais</option><option value="history">Histórico</option></select></label>
+      <div class="dashboard-filter-actions"><button class="btn btn-primary" type="submit">Aplicar filtros</button><button class="btn btn-secondary" type="reset">Limpar</button></div>
+    </form>
+    <p id="dashboardFeedback" role="status" aria-live="polite">Carregando indicadores...</p>
+    <div id="dashboardContent" aria-busy="true">
+      <section class="metrics-grid dashboard-metrics" id="dashboardMetrics" aria-label="Indicadores"></section>
+      <p class="chart-footnote" id="dashboardDataNote"></p>
+      <section class="dashboard-charts" aria-labelledby="dashboardChartsTitle">
+        <div class="dashboard-charts-heading"><div><p class="eyebrow">Acompanhe seus eventos</p><h2 id="dashboardChartsTitle">Eventos em números</h2></div></div>
+        <div class="dashboard-chart-grid">
+          <article class="panel-card dashboard-chart-panel chart-wide"><h3>Evolução das inscrições</h3><p class="chart-hint" id="dashboardTimelineHint"></p><div id="dashboardTimelineChart"></div></article>
+          <article class="panel-card dashboard-chart-panel"><h3>Eventos com mais inscritos</h3><p class="chart-hint">As 5 maiores contagens de inscrições ativas nos filtros selecionados. Abra o relatório pelo nome.</p><div id="dashboardRegistrationChart"></div></article>
+          <article class="panel-card dashboard-chart-panel"><h3>Inscrições por instituição</h3><p class="chart-hint">Inscrições ativas, agrupadas pela instituição responsável pelo evento.</p><div id="dashboardInstitutionChart" class="chart-scroll"></div></article>
+          <article class="panel-card dashboard-chart-panel"><h3>Escola e faculdade</h3><p class="chart-hint">Distribuição das inscrições ativas por público.</p><div id="dashboardAudienceChart"></div></article>
+          <article class="panel-card dashboard-chart-panel"><h3>Ativas e canceladas</h3><p class="chart-hint">Situação atual das inscrições feitas no período selecionado.</p><div id="dashboardCancellationChart"></div></article>
+          <article class="panel-card dashboard-chart-panel"><h3>Ocupação dos eventos</h3><p class="chart-hint">Inscritos ativos atuais ÷ vagas. Inclui inscrições de todos os períodos e públicos nos eventos selecionados.</p><div id="dashboardOccupancyChart" class="chart-scroll"></div></article>
+          <article class="panel-card dashboard-chart-panel"><h3>Situação dos eventos</h3><p class="chart-hint">Publicação e encerramento dos eventos selecionados.</p><div id="dashboardStatusChart"></div></article>
+        </div>
+      </section>
+      <section class="panel-card dashboard-summary" aria-labelledby="dashboardSummaryTitle"><div class="panel-heading"><h2 id="dashboardSummaryTitle">Resumo dos eventos</h2><a href="eventos.html">Gerenciar</a></div><p class="chart-hint">Do cadastro mais recente para o mais antigo. Inscrições seguem os filtros; ocupação indica o total atual.</p>
+        <div class="dashboard-table-scroll" role="region" aria-label="Resumo dos eventos, role horizontalmente para ver todas as colunas" tabindex="0"><table class="dashboard-table"><thead><tr><th>Evento / instituição</th><th>Status</th><th>Ativas</th><th>Canceladas</th><th>Vagas</th><th>Ocupação atual</th><th>Data</th><th>Publicação</th><th>Ações</th></tr></thead><tbody id="dashboardEventTable"></tbody></table></div>
+      </section>
+      <section class="admin-grid two-cols dashboard-recent">
+        <article class="panel-card"><div class="panel-heading"><h2>Eventos recentes</h2><a href="eventos.html">Gerenciar</a></div><div id="dashboardEvents" class="mini-list"></div></article>
+        <article class="panel-card"><div class="panel-heading"><h2>Últimas inscrições</h2><a href="relatorios.html">Ver todas</a></div><div id="dashboardRegistrations" class="mini-list"></div></article>
+      </section>
+    </div>
+    <section class="panel-card dashboard-shortcuts"><h2>Atalhos rápidos</h2><nav aria-label="Atalhos do dashboard"><a href="evento-form.html">+ Criar evento</a><a href="eventos.html">Eventos atuais →</a><a href="eventos.html?view=history">Histórico →</a><a href="relatorios.html">Relatórios →</a><a href="relatorios.html">Ver inscrições →</a><a href="../index.php">Site público ↗</a></nav></section>
   </main>
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
-  <script src="assets/js/dashboard-charts.js?v=1"></script>
-  <script src="assets/js/app.js?v=dashboard-charts-1"></script>
+  <script src="assets/js/dashboard-charts.js?v=2"></script>
+  <script src="assets/js/app.js?v=browser-theme-1"></script>
 </body>
 </html>

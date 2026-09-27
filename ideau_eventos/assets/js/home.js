@@ -1,47 +1,5 @@
 
-/*inicia funcoes de tema*/
-function initTheme() {
-  const saved = localStorage.getItem('ideau-theme');
-  const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-  const theme = saved || (prefersDark ? 'dark' : 'light');
-  document.documentElement.setAttribute('data-theme', theme);
-  updateThemeIcon(theme);
-}
-
-function toggleTheme() {
-  const current = document.documentElement.getAttribute('data-theme');
-  const next = current === 'dark' ? 'light' : 'dark';
-  document.documentElement.setAttribute('data-theme', next);
-  localStorage.setItem('ideau-theme', next);
-  updateThemeIcon(next);
-}
-
-function updateThemeIcon(theme) {
-  const btn = document.getElementById('themeToggle');
-  if (btn) btn.textContent = theme === 'dark' ? '🌙' : '☀️';
-  // Sidebar
-  const sIcon = document.getElementById('sidebarThemeIcon');
-  const sLabel = document.getElementById('sidebarThemeLabel');
-  if (sIcon) sIcon.textContent = theme === 'dark' ? '🌙' : '☀️';
-  if (sLabel) sLabel.textContent = theme === 'dark' ? 'Tema escuro' : 'Tema claro';
-}
-/*finaliza funcoes de tema*/
-
-/*inicia inicializacao do tema*/
-initTheme();
-/*finaliza inicializacao do tema*/
-
-/*
-  TOGGLE TEMA PELA SIDEBAR
-  */
-/*inicia toggle tema sidebar*/
-const sidebarThemeBtn = document.getElementById('sidebarThemeToggle');
-if (sidebarThemeBtn) {
-  sidebarThemeBtn.addEventListener('click', () => {
-    toggleTheme();
-  });
-}
-/*finaliza toggle tema sidebar*/
+/* Tema e botão da sidebar são controlados por theme.js e app.js. */
 
 /*
   SIDEBAR MOBILE

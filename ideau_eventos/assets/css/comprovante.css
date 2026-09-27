@@ -100,3 +100,17 @@ body { background:radial-gradient(ellipse at 75% 0, #203523 0, #0a100c 60%); }
  .receipt-data { column-gap:16px; }
  .receipt-brand b { display:none; }
 }
+
+/* Acompanhar o tema também nas páginas que não carregam app.css. */
+[data-theme="light"] body { background:radial-gradient(ellipse at 75% 0, #dbe8d7 0, var(--bg) 60%); }
+[data-theme="light"] .receipt-heading > p { color:var(--muted); }
+[data-theme="light"] .receipt-status { color:#28633a; }
+[data-theme="light"] .receipt-back { background:var(--surface);color:var(--text);border-color:var(--border-strong); }
+[data-theme="light"] .receipt-back:hover { background:var(--surface-2); }
+[data-theme="light"] .receipt-ticket-side { background:#e3eddc;color:#243d2c;border-color:#aabda3; }
+[data-theme="light"] .receipt-ticket-side::before,[data-theme="light"] .receipt-ticket-side::after { background:var(--bg); }
+[data-theme="light"] .receipt-ticket-side h2 { color:#243d2c; }
+[data-theme="light"] .receipt-ticket-side p { color:#526657; }
+[data-theme="light"] .receipt-actions .btn-secondary { color:#243d2c;border-color:#8fa384; }
+[data-theme="light"] .cancel-registration { border-color:#aabda3; }
+[data-theme="light"] .cancel-registration summary { color:#923e38; }

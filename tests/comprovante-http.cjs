@@ -10,10 +10,11 @@ const router = path.join(temp, 'router.php');
 fs.writeFileSync(router, `<?php
 require getenv('RECEIPT_TEST_ROOT') . '/vendor/autoload.php';
 $db = App\\Config\\Conexao::getConexao();
-$db->exec('CREATE TEMPORARY TABLE eventos_publicacoes (id VARCHAR(100) PRIMARY KEY)');
-$db->exec('CREATE TEMPORARY TABLE eventos_publicacoes_inscricoes (id VARCHAR(100) PRIMARY KEY, id_evento VARCHAR(100))');
-$db->exec("INSERT INTO eventos_publicacoes VALUES ('evt-test')");
-$db->exec("INSERT INTO eventos_publicacoes_inscricoes VALUES ('reg-test','evt-test')");
+$db->exec('CREATE TEMPORARY TABLE eventos_publicacoes (id VARCHAR(100) PRIMARY KEY, dados JSON)');
+require getenv('RECEIPT_TEST_ROOT') . '/tests/dashboard-temporary.php';
+$db->exec('CREATE TEMPORARY TABLE eventos_publicacoes_inscricoes (id VARCHAR(100) PRIMARY KEY, id_evento VARCHAR(100), criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP)');
+$db->exec("INSERT INTO eventos_publicacoes (id,dados) VALUES ('evt-test','{}')");
+$db->exec("INSERT INTO eventos_publicacoes_inscricoes (id,id_evento) VALUES ('reg-test','evt-test')");
 
 if (parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) === '/fixture') {
     session_start();

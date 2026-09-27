@@ -14,6 +14,7 @@ function invalid(callable $operation): void {
 }
 
 $db = Conexao::getConexao();
+require __DIR__ . '/dashboard-temporary.php';
 foreach (['eventos_publicacoes', 'eventos_publicacoes_inscricoes'] as $table) {
     $ddl = $db->query('SHOW CREATE TABLE ' . $table)->fetch(PDO::FETCH_ASSOC)['Create Table'];
     $ddl = preg_replace('/^CREATE TABLE/', 'CREATE TEMPORARY TABLE', $ddl);
@@ -146,3 +147,20 @@ check($afterCancel[$siblingsEvent['id']]['registrationCount'] === 1, 'Contagem d
 $againReceipt = $service->inscrever($child);
 check(!$againReceipt['alreadyRegistered'] && $againReceipt['receiptUrl'] !== $childReceipt['receiptUrl'], 'Nova inscrição deve gerar outro protocolo.');
 echo "OK: cancelamento autorizado, isolamento, vaga liberada, comprovante invalidado e reinscrição.\n";
+
+// Prazo de inscrição é independente da retirada do evento do ar.
+$deadlineEvent = $service->salvar(array_replace($fixture, ['publicationMode'=>'published','registrationEndAt'=>'2099-12-01T12:00:00.000Z']),$owner);
+$deadlineRegistration = array_replace($registration,['eventId'=>$deadlineEvent['id']]);
+check(!$service->inscrever($deadlineRegistration)['alreadyRegistered'],'Inscrição antes do prazo deve funcionar.');
+$expired = array_replace($deadlineEvent,['registrationEndAt'=>'2000-01-01T12:00:00.000Z']);
+$expired = $service->salvar($expired,$owner);
+check($expired['published'] && !$expired['closed'] && $expired['registrationClosed'],'Prazo encerra só inscrições, mantendo evento atual e publicado.');
+check(in_array($expired['id'],array_column($service->listar(),'id'),true),'Evento continua no site após o prazo de inscrição.');
+invalid(fn()=>$service->inscrever(array_replace($deadlineRegistration,['studentName'=>'Outro educando'])));
+check(array_column($service->listar($owner),null,'id')[$expired['id']]['registrationCount']===1,'Inscrições confirmadas devem ser preservadas.');
+invalid(fn()=>$service->salvar(array_replace($fixture,['registrationEndAt'=>'2099-02-30T12:00:00.000Z']),$owner));
+invalid(fn()=>$service->salvar(array_replace($fixture,['publicationMode'=>'automatic','publishAt'=>'2099-12-02T12:00:00.000Z','registrationEndAt'=>'2099-12-01T12:00:00.000Z']),$owner));
+$reopened=$service->salvar(array_replace($expired,['registrationEndAt'=>null]),$owner);
+check(!$reopened['registrationClosed'],'Organizador pode remover o prazo de inscrição.');
+check(!$service->inscrever(array_replace($deadlineRegistration,['studentName'=>'Outro educando']))['alreadyRegistered'],'Após remover o prazo, novas inscrições voltam a funcionar.');
+echo "OK: prazo exclusivo de inscrição, evento público preservado, validação e remoção do prazo.\n";

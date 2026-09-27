@@ -2,6 +2,7 @@
 <html lang="pt-BR" data-theme="dark">
 <head>
   <meta charset="UTF-8" />
+  <script src="ideau_eventos/assets/js/theme.js?v=browser-theme-1"></script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>IDEAU Eventos</title>
   <link rel="icon" type="image/png" href="ideau_eventos/assets/img/logo__ideau.png" />
@@ -175,7 +176,7 @@
   <script>
     const PASTA_BASE = "<?php echo $pastaBase; ?>";
   </script>
-  <script src="ideau_eventos/assets/js/app.js?v=published-featured-1"></script>
-  <script src="ideau_eventos/assets/js/home.js"></script>
+  <script src="ideau_eventos/assets/js/app.js?v=browser-theme-1"></script>
+  <script src="ideau_eventos/assets/js/home.js?v=browser-theme-1"></script>
 </body>
 </html>

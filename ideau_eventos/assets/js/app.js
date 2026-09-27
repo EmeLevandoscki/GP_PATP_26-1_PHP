@@ -11,32 +11,6 @@ function getPastaBase() {
 /* TEMA + SIDEBAR: lógica compartilhada entre todas as páginas */
 (function () {
 
-  /* TEMA: lê preferência salva ou detecta o sistema */
-  var saved      = localStorage.getItem('ideau-theme');
-  var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-  var theme      = saved || (prefersDark ? 'dark' : 'light');
-  document.documentElement.setAttribute('data-theme', theme);
-
-  /* TEMA: atualiza ícones do botão do header e do sidebar */
-  function _syncIcons(t) {
-    var btn    = document.getElementById('themeToggle');
-    var sIcon  = document.getElementById('sidebarThemeIcon');
-    var sLabel = document.getElementById('sidebarThemeLabel');
-    if (btn)    btn.textContent    = t === 'dark' ? '🌙' : '☀️';
-    if (sIcon)  sIcon.textContent  = t === 'dark' ? '🌙' : '☀️';
-    if (sLabel) sLabel.textContent = t === 'dark' ? 'Tema escuro' : 'Tema claro';
-  }
-  _syncIcons(theme);
-
-  /* TEMA: alterna entre claro e escuro e persiste no localStorage */
-  window.toggleTheme = function () {
-    var current = document.documentElement.getAttribute('data-theme');
-    var next    = current === 'dark' ? 'light' : 'dark';
-    document.documentElement.setAttribute('data-theme', next);
-    localStorage.setItem('ideau-theme', next);
-    _syncIcons(next);
-  };
-
   /* SIDEBAR: referências aos elementos do DOM */
   var toggle    = document.getElementById('menuToggle');
   var sidebarEl = document.getElementById('sidebar');
@@ -315,12 +289,14 @@ function getPastaBase() {
     const page = document.body.dataset.page;
     try {
       serverSession = await publicationRequest('session');
-      await loadServerEvents();
+      if (page !== 'dashboard') await loadServerEvents();
     } catch (error) {
       showToast(error.message);
     }
-    try { legacyRegistrationCount = Number(await fetchRegistrationsCount()) || 0; }
-    catch (error) { console.error(error); }
+    if (page !== 'dashboard') {
+      try { legacyRegistrationCount = Number(await fetchRegistrationsCount()) || 0; }
+      catch (error) { console.error(error); }
+    }
 
     if (page === 'home') initHomePage();
     if (page === 'event-detail') initEventDetailPage();
@@ -332,7 +308,7 @@ function getPastaBase() {
     if (page === 'registrations') initRegistrationsPage();
     if (page === 'reports') initReportsPage();
     if (page === 'settings') initSettingsPage();
-    if (['home', 'event-detail', 'registration', 'admin-events', 'dashboard'].includes(page)) {
+    if (['home', 'event-detail', 'registration', 'admin-events'].includes(page)) {
       let visibleState = '';
       setInterval(() => {
         if (document.hidden) return;
@@ -341,7 +317,7 @@ function getPastaBase() {
         });
         const currentId = new URLSearchParams(window.location.search).get('id');
         const relevantEvents = ['event-detail', 'registration'].includes(page) ? getEvents().filter(event => event.id === currentId) : getEvents();
-        const state = JSON.stringify(relevantEvents.map(event => [event.id, event.published, eventIsClosed(event)]));
+        const state = JSON.stringify(relevantEvents.map(event => [event.id, event.published, eventIsClosed(event), registrationIsClosed(event)]));
         if (state === visibleState) return;
         const previousState = visibleState;
         visibleState = state;
@@ -350,7 +326,6 @@ function getPastaBase() {
         if (page === 'event-detail') renderEventDetail();
         if (page === 'registration') initRegistrationPage();
         if (page === 'admin-events') renderAdminEventsTable();
-        if (page === 'dashboard') renderDashboard();
       }, 1000);
       setInterval(async () => {
         if (document.hidden) return;
@@ -362,9 +337,9 @@ function getPastaBase() {
           const id = new URLSearchParams(window.location.search).get('id');
           const currentChanged = JSON.stringify(JSON.parse(previous).find(event => event.id === id)) !== JSON.stringify(getEvents().find(event => event.id === id));
           if (page === 'event-detail' && currentChanged) renderEventDetail();
-          if (page === 'registration' && JSON.parse(previous).find(event => event.id === id)?.published !== getEvents().find(event => event.id === id)?.published) initRegistrationPage();
+          if (page === 'registration' && (JSON.parse(previous).find(event => event.id === id)?.published !== getEvents().find(event => event.id === id)?.published
+            || registrationIsClosed(JSON.parse(previous).find(event => event.id === id) || {}) !== registrationIsClosed(getEvents().find(event => event.id === id) || {}))) initRegistrationPage();
           if (page === 'admin-events') renderAdminEventsTable();
-          if (page === 'dashboard') renderDashboard();
         } catch (error) { console.error(error); }
       }, 30000);
     }
@@ -429,18 +404,24 @@ function getPastaBase() {
 
   async function initDashboardPage() {
     if (!requireAuth()) return;
-    apiRegistrations = await fetchRegistrationsFromApi();
-    renderDashboard();
+    window.initDashboard?.(publicationRequest);
   }
 
   function initAdminEventsPage() {
     if (!requireAuth()) return;
+    adminEventView = new URLSearchParams(location.search).get('view') === 'history' ? 'history' : 'current';
     renderAdminEventsTable();
     document.querySelectorAll('[data-event-view]').forEach(button => {
       button.addEventListener('click', () => {
         adminEventView = button.dataset.eventView;
         renderAdminEventsTable();
       });
+    });
+    document.getElementById('adminEventSearch')?.addEventListener('input', renderAdminEventsTable);
+    document.getElementById('clearAdminEventSearch')?.addEventListener('click', () => {
+      setValue('adminEventSearch', '');
+      renderAdminEventsTable();
+      document.getElementById('adminEventSearch')?.focus();
     });
     document.getElementById('resetDemoData')?.addEventListener('click', () => {
       if (!confirm('Restaurar eventos de demonstração? Isso remove alterações locais.')) return;
@@ -895,7 +876,7 @@ function getPastaBase() {
             </div>
           </div>
           <div class="evento-actions">
-            ${isSoldOut
+            ${registrationIsClosed(event) ? '<button class="btn-inscricao" type="button" disabled>Inscrições encerradas</button>' : isSoldOut
               ? '<button class="btn-inscricao" type="button" disabled>Vagas esgotadas</button>'
               : `<a class="btn-inscricao" href="${eventRegistrationUrl(event.id)}">Ir para inscrição <span aria-hidden="true">→</span></a>`}
             <a class="btn-outros" href="../index.php#eventos">Ver outros eventos</a>
@@ -903,10 +884,10 @@ function getPastaBase() {
         </div>
         <div class="evento-info-wrap">
           <div class="evento-kicker">
-            <span class="vagas-pill${isSoldOut ? ' esgotada' : ''}">${isSoldOut ? 'Vagas esgotadas' : (event.seats == -1 ? 'Entrada livre' : `${remaining} vagas disponíveis`)}</span>
+            <span class="vagas-pill${isSoldOut ? ' esgotada' : ''}">${registrationIsClosed(event) ? 'Inscrições encerradas' : isSoldOut ? 'Vagas esgotadas' : (event.seats == -1 ? 'Entrada livre' : `${remaining} vagas disponíveis`)}</span>
           </div>
           <h1>${escapeHtml(event.title)}</h1>
-          ${event.effectiveEndAt ? `<p class="muted">Inscrições até ${escapeHtml(formatDateTime(event.effectiveEndAt))}<br><span data-countdown="${escapeAttr(event.effectiveEndAt)}">${countdownLabel(event.effectiveEndAt)}</span></p>` : ''}
+          ${registrationDeadline(event) ? `<p class="muted">Inscrições até ${escapeHtml(formatDateTime(registrationDeadline(event)))}<br><span data-countdown="${escapeAttr(registrationDeadline(event))}">${countdownLabel(registrationDeadline(event))}</span></p>` : ''}
           <p class="evento-summary">${escapeHtml(event.summary)}</p>
           ${event.description ? `
           <div class="evento-descricao">
@@ -955,6 +936,11 @@ function getPastaBase() {
       return;
     }
 
+    if (registrationIsClosed(event)) {
+      root.innerHTML += `<div class="inscricao-layout"><section class="panel-card"><h1>Inscrições encerradas</h1><p>O prazo de inscrição para ${escapeHtml(event.title)} terminou. O evento continua disponível para consulta.</p>${receiptLinks}<div class="form-actions"><a class="btn btn-primary" href="consultar-inscricao.php">Consultar minha inscrição</a><a class="btn btn-secondary" href="evento.html?id=${encodeURIComponent(event.id)}">Voltar para o evento</a></div></section></div>`;
+      return;
+    }
+
     document.title = `Inscrição — ${event.title}`;
 
     const remaining = event.seats != -1 ? Math.max(Number(event.seats || 0) - countRegistrations(event.id), 0) : -1;
@@ -967,7 +953,7 @@ function getPastaBase() {
           <div class="inscricao-eyebrow">${escapeHtml(CATEGORIES[event.category] || event.category)}</div>
           <h1>${escapeHtml(event.title)}</h1>
           <p class="inscricao-sub">Preencha os dados ao lado para confirmar sua participação neste evento.</p>
-          ${event.effectiveEndAt ? `<p>Inscrições até ${escapeHtml(formatDateTime(event.effectiveEndAt))}<br><span data-countdown="${escapeAttr(event.effectiveEndAt)}">${countdownLabel(event.effectiveEndAt)}</span></p>` : ''}
+          ${registrationDeadline(event) ? `<p>Inscrições até ${escapeHtml(formatDateTime(registrationDeadline(event)))}<br><span data-countdown="${escapeAttr(registrationDeadline(event))}">${countdownLabel(registrationDeadline(event))}</span></p>` : ''}
           <div class="inscricao-meta">
             <div class="inscricao-meta-item"><strong>Data</strong> ${formatDate(event.date_begin)} — ${formatDate(event.date_end)}</div>
             <div class="inscricao-meta-item"><strong>Horário</strong> ${escapeHtml(event.time_begin)} — ${escapeHtml(event.time_end)}</div>
@@ -1179,40 +1165,6 @@ function getPastaBase() {
       });
   }
 
-  function renderDashboard() {
-    const events = getEvents();
-    const regs = getRegistrations();
-    window.renderDashboardCharts?.(events.map(event => ({
-      id: event.id, title: event.title, count: countRegistrations(event.id),
-      closed: eventIsClosed(event), published: event.published, mode: event.publicationMode
-    })));
-    const published = events.filter(event => event.published);
-    const totalSeats = events.reduce((sum, event) => sum + Number(event.seats || 0), 0);
-    const avg = totalSeats ? Math.round((regs.length / totalSeats) * 100) : 0;
-
-    setText('metricEvents', events.length);
-    setText('metricPublished', published.length);
-    setText('metricRegistrations', regs.length);
-    // setText('metricSeats', `${avg}%`);
-    setText('metricSeats', `Vagas Ilimitadas`);
-
-    const dashEvents = document.getElementById('dashboardEvents');
-    if (dashEvents) {
-      dashEvents.innerHTML = events.slice().sort(compareEventsByDate).slice(0, 5).map(event => {
-        const used = countRegistrations(event.id);
-        return `<div class="mini-item"><strong>${escapeHtml(event.title)}</strong><span>${formatDate(event.date_begin || event.date)} - ${formatDate(event.date_end || event.date)} · ${event.seats == -1 ? 'Vagas Ilimitadas · ' : used + '/' + Number(event.seats || 0) + 'inscritos · '}${publicationLabel(event)}</span></div>`;
-      }).join('') || '<div class="empty-state">Nenhum evento cadastrado.</div>';
-    }
-
-    const dashRegs = document.getElementById('dashboardRegistrations');
-    if (dashRegs) {
-      dashRegs.innerHTML = regs.slice().sort((a, b) => b.createdAt.localeCompare(a.createdAt)).slice(0, 6).map(reg => {
-        const event = events.find(item => item.id == reg.eventId);
-        return `<div class="mini-item"><strong>${escapeHtml(event?.title || 'Evento removido')}</strong><span>${formatDateTime(reg.createdAt)}</span></div>`;
-      }).join('') || '<div class="empty-state">Nenhuma inscrição registrada.</div>';
-    }
-  }
-
   async function renderAdminEventsTable() {
     const tbody = document.getElementById('adminEventsTable');
     if (!tbody) return;
@@ -1223,10 +1175,18 @@ function getPastaBase() {
     setText('eventsListTitle', history ? 'Histórico de eventos' : 'Eventos atuais');
     setText('eventsListHint', history ? 'Eventos encerrados. Os inscritos e relatórios continuam disponíveis.' : 'Publicados, agendados e rascunhos.');
     document.querySelectorAll('[data-event-view]').forEach(button => button.setAttribute('aria-pressed', String(button.dataset.eventView === adminEventView)));
+    const normalizeSearch = value => String(value || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase('pt-BR').trim();
+    const query = normalizeSearch(getValue('adminEventSearch'));
+    const terms = query.split(/\s+/).filter(Boolean);
     const events = allEvents.filter(event => eventIsClosed(event) === history)
+      .filter(event => {
+        const text = normalizeSearch([event.title, event.city, event.location].join(' '));
+        return terms.every(term => text.includes(term));
+      })
       .sort(history ? (a, b) => String(b.closedAt || b.effectiveEndAt || '').localeCompare(String(a.closedAt || a.effectiveEndAt || '')) : compareEventsByDate);
+    setText('adminEventSearchCount', `${events.length} ${events.length === 1 ? 'evento encontrado' : 'eventos encontrados'} em ${history ? 'Histórico' : 'Atuais'}.`);
     if (!events.length) {
-      tbody.innerHTML = `<tr><td colspan="6">${history ? 'Nenhum evento encerrado ainda.' : 'Nenhum evento atual. Consulte o histórico para ver eventos encerrados.'}</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="6">${query ? 'Nenhum evento corresponde à busca nesta aba. Tente outro termo ou limpe a busca.' : history ? 'Nenhum evento encerrado ainda.' : 'Nenhum evento atual. Consulte o histórico para ver eventos encerrados.'}</td></tr>`;
       return;
     }
     tbody.innerHTML = events.map(event => {
@@ -1239,6 +1199,7 @@ function getPastaBase() {
           <td>${event.seats == -1 ? 'Ilimitadas' : Number(event.seats || 0)}</td>
           <td>${used}</td>
           <td><span class="status-pill ${history ? 'closed' : event.published ? '' : 'off'}">${publicationLabel(event)}</span>
+            ${event.registrationEndAt ? `<br><small>${registrationIsClosed(event) ? 'Inscrições encerradas' : 'Inscrições até'}: ${escapeHtml(formatDateTime(event.registrationEndAt))}</small>` : ''}
             ${history ? `<br><small>${event.closeReason === 'manual' ? 'Retirado manualmente' : 'Prazo encerrado'}<br>${escapeHtml(formatDateTime(event.closedAt || event.effectiveEndAt))}</small>`
               : `${event.publicationMode === 'automatic' ? `<br><small>Publicação: ${escapeHtml(formatDateTime(event.publishAt))}</small>` : ''}${event.publicationMode !== 'draft' && event.effectiveEndAt ? `<br><small>Limite: ${escapeHtml(formatDateTime(event.effectiveEndAt))}</small><span class="event-countdown" data-countdown="${escapeAttr(event.effectiveEndAt)}">${countdownLabel(event.effectiveEndAt)}</span>` : ''}`}</td>
           <td>
@@ -1340,6 +1301,7 @@ function getPastaBase() {
     setValue('eventPublicationMode', event.publicationMode || (event.published ? 'published' : 'draft'));
     setValue('eventPublishAt', toLocalDateTime(event.publishAt));
     setValue('eventEndAt', toLocalDateTime(event.endAt));
+    setValue('eventRegistrationEndAt', toLocalDateTime(event.registrationEndAt));
     togglePublicationFields();
     setValue('eventExtraFields', (event.fields?.extras || []).map(extra => `${extra.label}${extra.required ? '|required' : ''}`).join('\n'));
     toggleAudienceFieldGroups();
@@ -1358,6 +1320,15 @@ function getPastaBase() {
     if (event.publicationMode === 'automatic') return 'Agendado — automático';
     if (event.publicationMode === 'scheduled') return 'Agendado — manual';
     return 'Rascunho';
+  }
+
+  function registrationIsClosed(event) {
+    return Boolean(event.registrationClosed || eventIsClosed(event) || (event.registrationEndAt && new Date(event.registrationEndAt).getTime() <= Date.now()));
+  }
+
+  function registrationDeadline(event) {
+    const limits = [event.registrationEndAt, event.effectiveEndAt].filter(Boolean);
+    return limits.sort((a, b) => new Date(a) - new Date(b))[0] || null;
   }
 
   function eventIsClosed(event) {
@@ -1416,6 +1387,13 @@ function getPastaBase() {
       const publishTime = getValue('eventPublicationMode') === 'automatic' ? new Date(getValue('eventPublishAt')).getTime() : Date.now();
       endInput.setCustomValidity(!endInput.value || (Number.isFinite(endTime) && endTime > Date.now() && endTime > publishTime)
         ? '' : 'Escolha um limite futuro e posterior à publicação.');
+    }
+    const registrationEndInput = document.getElementById('eventRegistrationEndAt');
+    if (registrationEndInput) {
+      const deadline = new Date(registrationEndInput.value).getTime();
+      const publication = getValue('eventPublicationMode') === 'automatic' ? new Date(getValue('eventPublishAt')).getTime() : -Infinity;
+      registrationEndInput.setCustomValidity(!registrationEndInput.value || (Number.isFinite(deadline) && deadline > publication)
+        ? '' : 'Informe um limite válido, posterior à publicação agendada.');
     }
     return form.checkValidity();
   }
@@ -1488,6 +1466,7 @@ function getPastaBase() {
       publicationMode: getValue('eventPublicationMode'),
       published: getValue('eventPublicationMode') === 'published',
       publishAt: getValue('eventPublicationMode') === 'automatic' ? new Date(getValue('eventPublishAt')).toISOString() : null,
+      registrationEndAt: getValue('eventRegistrationEndAt') ? new Date(getValue('eventRegistrationEndAt')).toISOString() : null,
       endAt: getValue('eventEndAt') ? new Date(getValue('eventEndAt')).toISOString() : null,
       fields: {
         cpf: getChecked('fieldCpf'),

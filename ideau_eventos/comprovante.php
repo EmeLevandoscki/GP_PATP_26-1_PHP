@@ -55,10 +55,11 @@ function escapeReceipt(string $text): string { return htmlspecialchars($text, EN
 <!DOCTYPE html>
 <html lang="pt-BR" data-theme="dark">
 <head>
-  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="UTF-8">
+  <script src="assets/js/theme.js?v=browser-theme-1"></script><meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Comprovante de inscrição — IDEAU Eventos</title>
   <link rel="stylesheet" href="assets/css/inscricao.css">
-  <link rel="stylesheet" href="assets/css/comprovante.css?v=4">
+  <link rel="stylesheet" href="assets/css/comprovante.css?v=browser-theme-1">
 </head>
 <body><main class="receipt-page"><header class="receipt-nav"><a class="receipt-brand" href="../index.php"><img src="assets/img/logo__ideau.png" alt="Logo IDEAU"><span>IDEAU <b>Eventos</b></span></a><a class="receipt-back" href="../index.php#eventos">← Voltar aos eventos</a></header><section class="receipt">
 <?php if ($error): ?><p role="alert"><?= escapeReceipt($error) ?></p><?php endif; ?>

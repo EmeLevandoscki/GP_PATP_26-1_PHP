@@ -26,6 +26,8 @@ final class ComprovanteService
                 ? 'SELECT e.id FROM eventos e JOIN atividades a ON a.id_evento = e.id WHERE a.id = ? FOR UPDATE'
                 : 'SELECT id FROM eventos_publicacoes WHERE id = ? FOR UPDATE');
             $lock->execute([$receipt['eventId']]);
+            CancelamentoEstatistica::registrar($db, $legacy,
+                $legacy ? substr($receipt['protocol'], 6) : $receipt['protocol'], (string) $receipt['eventId']);
             $stmt = $db->prepare($legacy
                 ? 'DELETE FROM inscricoes WHERE id = ? AND id_atividade = ?'
                 : 'DELETE FROM eventos_publicacoes_inscricoes WHERE id = ? AND id_evento = ?');

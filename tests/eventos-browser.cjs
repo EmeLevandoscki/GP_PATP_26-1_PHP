@@ -40,12 +40,25 @@ const lookupHtml = execFileSync('php', [], { cwd: root, encoding: 'utf8', input:
 $error='';$message='';$email='';$verified=null;$receipts=[];$_SESSION=['consulta_csrf'=>'test'];
 function consultaEscape(string $value): string {return htmlspecialchars($value, ENT_QUOTES, 'UTF-8');}
 ?><!DOCTYPE html>` + lookupTemplate });
+// Resposta agregada simulada somente para o teste de interface. SQL real: tests/dashboard.php.
+function dashboardResponse(url) {
+  let selected=events.map((e,i)=>({...e,key:'p:'+e.id,active:e.registrationCount||0,cancelled:i===0?2:0,totalActive:e.registrationCount||0,seats:i===0?100:-1,occupancy:i===0?(e.registrationCount||0):null,institutionName:'Faculdade IDEAU',institution:'faculdade-ideau',createdAt:200-i,mode:e.publicationMode||'published',date:'2099-12-31'}));
+  const options=selected.slice();
+  const scope=url.searchParams.get('scope'),event=url.searchParams.get('event'),audience=url.searchParams.get('audience');
+  if(scope==='history')selected=selected.filter(e=>e.closed);
+  if(scope==='current')selected=selected.filter(e=>!e.closed);
+  if(event)selected=selected.filter(e=>e.id===event);
+  if(audience==='escola')selected=[];
+  const active=selected.reduce((sum,e)=>sum+e.active,0),cancelled=selected.reduce((sum,e)=>sum+e.cancelled,0);
+  return {events:selected,options,metrics:{events:selected.length,current:selected.filter(e=>!e.closed).length,closed:selected.filter(e=>e.closed).length,published:selected.filter(e=>e.published).length,active,cancelled,institutions:active?1:0,occupancy:selected.some(e=>e.seats>0)?42:null,available:58,unlimited:selected.filter(e=>e.seats===-1).length},institutions:active?[{name:'Faculdade IDEAU',count:active}]:[],audiences:{escola:0,faculdade:active,unknown:0},daily:[{date:'2026-09-20',count:active},{date:'2026-09-21',count:cancelled}],latest:selected.filter(e=>e.active).map(e=>({title:e.title,date:'2026-09-20T12:00:00Z'})),cancellationTracking:true,generatedAt:new Date().toISOString(),period:{from:null,to:null}};
+}
 const server = http.createServer(async (req, res) => {
   const url = new URL(req.url, 'http://localhost');
   const json = body => { res.setHeader('Content-Type', 'application/json'); res.end(JSON.stringify(body)); };
   if (url.pathname.endsWith('/PublicacaoController.php')) {
     const action = url.searchParams.get('action');
     if (action === 'session') return json({ authenticated: true, csrf: 'test', receipts: receiptList });
+    if (action === 'dashboard') return json(dashboardResponse(url));
     if (action === 'registrations') return json(registrations);
     if (action === 'events') return json(events.filter(event => url.searchParams.get('scope') === 'admin' || (!event.closed && new Date(event.effectiveEndAt) > new Date())));
     let raw = '';
@@ -138,6 +151,22 @@ const server = http.createServer(async (req, res) => {
     await send('Page.navigate', { url: origin + '/index.php' });
     await until('document.querySelector("#eventsGrid .card-title")?.textContent === "Evento de teste"');
     await until('document.getElementById("statInscricoes").textContent === "1"');
+    await send('Emulation.setEmulatedMedia',{features:[{name:'prefers-color-scheme',value:'dark'}]});
+    await until('document.documentElement.getAttribute("data-theme") === "dark"');
+    assert.equal(await evaluate('document.getElementById("themeToggle").textContent'),'🌙');
+    await send('Emulation.setEmulatedMedia',{features:[{name:'prefers-color-scheme',value:'light'}]});
+    await until('document.documentElement.getAttribute("data-theme") === "light"');
+    assert.equal(await evaluate('document.getElementById("themeToggle").textContent'),'☀️');
+    await evaluate('document.getElementById("themeToggle").click()');
+    assert.equal(await evaluate('document.documentElement.getAttribute("data-theme")'),'dark');
+    assert.equal(await evaluate('localStorage.getItem("ideau-theme")'),'dark');
+    await evaluate('document.getElementById("themeToggle").click()');
+    assert.equal(await evaluate('localStorage.getItem("ideau-theme")'),null);
+    await send('Emulation.setEmulatedMedia',{features:[{name:'prefers-color-scheme',value:'dark'}]});
+    await until('document.documentElement.getAttribute("data-theme") === "dark"');
+    await send('Emulation.setEmulatedMedia',{features:[{name:'prefers-color-scheme',value:'light'}]});
+    await until('document.documentElement.getAttribute("data-theme") === "light"');
+    console.log('Tema conferido: acompanha navegador em tempo real, preserva sol/lua e permite troca manual com retorno ao automático.');
     assert.equal(await evaluate('document.getElementById("statInscricoes").textContent'), '1', 'Contador deve usar o evento publicado, sem as 80 inscrições do evento antigo.');
     await evaluate('document.querySelector("#eventsGrid .event-card").scrollIntoView({behavior:"instant"})');
     assert.equal(await evaluate('getComputedStyle(document.querySelector("#eventsGrid .event-card")).opacity'), '1', 'Evento publicado deve estar visível após carregar pela API.');
@@ -174,11 +203,12 @@ const server = http.createServer(async (req, res) => {
     assert.equal(await evaluate('(() => { const box = document.getElementById("eventTitleError").getBoundingClientRect(); return box.top >= 0 && box.bottom <= innerHeight; })()'), true);
     assert.equal(await evaluate('document.querySelector(".admin-public-link").parentElement === document.getElementById("logoutButton").parentElement'), true);
     assert.equal(await evaluate(`document.querySelector('.admin-nav a[href="../index.php"]')`), null);
-    await evaluate(`(() => { const f = document.getElementById('eventTitle'); f.value = 'Título preservado'; f.dispatchEvent(new Event('input', { bubbles: true })); const d = document.getElementById('eventEndAt'); d.value = '2099-12-31T20:00'; d.dispatchEvent(new Event('input', { bubbles: true })); })()`);
+    await evaluate(`(() => { const f = document.getElementById('eventTitle'); f.value = 'Título preservado'; f.dispatchEvent(new Event('input', { bubbles: true })); const r = document.getElementById('eventRegistrationEndAt'); r.value = '2099-12-30T20:00'; r.dispatchEvent(new Event('input', { bubbles: true })); const d = document.getElementById('eventEndAt'); d.value = '2099-12-31T20:00'; d.dispatchEvent(new Event('input', { bubbles: true })); })()`);
     assert.equal(await evaluate('document.getElementById("eventTitle").hasAttribute("aria-invalid")'), false);
     await send('Page.reload');
     await until('document.getElementById("eventForm")?.getAttribute("aria-busy") === "false" && document.getElementById("eventTitle").value === "Título preservado"');
     assert.equal(await evaluate('document.getElementById("eventEndAt").value'), '2099-12-31T20:00');
+    assert.equal(await evaluate('document.getElementById("eventRegistrationEndAt").value'), '2099-12-30T20:00');
     await send('Emulation.setDeviceMetricsOverride', { width: 390, height: 844, deviceScaleFactor: 1, mobile: true });
     assert.equal(await evaluate('document.documentElement.scrollWidth <= innerWidth'), true);
     await send('Emulation.clearDeviceMetricsOverride');
@@ -355,6 +385,63 @@ const server = http.createServer(async (req, res) => {
     assert.equal(await evaluate('document.querySelector(".consult-submit").getBoundingClientRect().bottom <= innerHeight'), true);
     await send('Emulation.clearDeviceMetricsOverride');
     console.log('Consulta por e-mail conferida em desktop e celular, com formulário e navegação acessíveis.');
+    events=[{...fixture,registrationEndAt:'2000-01-01T12:00:00.000Z',published:true}];
+    await navigate('evento.html?id=evt-browser');
+    await until('document.querySelector(".evento-actions button")?.textContent.includes("Inscrições encerradas")');
+    assert.match(await evaluate('document.body.textContent'), /Evento de teste/);
+    await navigate('inscricao.html?id=evt-browser');
+    await until('document.querySelector("#registrationRoot")?.textContent.includes("O prazo de inscrição")');
+    assert.equal(await evaluate('!!document.getElementById("registrationForm")'),false);
+    assert.equal(await evaluate('Array.from(document.querySelectorAll("#registrationRoot a")).some(a=>a.getAttribute("href")==="consultar-inscricao.php")'),true);
+    console.log('Prazo conferido: evento continua visível, inscrições fechadas e consulta de comprovante acessível.');
+    events = [
+      {...fixture, title:'Semana acadêmica', registrationCount:42},
+      {...fixture, id:'evt-history', title:'Encontro de inverno', registrationCount:18, closed:true, published:false},
+      {...fixture, id:'evt-scheduled', title:'Oficina de tecnologia', publicationMode:'automatic', published:false},
+      {...fixture, id:'evt-draft', title:'Feira de profissões', publicationMode:'draft', published:false}
+    ];
+    registrations = [];
+    await navigate('dashboard.html');
+    await until('document.querySelectorAll(".metric-card").length === 10');
+    assert.equal(await evaluate('!!document.getElementById("dashboardEvents") && !!document.getElementById("dashboardRegistrations")'), true);
+    assert.deepEqual(await evaluate('Array.from(document.querySelectorAll("#dashboardRegistrationChart .chart-bar-label strong"), n=>n.textContent)'), ['42','18']);
+    assert.deepEqual(await evaluate('Array.from(document.querySelectorAll("#dashboardStatusChart .chart-legend strong"), n=>n.textContent)'), ['1','1','1','1']);
+    assert.equal(await evaluate('document.querySelector("[data-metric=active]").textContent'), '60');
+    assert.equal(await evaluate('document.querySelector("[data-metric=cancelled]").textContent'), '2');
+    assert.equal(await evaluate('document.querySelectorAll("#dashboardEventTable tr").length'), 4);
+    assert.equal(await evaluate('document.querySelectorAll(".timeline-point").length'), 2);
+    assert.match(await evaluate('document.querySelector("#dashboardOccupancyChart").textContent'), /Sem limite/);
+    assert.match(await evaluate('document.querySelector(".chart-bar-link").getAttribute("href")'), /relatorios.html\?event=evt-browser/);
+    await send('Emulation.setDeviceMetricsOverride', {width:1440,height:1000,deviceScaleFactor:1,mobile:false});
+    await evaluate('scrollTo(0,0)');await pause(150);
+    const chartShot=await send('Page.captureScreenshot',{format:'png'});
+    fs.writeFileSync(path.join(os.tmpdir(),'ideau-dashboard-charts.png'),Buffer.from(chartShot.data,'base64'));
+    await evaluate('window.toggleTheme();document.querySelector(".dashboard-charts").scrollIntoView({block:"start",behavior:"instant"})');
+    await pause(150);
+    const darkChartShot=await send('Page.captureScreenshot',{format:'png'});
+    fs.writeFileSync(path.join(os.tmpdir(),'ideau-dashboard-dark-charts.png'),Buffer.from(darkChartShot.data,'base64'));
+    await evaluate('document.getElementById("dashboardChartScope").value="history"; document.getElementById("dashboardFilters").requestSubmit()');
+    await until('document.querySelector("[data-metric=events]")?.textContent === "1"');
+    assert.equal(await evaluate('document.querySelector("#dashboardRegistrationChart .chart-bar-label strong").textContent'), '18');
+    await evaluate('document.getElementById("dashboardFilters").reset()');
+    await until('document.querySelector("[data-metric=events]")?.textContent === "4"');
+    await evaluate('document.getElementById("dashboardPeriod").value="custom";document.getElementById("dashboardPeriod").dispatchEvent(new Event("change"))');
+    assert.equal(await evaluate('document.getElementById("dashboardCustomDates").hidden'),false);
+    assert.equal(await evaluate('document.getElementById("dashboardFilters").checkValidity()'),false);
+    await evaluate('document.getElementById("dashboardFilters").reset()');
+    await send('Emulation.setDeviceMetricsOverride',{width:375,height:850,deviceScaleFactor:1,mobile:true});
+    await pause(150);
+    assert.equal(await evaluate('document.documentElement.scrollWidth <= innerWidth'),true,'Dashboard deve caber no celular.');
+    assert.equal(await evaluate('document.querySelector(".dashboard-table-scroll").scrollWidth > document.querySelector(".dashboard-table-scroll").clientWidth'),true,'Tabela tem rolagem própria.');
+    await evaluate('document.getElementById("dashboardMetrics").scrollIntoView({block:"start",behavior:"instant"})');
+    const mobileShot=await send('Page.captureScreenshot',{format:'png'});
+    fs.writeFileSync(path.join(os.tmpdir(),'ideau-dashboard-mobile.png'),Buffer.from(mobileShot.data,'base64'));
+    events=[];
+    await navigate('dashboard.html');
+    await until('document.getElementById("dashboardStatusChart")?.textContent.includes("Nenhum evento")');
+    assert.equal(await evaluate('document.querySelectorAll(".chart-donut svg").length'),0,'Sem dados não inventar gráfico.');
+    await send('Emulation.clearDeviceMetricsOverride');
+    console.log('Dashboard conferido: indicadores, sete gráficos, filtros, tabela, atalhos, listas preservadas, vazio e celular.');
     assert.deepEqual(errors, []);
     console.log('OK no navegador: lista de erros visível sem subir ao topo, links para os campos, salvamento após correção, recuperação, menu, celular e encerramento.');
   } finally {
