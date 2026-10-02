@@ -4,7 +4,7 @@ require_once __DIR__ . '/../../vendor/autoload.php';
 use App\Config\Conexao;
 use App\Service\PublicacaoService;
 
-session_start(['cookie_httponly' => true, 'cookie_samesite' => 'Lax']);
+\App\Service\RequestSecurity::session();
 header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-store');
 
@@ -26,7 +26,9 @@ try {
                 $_SESSION['cancelled_receipts'][$id] = true;
                 continue;
             }
-            $receipts[] = ['id' => $id, 'eventId' => $receipt['eventId'], 'name' => $receipt['name']];
+            $receipt = \App\Service\ComprovanteService::atualizar(Conexao::getConexao(), $receipt);
+            $_SESSION['registration_receipts'][$id] = $receipt;
+            $receipts[] = ['id' => $id, 'eventId' => $receipt['eventId'], 'name' => $receipt['name'], 'reviewStatus' => $receipt['reviewStatus'] ?? 'approved'];
         }
         responder(['authenticated' => isset($_SESSION['publication_organizer']), 'csrf' => $_SESSION['publication_csrf'], 'receipts' => $receipts]);
     }
@@ -40,11 +42,16 @@ try {
         $data = json_decode($raw, true, 512, JSON_THROW_ON_ERROR);
         if (!is_array($data)) responder(['message' => 'Dados inválidos.'], 422);
         if ($action === 'login') {
-            // Mantém o acesso de demonstração já usado pelo painel. O servidor
-            // também permite configurar essas credenciais por ambiente.
-            $email = getenv('IDEAU_ORGANIZER_EMAIL') ?: 'organizador@ideau.edu.br';
-            $password = getenv('IDEAU_ORGANIZER_PASSWORD') ?: 'ideau2026';
-            if (($data['email'] ?? '') !== $email || !hash_equals($password, (string) ($data['password'] ?? ''))) {
+            $config = \App\Service\OrganizerAccess::config();
+            if (!$config['password_hash']) responder(['message' => 'O acesso do organizador precisa ser configurado no servidor.'], 503);
+            if (!\App\Service\OrganizerAccess::attempt($_SERVER['REMOTE_ADDR'] ?? 'unknown')) {
+                header('Retry-After: 900');
+                responder(['message' => 'Muitas tentativas. Aguarde 15 minutos para tentar novamente.'], 429);
+            }
+            $email = $config['email'];
+            $validPassword = is_string($data['password'] ?? null) && strlen($data['password']) <= 1024
+                && password_verify($data['password'], $config['password_hash']);
+            if (!is_string($data['email'] ?? null) || $data['email'] !== $email || !$validPassword) {
                 responder(['message' => 'E-mail ou senha incorretos.'], 401);
             }
             session_regenerate_id(true);
@@ -59,6 +66,12 @@ try {
         if ($action === 'logout') {
             unset($_SESSION['publication_organizer']);
             responder(['success' => true]);
+        }
+        if ($action === 'review-registration') {
+            foreach (['eventId', 'id', 'decision'] as $field) {
+                if (!is_string($data[$field] ?? null) || $data[$field] === '') throw new InvalidArgumentException('Informe a inscrição e a ação.');
+            }
+            responder((new PublicacaoService(Conexao::getConexao()))->revisarInscricao($data['eventId'], $data['id'], $data['decision'], $_SESSION['publication_organizer']));
         }
         if ($action === 'save') {
             $service = new PublicacaoService(Conexao::getConexao());
@@ -82,6 +95,12 @@ try {
         if (!isset($_SESSION['publication_organizer'])) responder(['message' => 'Entre como organizador para continuar.'], 401);
         $service = new PublicacaoService(Conexao::getConexao());
         responder($service->listarInscricoes($_SESSION['publication_organizer']));
+    }
+    if ($method === 'GET' && $action === 'event') {
+        $id = $_GET['id'] ?? '';
+        $accessToken = $_GET['accessToken'] ?? '';
+        if (!is_string($id) || !is_string($accessToken)) throw new InvalidArgumentException('Link de evento inválido.');
+        responder((new PublicacaoService(Conexao::getConexao()))->eventoPublico($id, $accessToken));
     }
     if ($method === 'GET' && $action === 'events') {
         $organizer = null;

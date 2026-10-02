@@ -1,0 +1,11 @@
+Options -Indexes
+<IfModule mod_rewrite.c>
+RewriteEngine On
+RewriteRule ^(?:\.git|\.agents|\.codex|db|tests|tools|vendor|src/(?:Config|Service|Model))(?:/|$) - [F,L,NC]
+RewriteRule (?:^|/)(?:\.env(?:\..*)?|composer\.(?:json|lock)|.*\.(?:sql|log|bak|old))$ - [F,L,NC]
+</IfModule>
+<IfModule mod_headers.c>
+Header always set X-Content-Type-Options "nosniff"
+Header always set Referrer-Policy "same-origin"
+Header always set X-Frame-Options "SAMEORIGIN"
+</IfModule>

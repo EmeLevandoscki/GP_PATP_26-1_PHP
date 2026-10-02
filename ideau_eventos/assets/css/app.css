@@ -474,3 +474,31 @@ h3 { font-size: 1rem; margin-bottom: 8px; }
 .admin-event-search .form-field { min-width:0; }
 #adminEventSearchCount { font-size:.8rem; margin:0 0 18px; }
 @media(max-width:600px) { .admin-event-search { grid-template-columns:1fr; } .admin-event-search .btn { justify-self:start; } }
+
+/* Inscritos: dados e ações de cada aluno ficam juntos no celular. */
+.report-registration-table .form-actions { margin-top: 0; gap: 8px; }
+@media (max-width: 640px) {
+  .report-registration-table { display: block; min-width: 0; }
+  .report-registration-table thead { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+  .report-registration-table tbody, .report-registration-table tr { display: block; width: 100%; }
+  .report-registration-table tr { padding: 12px 0; border-bottom: 1px solid var(--border); }
+  .report-registration-table tr:last-child { border-bottom: 0; }
+  .report-registration-table td { display: grid; grid-template-columns: 90px minmax(0, 1fr); gap: 10px; padding: 8px 14px; border: 0; overflow-wrap: anywhere; }
+  .report-registration-table td[data-label]::before { content: attr(data-label); color: var(--muted); font-size: .72rem; font-weight: 700; }
+  .report-registration-table td[data-label="Ações"], .report-registration-table td[colspan] { display: block; }
+  .report-registration-table td[data-label="Ações"]::before { display: none; }
+  .report-registration-table .form-actions .btn { flex: 1 1 auto; min-height: 44px; }
+}
+
+.public-share { position: relative; }
+.public-share > summary { list-style: none; cursor: pointer; }
+.public-share > summary::-webkit-details-marker { display: none; }
+.public-share > summary svg { flex-shrink: 0; }
+.public-share[open] > summary { border-color: var(--green); }
+.public-share-popover { position: absolute; top: calc(100% + 10px); right: 0; z-index: 20; width: min(360px, calc(100vw - 64px)); padding: 18px; border: 1px solid var(--border-strong); border-radius: 16px; background: var(--surface); box-shadow: 0 12px 32px rgba(0,0,0,.2); }
+.public-share-popover > label { display: block; color: var(--text); font-size: .88rem; font-weight: 700; margin-bottom: 10px; }
+.public-share-copy { display: flex; align-items: stretch; gap: 8px; }
+.public-share-copy input { min-width: 0; width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px; background: var(--surface-2); color: var(--text); font: inherit; font-size: .8rem; user-select: text; }
+.public-share-copy .btn { flex-shrink: 0; }
+#publicEventsLinkHint { margin: 10px 0 0; font-size: .76rem; color: var(--muted); line-height: 1.5; }
+@media (max-width: 600px) { .public-share-popover { left: 0; right: auto; } }

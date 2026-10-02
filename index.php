@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,700;1,300&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="ideau_eventos/assets/css/home.css?v=event-spacing-1" />
+  <link rel="stylesheet" href="ideau_eventos/assets/css/home.css?v=20261001-sidebar-1" />
 </head>
 <body data-page="home">
   <header class="site-header">
@@ -17,38 +17,33 @@
       <img src="ideau_eventos/assets/img/logo__ideau.png" alt="IDEAU" />
       <span class="brand-text"><strong>IDEAU Eventos</strong><small>Faculdades IDEAU</small></span>
     </a>
-    <nav class="main-nav" id="mainNav">
-      <a href="#eventos">Eventos</a>
-      <a href="ideau_eventos/consultar-inscricao.php">Consultar minha inscrição</a>
-      <a href="ideau_eventos/login.html" class="nav-cta">Organizador</a>
-    </nav>
-    <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="Alternar tema" aria-label="Alternar tema claro/escuro">🌙</button>
-    <button class="menu-toggle" id="menuToggle" type="button" aria-label="Abrir menu" aria-expanded="false">
+    <button class="menu-toggle" id="menuToggle" type="button" aria-label="Abrir menu" aria-expanded="false" aria-controls="sidebar">
       <span class="hamburger-line"></span>
       <span class="hamburger-line"></span>
       <span class="hamburger-line"></span>
     </button>
   </header>
 
-  <!-- Sidebar mobile -->
+  <!-- Menu lateral -->
   <aside class="sidebar-overlay" id="sidebarOverlay"></aside>
-  <aside class="sidebar" id="sidebar">
+  <aside class="sidebar" id="sidebar" role="dialog" aria-modal="true" aria-labelledby="sidebarTitle" aria-hidden="true" inert>
     <div class="sidebar-header">
-      <span class="sidebar-title">Menu</span>
+      <span class="sidebar-title" id="sidebarTitle">Menu</span>
       <button class="sidebar-close" id="sidebarClose" aria-label="Fechar menu">&times;</button>
     </div>
-    <nav class="sidebar-nav">
-      <a class="sidebar-link" href="ideau_eventos/consultar-inscricao.php">Consultar minha inscrição</a>
+    <nav class="sidebar-nav" aria-label="Navegação principal">
+
       <a href="#eventos" class="sidebar-link" data-nav-link>
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
         Eventos
       </a>
+      <a class="sidebar-link" href="ideau_eventos/consultar-inscricao.php" data-nav-link>Consultar minha inscrição</a>
       <a href="ideau_eventos/login.html" class="sidebar-link" data-nav-link>
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
         Organizador
       </a>
       <hr class="sidebar-divider">
-      <button class="sidebar-link sidebar-theme-btn" id="sidebarThemeToggle">
+      <button class="sidebar-link sidebar-theme-btn" id="sidebarThemeToggle" type="button" aria-label="Alternar tema claro e escuro" title="Trocar entre tema claro e escuro">
         <span class="sidebar-theme-icon" id="sidebarThemeIcon">🌙</span>
         <span id="sidebarThemeLabel">Tema escuro</span>
       </button>
@@ -176,7 +171,7 @@
   <script>
     const PASTA_BASE = "<?php echo $pastaBase; ?>";
   </script>
-  <script src="ideau_eventos/assets/js/app.js?v=browser-theme-1"></script>
-  <script src="ideau_eventos/assets/js/home.js?v=browser-theme-1"></script>
+  <script src="ideau_eventos/assets/js/app.js?v=20261001-sidebar-1"></script>
+  <script src="ideau_eventos/assets/js/home.js?v=20260930-menu-1"></script>
 </body>
 </html>

@@ -1,11 +1,18 @@
 <?php
     namespace App\Controller;
-    ini_set('display_errors', 1);
+    ini_set('display_errors', 0);
     error_reporting(E_ALL);
     use App\Service\EventoService;
     require_once __DIR__ . '/../../vendor/autoload.php';
 
-    session_start();
+    \App\Service\RequestSecurity::session();
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        if (!isset($_POST['inscrever']) || array_intersect(['salvar', 'editar', 'excluir', 'reservar'], array_keys($_POST))) {
+            \App\Service\RequestSecurity::organizer();
+        }
+        \App\Service\RequestSecurity::csrf();
+    }
+    if (($_GET['action'] ?? '') === 'inscricoes_evento') \App\Service\RequestSecurity::organizer();
 
     try {
     $service = new EventoService();
@@ -38,7 +45,7 @@
         header('Content-Type: application/json');
         try {
             echo json_encode($service->realizarInscricao($_POST), JSON_UNESCAPED_UNICODE);
-        } catch (\Exception $e) {
+        } catch (\InvalidArgumentException $e) {
             echo json_encode([
                 'success' => false,
                 'message' => $e->getMessage()

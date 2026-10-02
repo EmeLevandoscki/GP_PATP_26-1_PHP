@@ -37,7 +37,7 @@ require getenv('LOOKUP_TEST_ROOT').'/ideau_eventos/consultar-inscricao.php';
   const opened=await request('/?token='+'b'.repeat(64));assert.equal(opened.status,303);assert.doesNotMatch(opened.headers.get('location'),/token=/);
   const pending=await request('/');html=await pending.text();assert.match(html,/Abra sua inscrição/);assert.doesNotMatch(html,/Evento reservado/);
   const confirmed=await post({action:'confirm',csrf});assert.equal(confirmed.status,303);
-  html=await(await request('/')).text();assert.match(html,/Evento reservado/);assert.match(html,/Inscrição ativa/);assert.match(html,/&lt;script&gt;/);assert.doesNotMatch(html,/<script>teste/);assert.match(html,/Ver comprovante/);assert.match(html,/Cancelar inscrição/);
+  html=await(await request('/')).text();assert.match(html,/Evento reservado/);assert.match(html,/Inscrição confirmada/);assert.match(html,/&lt;script&gt;/);assert.doesNotMatch(html,/<script>teste/);assert.match(html,/Ver comprovante/);assert.match(html,/Cancelar inscrição/);
   assert.equal((await post({action:'reset',csrf})).status,303);html=await(await request('/')).text();assert.doesNotMatch(html,/Evento reservado/);
   console.log('OK: consulta HTTP, CSRF, configuração ausente, link limpo, confirmação, isolamento antes do acesso e escape HTML.');
  }finally{child.kill();await new Promise(r=>child.exitCode!==null?r():child.once('exit',r));assert.ok(temp.startsWith(path.join(os.tmpdir(),'ideau-lookup-')));fs.rmSync(temp,{recursive:true,force:true});}

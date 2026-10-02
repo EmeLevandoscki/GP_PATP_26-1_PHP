@@ -60,6 +60,16 @@ try {
     invalid(fn () => $service->salvar($fixture + ['publicationMode' => 'automatic', 'publishAt' => '2099-02-30T00:00:00.000Z'], $owner));
     invalid(fn () => $service->salvar($fixture + ['id' => $ids['published'], 'publicationMode' => 'published'], 'outro-organizador'));
     invalid(fn () => $service->salvar(array_replace($fixture, ['title' => '   ']), $owner));
+    invalid(fn () => $service->salvar(array_replace($fixture, ['category' => '   ']), $owner));
+    invalid(fn () => $service->salvar(array_replace($fixture, ['audienceLabel' => '   ']), $owner));
+    invalid(fn () => $service->salvar(array_replace($fixture, ['audienceLabel' => ['inválido']]), $owner));
+    $custom = $service->salvar(array_replace($fixture, ['category' => '  Encontro de famílias  ', 'audienceLabel' => '  Pais e educandos  ', 'audience' => 'graduacao']), $owner);
+    check($custom['category'] === 'Encontro de famílias' && $custom['audienceLabel'] === 'Pais e educandos', 'Textos personalizados devem ser preservados sem espaços nas pontas.');
+    check($custom['audience'] === 'escola' && $custom['fields']['responsibleName'] && $custom['fields']['studentName'], 'Público personalizado deve preservar as regras de inscrição escolar.');
+    $stored = array_column($service->listar($owner), null, 'id')[$custom['id']];
+    check($stored['audienceLabel'] === $custom['audienceLabel'] && $stored['category'] === $custom['category'], 'Textos devem persistir ao recarregar do banco.');
+    $updated = $service->salvar(array_replace($stored, ['institution' => 'faculdade-ideau', 'audienceLabel' => 'Egressos']), $owner);
+    check($updated['audience'] === 'graduacao' && !$updated['fields']['studentName'] && $updated['audienceLabel'] === 'Egressos', 'Editar o público deve preservar as regras da faculdade.');
     invalid(fn () => $service->salvar(array_replace($fixture, ['cover' => 'data:image/png;base64,YWJj']), $owner));
     echo "OK: quatro estados, horário do servidor, publicação manual, cancelamento, permissões e validação.\n";
 } finally {
@@ -113,14 +123,19 @@ invalid(fn () => $service->salvar(array_replace($fixture, ['endAt' => '2000-01-0
 invalid(fn () => $service->salvar(array_replace($fixture, ['endAt' => '2099-02-30T12:00:00.000Z']), $owner));
 invalid(fn () => $service->salvar(array_replace($fixture, ['publicationMode' => 'automatic', 'publishAt' => '2099-12-31T20:00:00.000Z', 'endAt' => '2099-12-31T19:00:00.000Z']), $owner));
 
-$past = $service->salvar(array_replace($fixture, ['date' => '2000-01-01', 'publicationMode' => 'published']), $owner);
+// Simula evento já existente cuja data passou; novos cadastros não aceitam passado.
+$past = $service->salvar(array_replace($fixture, ['publicationMode' => 'published']), $owner);
+$db->prepare("UPDATE eventos_publicacoes SET dados = JSON_SET(dados, '$.date', '2000-01-01') WHERE id = ?")->execute([$past['id']]);
+$past = array_column($service->listar($owner), null, 'id')[$past['id']];
 check(!$past['closed'] && $past['published'], 'Evento sem limite explícito deve continuar no ar mesmo com data passada.');
 check($past['effectiveEndAt'] === null, 'Não deve inventar um prazo de encerramento.');
 check(in_array($past['id'], array_column($service->listar(), 'id')), 'Evento antigo sem limite deve continuar na lista pública.');
 check($service->inscrever(array_replace($registration, ['eventId' => $past['id']]))['success'], 'Evento sem limite deve continuar aceitando inscrições.');
 $service->encerrar($past['id'], $owner);
 invalid(fn () => $service->inscrever(array_replace($registration, ['eventId' => $past['id']])));
-$draft = $service->salvar(array_replace($fixture, ['date' => '2000-01-01', 'publicationMode' => 'draft']), $owner);
+$draft = $service->salvar(array_replace($fixture, ['publicationMode' => 'draft']), $owner);
+$db->prepare("UPDATE eventos_publicacoes SET dados = JSON_SET(dados, '$.date', '2000-01-01') WHERE id = ?")->execute([$draft['id']]);
+$draft = array_column($service->listar($owner), null, 'id')[$draft['id']];
 check(!$draft['closed'], 'Rascunhos não devem ir automaticamente ao histórico.');
 echo "OK: encerramento manual e automático, preservação de inscrições, histórico privado, datas e bloqueio de reabertura.\n";
 
@@ -164,3 +179,27 @@ $reopened=$service->salvar(array_replace($expired,['registrationEndAt'=>null]),$
 check(!$reopened['registrationClosed'],'Organizador pode remover o prazo de inscrição.');
 check(!$service->inscrever(array_replace($deadlineRegistration,['studentName'=>'Outro educando']))['alreadyRegistered'],'Após remover o prazo, novas inscrições voltam a funcionar.');
 echo "OK: prazo exclusivo de inscrição, evento público preservado, validação e remoção do prazo.\n";
+
+// Regras de data do evento independem do fuso configurado no PHP.
+$originalTimezone = date_default_timezone_get();
+date_default_timezone_set('Pacific/Auckland');
+$zone = new DateTimeZone('America/Sao_Paulo');
+$now = new DateTimeImmutable('now', $zone);
+foreach (['published','draft','scheduled','automatic'] as $mode) {
+    invalid(fn()=>$service->salvar(array_replace($fixture,['date'=>'2000-01-01','publicationMode'=>$mode,'publishAt'=>'2099-01-01T12:00:00.000Z']),$owner));
+}
+$before = $now->modify('-2 minutes');
+invalid(fn()=>$service->salvar(array_replace($fixture,['date'=>$before->format('Y-m-d'),'time'=>$before->format('H:i'),'publicationMode'=>'published']),$owner));
+$future = $now->modify('+5 minutes');
+$futureEvent = $service->salvar(array_replace($fixture,['date'=>$future->format('Y-m-d'),'time'=>$future->format('H:i'),'publicationMode'=>'published']),$owner);
+check($futureEvent['date']===$future->format('Y-m-d'),'Horário futuro é aceito no fuso de Brasília.');
+invalid(fn()=>$service->salvar(array_replace($futureEvent,['date'=>'2000-01-01']),$owner));
+// Metadata de eventos antigos pode ser corrigida sem reagendar.
+$same = $service->salvar(array_replace($draft,['title'=>'Título corrigido']),$owner);
+check($same['date']==='2000-01-01','Edição mantém a data de um evento antigo.');
+invalid(fn()=>$service->salvar(array_replace($draft,['publicationMode'=>'published']),$owner));
+invalid(fn()=>$service->salvar(array_replace($draft,['time'=>'00:01']),$owner));
+$rescheduled = $service->salvar(array_replace($draft,['date'=>'2099-12-31','publicationMode'=>'published']),$owner);
+check($rescheduled['published'],'Rascunho antigo pode ser reagendado para o futuro.');
+date_default_timezone_set($originalTimezone);
+echo "OK: data futura, passado bloqueado em todos os modos, horário de Brasília e edição de eventos antigos.\n";

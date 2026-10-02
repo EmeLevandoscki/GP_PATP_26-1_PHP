@@ -33,7 +33,40 @@ class PublicacaoService
             $event['time_end'] = $event['time'];
             return $event;
         }, $stmt->fetchAll(PDO::FETCH_ASSOC));
-        return $organizador !== null ? $events : array_values(array_filter($events, fn ($event) => $event['published']));
+        if ($organizador !== null) return $events;
+        return array_values(array_map(fn ($event) => $this->dadosPublicos($event),
+            array_filter($events, fn ($event) => $event['published'] && $event['listed'])));
+    }
+
+    public function eventoPublico(string $id, string $accessToken = ''): array
+    {
+        $stmt = $this->con->prepare('SELECT dados, modo, publicar_em,
+            (SELECT COUNT(*) FROM eventos_publicacoes_inscricoes i WHERE i.id_evento = eventos_publicacoes.id) AS inscritos
+            FROM eventos_publicacoes WHERE id = ?');
+        $stmt->execute([$id]);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        if (!$row) return [];
+        $event = $this->estado(json_decode($row['dados'], true, 512, JSON_THROW_ON_ERROR), $row['modo'], $row['publicar_em']);
+        if (!$event['published'] || (!$event['listed'] && !$this->temAcesso($event, $accessToken))) return [];
+        $event['registrationCount'] = (int) $row['inscritos'];
+        $event['date_begin'] = $event['date_end'] = $event['date'];
+        $event['time_begin'] = $event['time_end'] = $event['time'];
+        return [$this->dadosPublicos($event, $accessToken)];
+    }
+
+    private function temAcesso(array $event, mixed $accessToken): bool
+    {
+        if (($event['accessMode'] ?? 'public') === 'public') return true;
+        return is_string($accessToken) && preg_match('/^[a-f0-9]{64}$/D', $accessToken)
+            && is_string($event['accessToken'] ?? null) && hash_equals($event['accessToken'], $accessToken);
+    }
+
+    private function dadosPublicos(array $event, string $accessToken = ''): array
+    {
+        $event['accessGranted'] = $this->temAcesso($event, $accessToken);
+        unset($event['accessToken'], $event['allowedParticipants']);
+        if (!$event['accessGranted']) unset($event['fields']);
+        return $event;
     }
 
     public function salvar(array $event, string $organizador): array
@@ -69,6 +102,13 @@ class PublicacaoService
         if (!isset($types[$event['institution']])) throw new InvalidArgumentException('Selecione uma instituição válida.');
         $event['institutionType'] = $types[$event['institution']];
         $event['audience'] = $event['institutionType'] === 'escola' ? 'escola' : 'graduacao';
+        // O texto de divulgação é livre; a instituição continua definindo os dados da inscrição.
+        if (array_key_exists('audienceLabel', $event)) {
+            if (!is_string($event['audienceLabel']) || trim($event['audienceLabel']) === '') {
+                throw new InvalidArgumentException('Informe o público-alvo do evento.');
+            }
+            $event['audienceLabel'] = trim($event['audienceLabel']);
+        }
         $event['fields'] = is_array($event['fields'] ?? null) ? $event['fields'] : [];
         if ($event['audience'] === 'escola') {
             $event['fields']['responsibleName'] = true;
@@ -80,7 +120,7 @@ class PublicacaoService
                 $event['fields'][$field] = false;
             }
         }
-        $date = DateTimeImmutable::createFromFormat('!Y-m-d H:i', $event['date'] . ' ' . $event['time']);
+        $date = DateTimeImmutable::createFromFormat('!Y-m-d H:i', $event['date'] . ' ' . $event['time'], new DateTimeZone('America/Sao_Paulo'));
         if (!$date || $date->format('Y-m-d H:i') !== $event['date'] . ' ' . $event['time']) {
             throw new InvalidArgumentException('Informe data e horário válidos para o evento.');
         }
@@ -162,6 +202,40 @@ class PublicacaoService
         if ($existing && $this->estado(json_decode($existing['dados'], true), $existing['modo'], $existing['publicar_em'])['closed']) {
             throw new InvalidArgumentException('Este evento já foi encerrado e está no histórico. Atualize a página.');
         }
+        $previous = $existing ? json_decode($existing['dados'], true, 512, JSON_THROW_ON_ERROR) : [];
+        $sameSchedule = $existing && ($previous['date'] ?? '') === $event['date']
+            && ($previous['time'] ?? '') === $event['time'] && $existing['modo'] === $mode;
+        if (!$sameSchedule && $date <= new DateTimeImmutable('now', new DateTimeZone('America/Sao_Paulo'))) {
+            throw new InvalidArgumentException('Escolha uma data e horário futuros para o evento (horário de Brasília).');
+        }
+        $event['accessMode'] = $event['accessMode'] ?? $previous['accessMode'] ?? 'public';
+        if (!in_array($event['accessMode'], ['public', 'link'], true)) throw new InvalidArgumentException('Escolha uma opção de acesso válida.');
+        $listed = $event['listed'] ?? $previous['listed'] ?? ($event['accessMode'] === 'public');
+        if (!is_bool($listed)) throw new InvalidArgumentException('Informe se o evento aparece na página pública.');
+        $event['listed'] = $event['accessMode'] === 'public' ? true : $listed;
+        // Somente o servidor cria o segredo. Edições comuns preservam o link compartilhado.
+        if ($event['accessMode'] === 'link') {
+            $event['accessToken'] = ($previous['accessMode'] ?? 'public') === 'link' && !empty($previous['accessToken'])
+                ? $previous['accessToken'] : bin2hex(random_bytes(32));
+        } else {
+            unset($event['accessToken']);
+        }
+        $event['targetCourse'] = $event['targetCourse'] ?? $previous['targetCourse'] ?? '';
+        $event['recipientMode'] = $event['recipientMode'] ?? $previous['recipientMode'] ?? 'course';
+        // Listas prévias antigas passam a exigir análise para novas inscrições.
+        if ($event['recipientMode'] === 'selected') $event['recipientMode'] = 'manual';
+        unset($event['allowedParticipants']);
+        if ($event['accessMode'] === 'link' && $event['institutionType'] === 'faculdade') {
+            if (!is_string($event['targetCourse']) || trim($event['targetCourse']) === '') throw new InvalidArgumentException('Informe o curso permitido para este evento.');
+            $event['targetCourse'] = trim($event['targetCourse']);
+            if (!in_array($event['recipientMode'], ['course', 'manual'], true)) throw new InvalidArgumentException('Escolha como autorizar os alunos.');
+            $event['fields']['cpf'] = $event['fields']['course'] = true;
+            $event['fields']['community'] = false;
+        } else {
+            $event['targetCourse'] = '';
+            $event['recipientMode'] = 'course';
+        }
+        unset($event['accessGranted']);
         // O cliente não pode reabrir eventos nem definir o motivo do encerramento.
         unset($event['closedAt'], $event['closed'], $event['closeReason'], $event['effectiveEndAt']);
         $stmt = $this->con->prepare('INSERT INTO eventos_publicacoes (id, organizador, modo, publicar_em, dados)
@@ -183,6 +257,10 @@ class PublicacaoService
 
     public function estado(array $event, string $mode, ?string $publishAt): array
     {
+        $event['accessMode'] = $event['accessMode'] ?? 'public';
+        $event['listed'] = $event['listed'] ?? true;
+        if (($event['recipientMode'] ?? '') === 'selected') $event['recipientMode'] = 'manual';
+        unset($event['allowedParticipants']);
         $now = new DateTimeImmutable('now', new DateTimeZone('UTC'));
         $limit = $this->limite($event);
         $expired = $mode !== 'draft' && $limit !== null && $limit <= $now;
@@ -230,6 +308,38 @@ class PublicacaoService
         return array_map(fn ($json) => json_decode($json, true, 512, JSON_THROW_ON_ERROR), $stmt->fetchAll(PDO::FETCH_COLUMN));
     }
 
+    public function revisarInscricao(string $eventId, string $id, string $action, string $organizador): array
+    {
+        if (!in_array($action, ['approve', 'reject', 'remove'], true)) throw new InvalidArgumentException('Escolha uma ação válida.');
+        $this->con->beginTransaction();
+        try {
+            // Mesma ordem de bloqueio da inscrição/cancelamento: evento antes do aluno.
+            $stmt = $this->con->prepare('SELECT id FROM eventos_publicacoes WHERE id = ? AND organizador = ? FOR UPDATE');
+            $stmt->execute([$eventId, $organizador]);
+            if (!$stmt->fetchColumn()) throw new InvalidArgumentException('Evento não encontrado para este organizador.');
+            $stmt = $this->con->prepare('SELECT dados FROM eventos_publicacoes_inscricoes WHERE id = ? AND id_evento = ? FOR UPDATE');
+            $stmt->execute([$id, $eventId]);
+            $json = $stmt->fetchColumn();
+            if (!$json) throw new InvalidArgumentException('Inscrição não encontrada. Atualize a lista.');
+            $registration = json_decode($json, true, 512, JSON_THROW_ON_ERROR);
+            if ($action === 'approve') {
+                $registration['reviewStatus'] = 'approved';
+                $registration['reviewedAt'] ??= gmdate('Y-m-d\TH:i:s\Z');
+                $this->con->prepare('UPDATE eventos_publicacoes_inscricoes SET dados = ? WHERE id = ? AND id_evento = ?')
+                    ->execute([json_encode($registration, JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR), $id, $eventId]);
+            } else {
+                if ($action === 'reject' && ($registration['reviewStatus'] ?? 'approved') !== 'pending') throw new InvalidArgumentException('Esta inscrição já foi aprovada. Atualize a lista antes de remover.');
+                CancelamentoEstatistica::registrar($this->con, false, $id, $eventId);
+                $this->con->prepare('DELETE FROM eventos_publicacoes_inscricoes WHERE id = ? AND id_evento = ?')->execute([$id, $eventId]);
+            }
+            $this->con->commit();
+            return ['success' => true];
+        } catch (\Throwable $error) {
+            if ($this->con->inTransaction()) $this->con->rollBack();
+            throw $error;
+        }
+    }
+
     public function inscrever(array $registration): array
     {
         $this->con->beginTransaction();
@@ -241,6 +351,12 @@ class PublicacaoService
             if (!$row) throw new InvalidArgumentException('Este evento não está disponível para inscrição.');
             $event = $this->estado(json_decode($row['dados'], true, 512, JSON_THROW_ON_ERROR), $row['modo'], $row['publicar_em']);
             if (!$event['published']) throw new InvalidArgumentException('Este evento foi encerrado. As inscrições estão fechadas.');
+            if (!$this->temAcesso($event, $registration['accessToken'] ?? '')) throw new InvalidArgumentException('Use o link de acesso enviado pelo organizador para se inscrever neste evento.');
+            if ($event['accessMode'] === 'link' && !empty($event['targetCourse'])) {
+                $course = $registration['course'] ?? '';
+                if (!is_string($course) || mb_strtolower(trim($course), 'UTF-8') !== mb_strtolower($event['targetCourse'], 'UTF-8') || ($registration['participantType'] ?? '') !== 'aluno') throw new InvalidArgumentException('Este evento permite inscrições apenas para o curso informado na divulgação.');
+            }
+            unset($registration['accessToken']);
             if ($event['registrationClosed']) throw new InvalidArgumentException('O prazo para inscrição neste evento terminou. Consulte sua inscrição pelo link Consultar minha inscrição.');
             $required = $event['audience'] === 'escola' ? ['responsibleName', 'studentName'] : ['name'];
             foreach (['cpf', 'email', 'phone', 'relationship', 'studentClass'] as $field) {
@@ -275,6 +391,8 @@ class PublicacaoService
             if ($event['seats'] !== -1 && count($rows) >= $event['seats']) {
                 throw new InvalidArgumentException('As vagas deste evento estão esgotadas.');
             }
+            $registration['reviewStatus'] = $event['accessMode'] === 'link' && ($event['recipientMode'] ?? 'course') === 'manual' ? 'pending' : 'approved';
+            unset($registration['reviewedAt']);
             $registration['id'] = 'reg-' . bin2hex(random_bytes(12));
             $registration['createdAt'] = gmdate('Y-m-d\TH:i:s\Z');
             $registration['audience'] = $event['audience'];
@@ -309,6 +427,7 @@ class PublicacaoService
     private function comprovante(array $registration, array $event): array
     {
         return ['protocol' => $registration['id'], 'eventId' => $event['id'],
+            'reviewStatus' => $registration['reviewStatus'] ?? 'approved',
             'name' => $registration['name'] ?? $registration['studentName'],
             'eventTitle' => $event['title'], 'date' => substr(ComprovanteService::data($event['date']), 0, 10),
             'time' => $event['time'], 'location' => $event['location'],

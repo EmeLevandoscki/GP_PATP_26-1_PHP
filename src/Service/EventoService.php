@@ -379,7 +379,6 @@ class EventoService
             $resposavel = $usuarioService->retornaPorCPF($params['responsible_cpf'] ?? '') ?: null;
             if ($resposavel) {
                 $idResponsavel = $resposavel->id;
-                error_log(print_r('ja existe responsavel ' . $idResponsavel, true));
             } else {
                 //cadastrar o responsavel e retornar o id
                 $idResponsavel = $usuarioService->cadastrarUsuario([
@@ -392,7 +391,6 @@ class EventoService
                     'cargo' => 'responsavel',
                     'foto_path' => '',
                 ]);
-                error_log(print_r('novo responsavel ' . $idResponsavel, true));
             }
             //vincular o aluno ao responsavel
 
@@ -423,19 +421,15 @@ class EventoService
                     'cargo' => 'aluno',
                     'foto_path' => '',
                 ]);
-                error_log('vinculando aluno ao responsavel' . print_r('aluno ' . $idAluno . ' responsavel ' . $idResponsavel . ' parentesco ' . $params['relationship'] ?? '', true));
                 $usuarioService->vincularAlunoResponsavel($idAluno, $idResponsavel, $params['relationship'] ?? '');
             }
             if ($this->verificaExistenciaInscricao($params['event_id'], $idAluno)) {
-                error_log('aluno já inscrito ' . print_r('aluno ' . $idAluno . ' evento ' . $params['event_id'], true));
                 return $this->comprovanteInscricao((int) $params['event_id'], (int) $idAluno, true);
             }
             //Vincular o aluno à uma turma
-            error_log('vinculando aluno à uma turma ' . print_r('aluno ' . $idAluno . ' turma ' . $params['student_class'] ?? '', true));
             $usuarioService->vincularAlunoTurma($idAluno, $params['student_class']);
 
             // Realizar a inscrição.
-            error_log('realizando inscrição ' . print_r('aluno ' . $idAluno . ' evento ' . $params['event_id'], true));
             $this->validarInscricaoAberta((int) $params['event_id']);
             try {
                 $sql = 'INSERT INTO 
@@ -457,9 +451,7 @@ class EventoService
                 $stmt->bindValue(':id_responsavel', $idResponsavel, PDO::PARAM_INT);    //ex: semana academica
                                                                                         //Por enquanto vai usar esse id ja q tem apenas 1 mesmo
                 $stmt->execute();
-                error_log('inscrição realizada com sucesso ' . print_r('aluno ' . $idAluno . ' evento ' . $params['event_id'], true));
             } catch (\Throwable $th) {
-                error_log('erro ao realizar inscrição ' . print_r('aluno ' . $idAluno . ' evento ' . $params['event_id'] . ' erro ' . $th->getMessage(), true));
                 throw $th;
             }    
             return $this->comprovanteInscricao((int) $params['event_id'], (int) $idAluno);

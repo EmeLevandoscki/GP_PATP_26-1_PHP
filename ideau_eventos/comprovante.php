@@ -2,7 +2,7 @@
 require_once __DIR__ . '/../vendor/autoload.php';
 use App\Service\ComprovanteService;
 use App\Config\Conexao;
-session_start(['cookie_httponly' => true, 'cookie_samesite' => 'Lax']);
+\App\Service\RequestSecurity::session();
 header('Cache-Control: no-store');
 header('Referrer-Policy: no-referrer');
 header('X-Content-Type-Options: nosniff');
@@ -32,7 +32,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 if ($receipt) {
     try {
-        if (!ComprovanteService::ativa(Conexao::getConexao(), $receipt)) {
+        $receipt = ComprovanteService::atualizar(Conexao::getConexao(), $receipt);
+        $_SESSION['registration_receipts'][$id] = $receipt;
+        if (($receipt['reviewStatus'] ?? '') === 'removed' || !ComprovanteService::ativa(Conexao::getConexao(), $receipt)) {
             unset($_SESSION['registration_receipts'][$id]);
             $_SESSION['cancelled_receipts'][$id] = true;
             $receipt = null;
@@ -45,6 +47,10 @@ if ($receipt) {
 }
 if (!$receipt && !$cancelled && !$error) http_response_code(404);
 if ($receipt && !$error && $_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['download'])) {
+    if (($receipt['reviewStatus'] ?? 'approved') !== 'approved') {
+        http_response_code(409);
+        exit('Inscrição aguardando aprovação. O comprovante será liberado após a aprovação do organizador.');
+    }
     header('Content-Type: application/pdf');
     header('Content-Disposition: attachment; filename="comprovante-inscricao.pdf"');
     echo ComprovanteService::pdf($receipt);
@@ -64,18 +70,27 @@ function escapeReceipt(string $text): string { return htmlspecialchars($text, EN
 <body><main class="receipt-page"><header class="receipt-nav"><a class="receipt-brand" href="../index.php"><img src="assets/img/logo__ideau.png" alt="Logo IDEAU"><span>IDEAU <b>Eventos</b></span></a><a class="receipt-back" href="../index.php#eventos">← Voltar aos eventos</a></header><section class="receipt">
 <?php if ($error): ?><p role="alert"><?= escapeReceipt($error) ?></p><?php endif; ?>
 <?php if ($receipt): ?>
+  <?php if (($receipt['reviewStatus'] ?? 'approved') === 'pending'): ?>
+  <header class="receipt-heading"><span class="receipt-status">Aguardando aprovação</span><h1>Inscrição recebida</h1><p>O organizador vai conferir seus dados. Sua participação será confirmada após a aprovação. Volte a esta página para acompanhar.</p></header>
+  <?php else: ?>
   <header class="receipt-heading"><span class="receipt-status"><span aria-hidden="true">✓</span> Inscrição confirmada</span><h1>Seu comprovante</h1><p>Sua inscrição está garantida. Confira os detalhes do evento abaixo.</p></header>
-  <div class="receipt-ticket"><div class="receipt-ticket-main"><div class="receipt-event"><span>IDEAU EVENTOS · COMPROVANTE DE INSCRIÇÃO</span><h2><?= escapeReceipt((string) $receipt['eventTitle']) ?></h2></div>
+  <?php endif; ?>
+  <div class="receipt-ticket"><div class="receipt-ticket-main"><div class="receipt-event"><span>IDEAU EVENTOS · <?= ($receipt['reviewStatus'] ?? 'approved') === 'pending' ? 'SOLICITAÇÃO DE INSCRIÇÃO' : 'COMPROVANTE DE INSCRIÇÃO' ?></span><h2><?= escapeReceipt((string) $receipt['eventTitle']) ?></h2></div>
   <dl class="receipt-data">
   <?php foreach (['name' => 'Participante', 'date' => 'Data do evento', 'time' => 'Horário', 'location' => 'Local', 'registeredAt' => 'Data da inscrição', 'protocol' => 'Protocolo'] as $field => $label): ?>
     <div class="receipt-field <?= $field === 'name' || $field === 'protocol' ? 'receipt-field-wide' : '' ?>"><dt><?= $label ?></dt><dd><?= escapeReceipt((string) $receipt[$field]) ?></dd></div>
   <?php endforeach; ?>
   </dl>
-  <p class="receipt-note">Este comprovante confirma a inscrição e não substitui o certificado de presença.</p>
+  <p class="receipt-note"><?= ($receipt['reviewStatus'] ?? 'approved') === 'pending' ? 'A solicitação ainda não confirma sua participação no evento.' : 'Este comprovante confirma a inscrição e não substitui o certificado de presença.' ?></p>
   </div><aside class="receipt-ticket-side" aria-label="Gerenciar inscrição">
   <div class="receipt-document-icon" aria-hidden="true"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M8 13h8M8 17h5"/></svg></div>
+  <?php if (($receipt['reviewStatus'] ?? 'approved') === 'pending'): ?>
+  <h2>Acompanhar aprovação</h2><p>O comprovante será liberado quando o organizador aprovar sua inscrição.</p>
+  <div class="receipt-actions"><a class="btn-primary" href="?id=<?= escapeReceipt($id) ?>">Atualizar situação</a><a class="btn-secondary" href="../index.php#eventos">Ver eventos</a></div>
+  <?php else: ?>
   <h2>Comprovante de inscrição</h2><p>Você pode baixar o PDF para consultar depois.</p>
   <div class="receipt-actions"><a class="btn-primary" href="?id=<?= escapeReceipt($id) ?>&amp;download=1">Baixar comprovante em PDF</a><a class="btn-secondary" href="../index.php#eventos">Ver eventos</a></div>
+  <?php endif; ?>
   <details class="cancel-registration" id="cancelar-inscricao" <?= isset($_GET['cancel']) ? 'open' : '' ?>>
     <summary>Cancelar minha inscrição</summary>
     <p>Você deixará de estar inscrito neste evento e sua vaga será liberada. Para participar depois, será necessário fazer uma nova inscrição, se houver vagas disponíveis.</p>
@@ -88,8 +103,8 @@ function escapeReceipt(string $text): string { return htmlspecialchars($text, EN
   </aside></div>
 <?php elseif ($cancelled): ?>
   <h1>Inscrição cancelada</h1><p>Você não está mais inscrito neste evento. O comprovante anterior não é mais válido.</p>
-  <div class="receipt-actions"><a class="btn-primary" href="../index.php#eventos">Voltar aos eventos</a></div>
+  <div class="receipt-actions"><a class="btn-primary" href="consultar-inscricao.php">Consultar minha inscrição</a></div>
 <?php else: ?>
-  <h1>Comprovante indisponível nesta sessão</h1><p>Volte ao evento e informe os mesmos dados da inscrição para recuperar seu comprovante. Isso não cria uma nova inscrição.</p><a class="btn-primary" href="../index.php#eventos">Voltar aos eventos</a>
+  <h1>Comprovante indisponível nesta sessão</h1><p>Consulte sua inscrição confirmando o acesso pelo e-mail cadastrado.</p><a class="btn-primary" href="../index.php#eventos">Voltar aos eventos</a>
 <?php endif; ?>
 </section></main></body></html>

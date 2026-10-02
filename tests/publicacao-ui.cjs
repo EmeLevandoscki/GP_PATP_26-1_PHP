@@ -21,7 +21,7 @@ const context = {
   setText: (id, text) => { elements[id].textContent = text; }
 };
 vm.createContext(context);
-for (const name of ['toLocalDateTime', 'togglePublicationFields', 'eventIsClosed', 'countdownLabel', 'publicationLabel', 'validateEventForm']) {
+for (const name of ['toLocalDateTime', 'togglePublicationFields', 'eventIsClosed', 'countdownLabel', 'publicationLabel', 'updateEventScheduleConstraints', 'validateEventForm']) {
   const start = source.indexOf('  function ' + name + '(');
   assert.ok(start >= 0);
   vm.runInContext(source.slice(start, source.indexOf('\n  }', start) + 4), context);
@@ -66,3 +66,32 @@ assert.equal(context.eventIsClosed({ publicationMode: 'draft', effectiveEndAt: '
 assert.equal(context.countdownLabel('2000-01-01T12:00:00Z'), 'Prazo encerrado');
 assert.match(context.countdownLabel(new Date(Date.now() + 90061000).toISOString()), /^Encerra em 1d 01:01:0[01]$/);
 console.log('OK: limite futuro, ordem de datas, histórico e contagem regressiva.');
+
+for (const id of ['eventDate','eventTime','eventId']) elements[id]={value:'',min:'',validationMessage:'',setCustomValidity(message){this.validationMessage=message}};
+let clock=Date.parse('2026-10-01T15:30:45Z');
+context.Date=class extends Date { static now(){return clock;} };
+context.getEvents=()=>[];
+elements.eventPublicationMode.value='published';
+elements.eventDate.value='2026-09-30';elements.eventTime.value='18:00';
+context.updateEventScheduleConstraints();
+assert.ok(elements.eventDate.validationMessage);
+assert.equal(elements.eventDate.min,'2026-10-01');
+elements.eventDate.value='2026-10-01';elements.eventTime.value='12:30';
+context.updateEventScheduleConstraints();
+assert.ok(elements.eventTime.validationMessage);assert.equal(elements.eventTime.min,'12:31');
+elements.eventTime.value='12:31';context.updateEventScheduleConstraints();
+assert.equal(elements.eventTime.validationMessage,'');
+elements.eventDate.value='2026-10-02';elements.eventTime.value='00:00';context.updateEventScheduleConstraints();
+assert.equal(elements.eventDate.validationMessage,'');assert.equal(elements.eventTime.min,'');
+clock=Date.parse('2026-10-02T02:59:50Z');
+elements.eventDate.value='2026-10-01';elements.eventTime.value='23:59';context.updateEventScheduleConstraints();
+assert.equal(elements.eventDate.min,'2026-10-02');assert.ok(elements.eventDate.validationMessage);
+elements.eventDate.value='2026-10-02';elements.eventTime.value='00:00';context.updateEventScheduleConstraints();
+assert.equal(elements.eventDate.validationMessage,'');assert.equal(elements.eventTime.validationMessage,'');
+clock=Date.parse('2026-10-02T03:00:01Z');context.updateEventScheduleConstraints();
+assert.ok(elements.eventTime.validationMessage,'Revalidar após a virada bloqueia horário vencido.');
+context.getEvents=()=>[{id:'evt-old',date:'2000-01-01',time:'12:00',publicationMode:'draft'}];
+elements.eventId.value='evt-old';elements.eventDate.value='2000-01-01';elements.eventTime.value='12:00';elements.eventPublicationMode.value='draft';
+context.updateEventScheduleConstraints();assert.equal(elements.eventDate.min,'');assert.equal(elements.eventDate.validationMessage,'');
+elements.eventPublicationMode.value='published';context.updateEventScheduleConstraints();assert.ok(elements.eventDate.validationMessage);
+console.log('OK: calendário e horário, fuso de Brasília, virada do dia, revalidação e edição sem reagendar.');

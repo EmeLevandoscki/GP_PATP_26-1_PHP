@@ -14,6 +14,17 @@ final class ComprovanteService
         return (bool) $stmt->fetchColumn();
     }
 
+    public static function atualizar(\PDO $db, array $receipt): array
+    {
+        if (str_starts_with($receipt['protocol'], 'IDEAU-')) return $receipt;
+        $stmt = $db->prepare('SELECT dados FROM eventos_publicacoes_inscricoes WHERE id = ? AND id_evento = ?');
+        $stmt->execute([$receipt['protocol'], $receipt['eventId']]);
+        $json = $stmt->fetchColumn();
+        // Falha fechada se houver cancelamento entre a consulta de existência e esta leitura.
+        $receipt['reviewStatus'] = $json ? (json_decode($json, true, 512, JSON_THROW_ON_ERROR)['reviewStatus'] ?? 'approved') : 'removed';
+        return $receipt;
+    }
+
     public static function cancelar(\PDO $db, string $receiptId): void
     {
         // O destino vem exclusivamente do comprovante autorizado na sessão.
@@ -44,14 +55,21 @@ final class ComprovanteService
     public static function resposta(array $receipt, bool $existing = false): array
     {
         $key = hash('sha256', $receipt['protocol']);
+        if ($existing && !isset($_SESSION['registration_receipts'][$key])) {
+            return ['success' => true, 'verificationRequired' => true,
+                'message' => 'Para consultar uma inscrição existente, confirme o acesso pelo e-mail cadastrado.',
+                'consultationUrl' => 'consultar-inscricao.php'];
+        }
         $_SESSION['registration_receipts'][$key] = $receipt;
-        return ['success' => true, 'alreadyRegistered' => $existing,
-            'message' => $existing ? 'Você já está inscrito. Aqui está seu comprovante.' : 'Inscrição confirmada!',
+        $pending = ($receipt['reviewStatus'] ?? 'approved') === 'pending';
+        return ['success' => true, 'alreadyRegistered' => $existing, 'reviewStatus' => $receipt['reviewStatus'] ?? 'approved',
+            'message' => $pending ? 'Inscrição recebida. Aguarde a aprovação do organizador.' : ($existing ? 'Você já está inscrito. Aqui está seu comprovante.' : 'Inscrição confirmada!'),
             'receiptUrl' => 'comprovante.php?id=' . $key];
     }
 
     public static function pdf(array $receipt): string
     {
+        if (($receipt['reviewStatus'] ?? 'approved') !== 'approved') throw new \InvalidArgumentException('O comprovante estará disponível após a aprovação do organizador.');
         $logo = file_get_contents(__DIR__ . '/../../ideau_eventos/assets/img/logo-ideau-pdf.jpg');
         [$logoWidth, $logoHeight] = getimagesizefromstring($logo);
         $text = static function (string $value, float $x, float $y, int $size = 11, bool $bold = false, string $color = '0.14 0.18 0.15'): string {

@@ -1,49 +1,7 @@
 
 /* Tema e botão da sidebar são controlados por theme.js e app.js. */
 
-/*
-  SIDEBAR MOBILE
-  */
-/*inicia sidebar mobile*/
-const menuToggle = document.getElementById('menuToggle');
-const sidebar = document.getElementById('sidebar');
-const sidebarOverlay = document.getElementById('sidebarOverlay');
-const sidebarClose = document.getElementById('sidebarClose');
 
-function openSidebar() {
-  sidebar.classList.add('open');
-  sidebarOverlay.classList.add('open');
-  menuToggle.classList.add('active');
-  menuToggle.setAttribute('aria-expanded', 'true');
-  document.body.style.overflow = 'hidden';
-}
-
-function closeSidebar() {
-  sidebar.classList.remove('open');
-  sidebarOverlay.classList.remove('open');
-  menuToggle.classList.remove('active');
-  menuToggle.setAttribute('aria-expanded', 'false');
-  document.body.style.overflow = '';
-}
-
-if (menuToggle) {
-  menuToggle.addEventListener('click', (e) => {
-    e.stopPropagation();
-    const isOpen = sidebar.classList.contains('open');
-    isOpen ? closeSidebar() : openSidebar();
-  });
-}
-if (sidebarOverlay) {
-  sidebarOverlay.addEventListener('click', closeSidebar);
-}
-if (sidebarClose) {
-  sidebarClose.addEventListener('click', closeSidebar);
-}
-// Fecha sidebar ao clicar em link
-document.querySelectorAll('[data-nav-link]').forEach(link => {
-  link.addEventListener('click', closeSidebar);
-});
-/*finaliza sidebar mobile*/
 
 /*
   MARQUEE

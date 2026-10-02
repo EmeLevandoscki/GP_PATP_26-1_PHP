@@ -12,9 +12,11 @@ require getenv('RECEIPT_TEST_ROOT') . '/vendor/autoload.php';
 $db = App\\Config\\Conexao::getConexao();
 $db->exec('CREATE TEMPORARY TABLE eventos_publicacoes (id VARCHAR(100) PRIMARY KEY, dados JSON)');
 require getenv('RECEIPT_TEST_ROOT') . '/tests/dashboard-temporary.php';
-$db->exec('CREATE TEMPORARY TABLE eventos_publicacoes_inscricoes (id VARCHAR(100) PRIMARY KEY, id_evento VARCHAR(100), criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP)');
+$db->exec('CREATE TEMPORARY TABLE eventos_publicacoes_inscricoes (id VARCHAR(100) PRIMARY KEY, id_evento VARCHAR(100), dados JSON, criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP)');
 $db->exec("INSERT INTO eventos_publicacoes (id,dados) VALUES ('evt-test','{}')");
-$db->exec("INSERT INTO eventos_publicacoes_inscricoes (id,id_evento) VALUES ('reg-test','evt-test')");
+$db->exec("INSERT INTO eventos_publicacoes_inscricoes (id,id_evento,dados) VALUES ('reg-test','evt-test','{}')");
+
+if (isset($_GET['pending'])) $db->exec(\"UPDATE eventos_publicacoes_inscricoes SET dados = JSON_OBJECT('reviewStatus','pending')\");
 
 if (parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) === '/fixture') {
     session_start();
@@ -62,6 +64,15 @@ require getenv('RECEIPT_TEST_ROOT') . '/ideau_eventos/comprovante.php';
     assert.ok(text.includes(Buffer.from('COMPROVANTE DE INSCRIÇÃO', 'latin1').toString('latin1')), 'Título deve manter acentos.');
     const xref = Number(text.match(/startxref\n(\d+)/)[1]);
     assert.equal(text.slice(xref, xref + 4), 'xref');
+    const pendingUrl=url+'&pending=1';
+    const pendingPage=await (await fetch(pendingUrl,{headers:{Cookie:cookie}})).text();
+    assert.match(pendingPage,/Aguardando aprovação/);
+    assert.doesNotMatch(pendingPage,/Baixar comprovante em PDF|Inscrição confirmada/);
+    const pendingPdf=await fetch(pendingUrl+'&download=1',{headers:{Cookie:cookie}});
+    assert.equal(pendingPdf.status,409);
+    assert.notEqual(pendingPdf.headers.get('content-type'),'application/pdf');
+    const afterApproval=await fetch(url+'&download=1',{headers:{Cookie:cookie}});
+    assert.equal(afterApproval.headers.get('content-type'),'application/pdf','Consulta no servidor atualiza sessão pendente após aprovação.');
     const receiptPage = await (await fetch(url, { headers: { Cookie: cookie } })).text();
     assert.match(receiptPage, /Cancelar minha inscrição/);
     const csrf = receiptPage.match(/name="csrf" value="([a-f0-9]+)"/)[1];

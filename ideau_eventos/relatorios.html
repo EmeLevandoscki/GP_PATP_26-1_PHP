@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,700;1,300&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="assets/css/app.css?v=20260920-reports-2" />
+  <link rel="stylesheet" href="assets/css/app.css?v=20261001-review-1" />
 </head>
 <body data-page="reports" class="admin-page">
   <aside class="admin-sidebar">
@@ -46,9 +46,13 @@
       <a class="btn btn-secondary" href="relatorios.html">← Voltar aos eventos</a>
       <div class="report-detail-heading"><h2 id="reportSelectedTitle"></h2><p class="muted" id="reportSelectedMeta"></p><p id="reportSelectedCount" aria-live="polite"></p></div>
       <label class="search-box report-search" id="reportParticipantSearch"><input id="reportSearch" type="search" placeholder="Buscar participante, responsável, turma ou curso" aria-label="Buscar inscritos deste evento"></label>
+      <div id="reportReviewControls" class="top-gap" hidden>
+        <p id="reportReviewSummary" class="muted" aria-live="polite"></p>
+        <label class="form-field"><span>Mostrar inscrições</span><select id="reportReviewFilter"><option value="all">Todas</option><option value="pending">Aguardando aprovação</option><option value="approved">Confirmadas</option></select></label>
+      </div>
       <div class="table-wrap">
-        <table class="data-table">
-          <thead><tr><th>Inscrição</th><th>Participante / educando</th><th>Responsável</th><th>CPF do Responsável</th><th>Parentesco</th><th>Turma</th><th>Curso</th></tr></thead>
+        <table class="data-table report-registration-table">
+          <thead><tr id="reportRegistrationsHead"></tr></thead>
           <tbody id="reportRegistrationsTable"></tbody>
         </table>
       </div>
@@ -56,6 +60,6 @@
   </main>
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
-  <script src="assets/js/app.js?v=browser-theme-1"></script>
+  <script src="assets/js/app.js?v=20261001-security-1"></script>
 </body>
 </html>

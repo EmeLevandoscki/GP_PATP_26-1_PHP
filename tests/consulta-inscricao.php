@@ -39,7 +39,10 @@ rejectsLookup(fn()=>$service->confirmar($token));
 $receipts=$service->inscricoes($email);
 verifyLookup(count($receipts)===3,'Recuperar evento moderno encerrado e dois irmãos do legado.');
 verifyLookup(!in_array('reg-two',array_column($receipts,'protocol')),'Não expor inscrições de outro e-mail.');
-foreach ($receipts as $receipt) ComprovanteService::resposta($receipt,true);
+foreach ($receipts as $receipt) {
+    $_SESSION['registration_receipts'][hash('sha256', $receipt['protocol'])] = $receipt;
+    ComprovanteService::resposta($receipt,true);
+}
 verifyLookup(count($_SESSION['registration_receipts'])===3,'Restaurar acesso aos comprovantes na nova sessão.');
 $db->exec("DELETE FROM eventos_publicacoes_inscricoes WHERE id='reg-one'");
 verifyLookup(count($service->inscricoes($email))===2,'Inscrição cancelada não deve ser apresentada como ativa.');

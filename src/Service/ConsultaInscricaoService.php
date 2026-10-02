@@ -87,7 +87,7 @@ final class ConsultaInscricaoService
         foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
             $reg = json_decode($row['dados'], true, 512, JSON_THROW_ON_ERROR);
             $event = json_decode($row['evento'], true, 512, JSON_THROW_ON_ERROR);
-            $result[] = ['protocol' => $row['id'], 'eventId' => $event['id'], 'name' => $reg['name'] ?? $reg['studentName'] ?? '',
+            $result[] = ['protocol' => $row['id'], 'reviewStatus' => $reg['reviewStatus'] ?? 'approved', 'eventId' => $event['id'], 'name' => $reg['name'] ?? $reg['studentName'] ?? '',
                 'eventTitle' => $event['title'], 'date' => substr(ComprovanteService::data($event['date']), 0, 10),
                 'time' => $event['time'], 'location' => $event['location'], 'registeredAt' => ComprovanteService::data($reg['createdAt'])];
         }

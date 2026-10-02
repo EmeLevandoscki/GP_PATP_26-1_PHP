@@ -1,3 +1,5 @@
 /vendor/
 
 /src/Config/email.local.php
+
+src/Config/organizer.local.php

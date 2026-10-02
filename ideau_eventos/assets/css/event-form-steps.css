@@ -1,0 +1,24 @@
+.event-wizard-progress { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin: 0 0 12px; padding: 0; list-style: none; scroll-margin-top: 20px; }
+.event-wizard-progress li { display: flex; align-items: center; gap: 10px; padding: 14px; min-width: 0; border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--muted); background: var(--surface); font-size: .82rem; line-height: 1.4; }
+.event-wizard-progress .event-step-number { display: grid; place-items: center; width: 28px; height: 28px; flex: 0 0 28px; border: 1px solid var(--border-strong); border-radius: 50%; font-weight: 700; font-size: .9rem; line-height: 1; color: inherit; }
+.event-wizard-progress [aria-current="step"] { border-color: var(--green); color: var(--text); background: var(--surface-2); font-weight: 700; }
+.event-wizard-progress [aria-current="step"] .event-step-number, .event-wizard-progress .is-complete .event-step-number { background: var(--green); color: #fff; border-color: var(--green); }
+.event-wizard-status { margin: 0 0 20px; color: var(--muted); font-size: .86rem; }
+#eventForm [data-event-step][hidden], .event-wizard-actions [hidden] { display: none !important; }
+#eventForm [data-event-step] h2:focus { outline: none; }
+.event-wizard-actions { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; padding: 18px 0; border-top: 1px solid var(--border); }
+.event-wizard-secondary { display: flex; align-items: center; gap: 16px; }
+.event-wizard-cancel { color: var(--muted); text-decoration: underline; font-size: .85rem; }
+.event-wizard-actions button:disabled { opacity: .5; cursor: not-allowed; }
+@media(max-width: 700px) {
+  #eventForm [data-event-step] .panel-heading { flex-direction: column; align-items: flex-start; gap: 8px; }
+  #eventForm [data-event-step] .panel-heading h2 { font-size: 1.5rem; }
+  #eventForm [data-event-step] .panel-heading p { line-height: 1.5; }
+  .event-wizard-progress { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+  .event-wizard-progress li { padding: 10px; font-size: .76rem; }
+}
+@media(max-width: 380px) {
+  .event-wizard-actions { gap: 12px; }
+  .event-wizard-secondary { gap: 10px; }
+  .event-wizard-actions .btn { padding-left: 16px; padding-right: 16px; }
+}

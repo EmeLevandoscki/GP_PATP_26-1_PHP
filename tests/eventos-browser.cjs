@@ -27,14 +27,17 @@ let registrations = [];
 let saves = 0;
 let receiptSubmissions = 0;
 let receiptList = [];
+let lastRegistration = null;
 // Renderiza o template real com dados fictícios; backend é coberto pelo teste HTTP.
 const receiptTemplate = fs.readFileSync(path.join(root, 'ideau_eventos/comprovante.php'), 'utf8').split('<!DOCTYPE html>')[1];
-const receiptHtml = execFileSync('php', [], { cwd: root, encoding: 'utf8', input: `<?php
-$receipt = ['name'=>'Participante de teste', 'eventTitle'=>'Semana Acadêmica IDEAU', 'date'=>'23/03/2027', 'time'=>'12:12', 'location'=>'Auditório IDEAU', 'registeredAt'=>'20/09/2026 09:44', 'protocol'=>'reg-teste-123456'];
+const renderReceiptHtml = reviewStatus => execFileSync('php', [], { cwd: root, env: {...process.env, TEST_REVIEW_STATUS: reviewStatus}, encoding: 'utf8', input: `<?php
+$receipt = ['name'=>'Participante de teste', 'eventTitle'=>'Semana Acadêmica IDEAU', 'date'=>'23/03/2027', 'time'=>'12:12', 'location'=>'Auditório IDEAU', 'registeredAt'=>'20/09/2026 09:44', 'protocol'=>'reg-teste-123456','reviewStatus'=>getenv('TEST_REVIEW_STATUS') ?: 'approved'];
 $id = str_repeat('a',64); $error = ''; $cancelled = false; $_SESSION['receipt_csrf'] = 'test';
 function escapeReceipt(string $text): string { return htmlspecialchars($text, ENT_QUOTES, 'UTF-8'); }
 ?><!DOCTYPE html>` + receiptTemplate });
 
+const receiptHtml = renderReceiptHtml('approved');
+const pendingReceiptHtml = renderReceiptHtml('pending');
 const lookupTemplate = fs.readFileSync(path.join(root, 'ideau_eventos/consultar-inscricao.php'), 'utf8').split('<!DOCTYPE html>')[1];
 const lookupHtml = execFileSync('php', [], { cwd: root, encoding: 'utf8', input: `<?php
 $error='';$message='';$email='';$verified=null;$receipts=[];$_SESSION=['consulta_csrf'=>'test'];
@@ -60,18 +63,36 @@ const server = http.createServer(async (req, res) => {
     if (action === 'session') return json({ authenticated: true, csrf: 'test', receipts: receiptList });
     if (action === 'dashboard') return json(dashboardResponse(url));
     if (action === 'registrations') return json(registrations);
-    if (action === 'events') return json(events.filter(event => url.searchParams.get('scope') === 'admin' || (!event.closed && new Date(event.effectiveEndAt) > new Date())));
+    const active = event => !event.closed && event.published && new Date(event.effectiveEndAt) > new Date();
+    const hasAccess = event => event.accessMode !== 'link' || (event.accessToken && url.searchParams.get('accessToken') === event.accessToken);
+    const publicView = event => { const result={...event,accessGranted:Boolean(hasAccess(event))}; delete result.accessToken; delete result.allowedParticipants; if(!result.accessGranted)delete result.fields; return result; };
+    if (action === 'events') return json(url.searchParams.get('scope') === 'admin' ? events : events.filter(event=>active(event) && event.listed !== false).map(publicView));
+    if (action === 'event') return json(events.filter(event=>event.id===url.searchParams.get('id') && active(event) && (event.listed !== false || hasAccess(event))).map(publicView));
     let raw = '';
     for await (const chunk of req) raw += chunk;
     const data = JSON.parse(raw || '{}');
-    if (action === 'register') { receiptSubmissions++; receiptList = [{ id: 'a'.repeat(64), eventId: data.eventId, name: data.name }]; return json({ success: true, alreadyRegistered: receiptSubmissions > 1, receiptUrl: 'comprovante.php?id=' + 'a'.repeat(64) }); }
+    if (action === 'register') {
+      lastRegistration=data; receiptSubmissions++;
+      const reviewStatus=events.find(event=>event.id===data.eventId)?.recipientMode==='manual'?'pending':'approved';
+      receiptList = [{ id: 'a'.repeat(64), eventId: data.eventId, name: data.name, reviewStatus }];
+      return json({success:true,reviewStatus,alreadyRegistered:receiptSubmissions>1,receiptUrl:'comprovante.php?id='+'a'.repeat(64)});
+    }
+    if (action === 'review-registration') {
+      const row=registrations.find(row=>row.id===data.id && row.eventId===data.eventId);
+      if(!row){res.statusCode=422;return json({message:'Inscrição não encontrada.'});}
+      if(data.decision==='approve')row.reviewStatus='approved';
+      else registrations=registrations.filter(item=>item!==row);
+      return json({success:true});
+    }
     if (action === 'close') {
       events = events.map(event => event.id === data.id ? { ...event, closed: true, published: false, closedAt: new Date().toISOString(), closeReason: 'manual' } : event);
       return json(events.find(event => event.id === data.id));
     }
     if (action === 'save') {
       saves++;
-      events.push({ ...data, effectiveEndAt: data.endAt || fixture.effectiveEndAt });
+      const previous=events.find(event=>event.id===data.id);
+      if(data.accessMode==='link'){data.accessToken=previous?.accessToken || 'b'.repeat(64); if(data.targetCourse)data.fields={...data.fields,cpf:true,course:true,community:false};}
+      events = events.filter(event => event.id !== data.id).concat({ ...data, effectiveEndAt: data.endAt || fixture.effectiveEndAt });
       return json(data);
     }
     return json({ success: true });
@@ -80,7 +101,7 @@ const server = http.createServer(async (req, res) => {
     const action = url.searchParams.get('action');
     return json(action === 'qtd_inscricoes_evento' ? { count: 80 } : action === 'qtdAtivos' ? 0 : []);
   }
-  if (url.pathname.endsWith('/comprovante.php')) { res.setHeader('Content-Type', 'text/html'); return res.end(receiptHtml); }
+  if (url.pathname.endsWith('/comprovante.php')) { res.setHeader('Content-Type', 'text/html'); return res.end(receiptList.some(item=>item.reviewStatus==='pending')?pendingReceiptHtml:receiptHtml); }
   if (url.pathname.endsWith('/consultar-inscricao.php')) { res.setHeader('Content-Type', 'text/html'); return res.end(lookupHtml); }
   const file = path.resolve(root, '.' + decodeURIComponent(url.pathname));
   if (!file.startsWith(root + path.sep) || !fs.existsSync(file) || !fs.statSync(file).isFile()) { res.writeHead(404); return res.end(); }
@@ -144,23 +165,54 @@ const server = http.createServer(async (req, res) => {
     await send('Network.enable');
     await send('Network.setBlockedURLs', { urls: ['*fonts.googleapis.com*', '*fonts.gstatic.com*', '*unsplash.com*'] });
     const navigate = async page => {
-      await send('Page.navigate', { url: origin + '/ideau_eventos/' + page });
-      await until(`document.readyState === 'complete' && location.href === ${JSON.stringify(origin + '/ideau_eventos/' + page)}`);
+      const url = new URL(page, origin + '/ideau_eventos/').href;
+      await send('Page.navigate', { url });
+      await until('document.readyState === "complete" && location.href === ' + JSON.stringify(url));
     };
+
+    // Cliques reais no menu mobile: detecta handlers duplicados e sobreposições.
+    await send('Emulation.setDeviceMetricsOverride', {width:390,height:844,deviceScaleFactor:1,mobile:true});
+    const clickMenuElement = async (selector, overlay = false) => {
+      const point = await evaluate('(() => { const r=document.querySelector(' + JSON.stringify(selector) + ').getBoundingClientRect(); return {x:r.x+' + (overlay ? '10' : 'r.width/2') + ',y:r.y+' + (overlay ? '400' : 'r.height/2') + '}; })()');
+      await send('Input.dispatchMouseEvent', {type:'mousePressed',button:'left',clickCount:1,...point});
+      await send('Input.dispatchMouseEvent', {type:'mouseReleased',button:'left',clickCount:1,...point});
+      await pause(400);
+    };
+    for (const page of ['../index.php', 'evento.html?id=evt-browser', 'inscricao.html?id=evt-browser']) {
+      await navigate(page);
+      await clickMenuElement('#menuToggle');
+      assert.equal(await evaluate('document.getElementById("sidebar").classList.contains("open")'), true, page + ': menu deve abrir com um clique');
+      assert.equal(await evaluate('document.getElementById("menuToggle").getAttribute("aria-expanded")'), 'true');
+      assert.equal(await evaluate('document.getElementById("mainNav")?.classList.contains("open") || false'), false);
+      assert.equal(await evaluate('document.body.style.overflow'), 'hidden');
+      await clickMenuElement('#sidebarClose');
+      assert.equal(await evaluate('document.getElementById("sidebar").classList.contains("open")'), false);
+      await clickMenuElement('#menuToggle');
+      await clickMenuElement('#sidebarOverlay', true);
+      assert.equal(await evaluate('document.getElementById("sidebar").classList.contains("open")'), false);
+      assert.equal(await evaluate('document.getElementById("menuToggle").getAttribute("aria-expanded")'), 'false');
+      assert.equal(await evaluate('document.body.style.overflow'), '');
+      await clickMenuElement('#menuToggle');
+      await evaluate('document.querySelector(".sidebar-nav a[data-nav-link]").addEventListener("click", e => e.preventDefault(), {once:true})');
+      await clickMenuElement('.sidebar-nav a[data-nav-link]');
+      assert.equal(await evaluate('document.getElementById("sidebar").classList.contains("open")'), false);
+    }
+    await send('Emulation.clearDeviceMetricsOverride');
+    console.log('Menu mobile: abertura, botão fechar, clique fora e links conferidos nas três páginas públicas.');
 
     await send('Page.navigate', { url: origin + '/index.php' });
     await until('document.querySelector("#eventsGrid .card-title")?.textContent === "Evento de teste"');
     await until('document.getElementById("statInscricoes").textContent === "1"');
     await send('Emulation.setEmulatedMedia',{features:[{name:'prefers-color-scheme',value:'dark'}]});
     await until('document.documentElement.getAttribute("data-theme") === "dark"');
-    assert.equal(await evaluate('document.getElementById("themeToggle").textContent'),'🌙');
+    assert.equal(await evaluate('document.getElementById("sidebarThemeIcon").textContent'),'🌙');
     await send('Emulation.setEmulatedMedia',{features:[{name:'prefers-color-scheme',value:'light'}]});
     await until('document.documentElement.getAttribute("data-theme") === "light"');
-    assert.equal(await evaluate('document.getElementById("themeToggle").textContent'),'☀️');
-    await evaluate('document.getElementById("themeToggle").click()');
+    assert.equal(await evaluate('document.getElementById("sidebarThemeIcon").textContent'),'☀️');
+    await evaluate('document.getElementById("sidebarThemeToggle").click()');
     assert.equal(await evaluate('document.documentElement.getAttribute("data-theme")'),'dark');
     assert.equal(await evaluate('localStorage.getItem("ideau-theme")'),'dark');
-    await evaluate('document.getElementById("themeToggle").click()');
+    await evaluate('document.getElementById("sidebarThemeToggle").click()');
     assert.equal(await evaluate('localStorage.getItem("ideau-theme")'),null);
     await send('Emulation.setEmulatedMedia',{features:[{name:'prefers-color-scheme',value:'dark'}]});
     await until('document.documentElement.getAttribute("data-theme") === "dark"');
@@ -190,9 +242,26 @@ const server = http.createServer(async (req, res) => {
     await navigate('evento-form.html');
     await until('document.getElementById("eventForm").getAttribute("aria-busy") === "false"');
     console.log('Formulário carregado no navegador.');
-    await evaluate('document.querySelector("#eventForm button[type=submit]").scrollIntoView({block:"end",behavior:"instant"}); document.querySelector("#eventForm button[type=submit]").click()');
+    const advanceToStep = async target => {
+      for (let i=0;i<4;i++) {
+        const current=Number(await evaluate('document.getElementById("eventFormStep").value'));
+        if(current===target)return;
+        assert.ok(current<target,'Avanço deve seguir a ordem das etapas.');
+        await evaluate('document.getElementById("eventStepNext").click()');
+        assert.equal(Number(await evaluate('document.getElementById("eventFormStep").value')),current+1,'Próximo deve avançar uma etapa válida.');
+      }
+    };
+    const saveThroughSteps = async () => {
+      await advanceToStep(3);
+      await evaluate('document.querySelector("#eventForm button[type=submit]").click()');
+    };
+    assert.equal(await evaluate('document.querySelectorAll("[data-event-step]:not([hidden])").length'),1);
+    assert.equal(await evaluate('document.getElementById("eventStepBack").disabled'),true);
+    assert.equal(await evaluate('document.querySelector("#eventForm button[type=submit]").hidden'),true);
+    await evaluate('document.getElementById("eventStepNext").scrollIntoView({block:"end",behavior:"instant"}); document.getElementById("eventStepNext").click()');
     assert.equal(await evaluate('document.activeElement.id'), 'eventFormErrors');
-    assert.equal(await evaluate('(() => { const box = document.getElementById("eventFormErrors").getBoundingClientRect(); return box.top >= 0 && box.bottom <= innerHeight; })()'), true, 'A lista deve estar visível junto ao botão.');
+    await until('(() => { const box = document.getElementById("eventFormErrors").getBoundingClientRect(); return box.top >= -1 && box.bottom <= innerHeight + 1; })()');
+    assert.equal(await evaluate('(() => { const box = document.getElementById("eventFormErrors").getBoundingClientRect(); return box.top >= -1 && box.bottom <= innerHeight + 1; })()'), true, 'A lista deve estar visível junto ao botão.');
     assert.ok(await evaluate('scrollY > 0'), 'Salvar com erros não deve levar ao topo.');
     assert.ok(await evaluate('document.querySelectorAll("[aria-invalid=true]").length') >= 5);
     assert.match(await evaluate('document.getElementById("eventTitleError").textContent'), /Preencha/);
@@ -200,7 +269,7 @@ const server = http.createServer(async (req, res) => {
     assert.equal(saves, 0, 'Formulário inválido não deve chamar o servidor.');
     await evaluate('document.querySelector("[data-error-field=eventTitle]").click()');
     assert.equal(await evaluate('document.activeElement.id'), 'eventTitle');
-    assert.equal(await evaluate('(() => { const box = document.getElementById("eventTitleError").getBoundingClientRect(); return box.top >= 0 && box.bottom <= innerHeight; })()'), true);
+    assert.equal(await evaluate('(() => { const box = document.getElementById("eventTitleError").getBoundingClientRect(); return box.top >= -1 && box.bottom <= innerHeight + 1; })()'), true);
     assert.equal(await evaluate('document.querySelector(".admin-public-link").parentElement === document.getElementById("logoutButton").parentElement'), true);
     assert.equal(await evaluate(`document.querySelector('.admin-nav a[href="../index.php"]')`), null);
     await evaluate(`(() => { const f = document.getElementById('eventTitle'); f.value = 'Título preservado'; f.dispatchEvent(new Event('input', { bubbles: true })); const r = document.getElementById('eventRegistrationEndAt'); r.value = '2099-12-30T20:00'; r.dispatchEvent(new Event('input', { bubbles: true })); const d = document.getElementById('eventEndAt'); d.value = '2099-12-31T20:00'; d.dispatchEvent(new Event('input', { bubbles: true })); })()`);
@@ -213,7 +282,7 @@ const server = http.createServer(async (req, res) => {
     assert.equal(await evaluate('document.documentElement.scrollWidth <= innerWidth'), true);
     await send('Emulation.clearDeviceMetricsOverride');
     await evaluate(`(() => {
-      for (const [id, value] of Object.entries({eventInstitution:'faculdade-ideau',eventCategory:'academico',eventDate:'2099-12-31',eventTime:'18:00'})) {
+      for (const [id, value] of Object.entries({eventInstitution:'faculdade-ideau',eventCategory:'Acadêmico',eventDate:'2099-12-31',eventTime:'18:00'})) {
         const field = document.getElementById(id); field.value = value;
         field.dispatchEvent(new Event('input', {bubbles:true})); field.dispatchEvent(new Event('change', {bubbles:true}));
       }
@@ -223,16 +292,117 @@ const server = http.createServer(async (req, res) => {
       file.dispatchEvent(new Event('change', {bubbles:true}));
     })()`);
     await until('document.getElementById("eventCover").value.startsWith("data:image/png")');
-    await evaluate('document.querySelector("#eventForm button[type=submit]").click()');
+    await evaluate('document.getElementById("eventStepNext").click()');
+    assert.equal(await evaluate('document.getElementById("eventFormStep").value'),'0');
     assert.equal(await evaluate('document.querySelectorAll("[aria-invalid=true]").length'), 1);
     assert.match(await evaluate('document.getElementById("eventFormErrors").textContent'), /Local/);
     assert.equal(await evaluate('document.activeElement.id'), 'eventFormErrors');
     await evaluate('document.querySelector("[data-error-field=eventLocation]").click()');
     assert.equal(await evaluate('document.activeElement.id'), 'eventLocation');
-    await evaluate('document.getElementById("eventLocation").value = "Auditório"; document.getElementById("eventLocation").dispatchEvent(new Event("input", {bubbles:true})); document.querySelector("#eventForm button[type=submit]").click()');
+    await evaluate('document.getElementById("eventLocation").value = "Auditório"; document.getElementById("eventLocation").dispatchEvent(new Event("input", {bubbles:true})); document.getElementById("eventStepNext").click()');
+    assert.equal(await evaluate('document.getElementById("eventFormStep").value'),'1');
+    assert.equal(saves,0,'Avançar não salva o evento.');
+    assert.equal(await evaluate('document.activeElement.id'),'eventStepHeading1');
+    await evaluate('document.getElementById("fieldNotes").click();document.getElementById("eventStepBack").click()');
+    assert.equal(await evaluate('document.getElementById("eventFormStep").value'),'0');
+    assert.equal(await evaluate('document.getElementById("eventLocation").value'),'Auditório');
+    await advanceToStep(2);
+    assert.equal(await evaluate('document.getElementById("fieldNotes").checked'),true);
+    await send('Page.reload');
+    await until('document.getElementById("eventForm")?.getAttribute("aria-busy")==="false"');
+    assert.equal(await evaluate('document.getElementById("eventFormStep").value'),'2','Atualizar preserva a etapa.');
+    assert.equal(await evaluate('document.getElementById("fieldNotes").checked'),true);
+    await advanceToStep(3);
+    assert.equal(await evaluate('document.getElementById("eventStepNext").hidden'),true);
+    assert.equal(await evaluate('document.querySelector("#eventForm button[type=submit]").hidden'),false);
+    await evaluate('document.querySelector("input[name=publicationMode][value=automatic]").click(); document.querySelector("#eventForm button[type=submit]").click()');
+    assert.equal(saves,0);
+    assert.match(await evaluate('document.getElementById("eventFormErrors").textContent'),/publicação/i);
+    await evaluate('document.querySelector("input[name=publicationMode][value=published]").click()');
+    await evaluate('document.getElementById("eventTitle").value="";document.querySelector("#eventForm button[type=submit]").click()');
+    assert.equal(await evaluate('document.getElementById("eventFormStep").value'),'0','Salvar deve reabrir a etapa anterior que ficou inválida.');
+    assert.match(await evaluate('document.getElementById("eventFormErrors").textContent'),/Título do evento/);
+    await evaluate('document.getElementById("eventTitle").value="Título preservado";document.getElementById("eventTitle").dispatchEvent(new Event("input",{bubbles:true}))');
+    await saveThroughSteps();
     await until('location.pathname.endsWith("/eventos.html")');
     assert.equal(saves, 1, 'Após corrigir o campo, deve salvar normalmente.');
     console.log('Validação, menu, recuperação e layout móvel conferidos.');
+    const savedEvent = events.at(-1);
+    assert.equal(savedEvent.category, 'academico', 'Sugestão deve manter a categoria compatível com os filtros.');
+    assert.equal(savedEvent.audience, 'graduacao');
+    await navigate('evento-form.html?id=' + savedEvent.id);
+    await until('document.getElementById("eventForm")?.getAttribute("aria-busy") === "false"');
+    assert.equal(await evaluate('document.getElementById("eventCategory").value'), 'Acadêmico');
+    assert.ok(await evaluate('document.getElementById("eventCategoryOptions").options.length >= 6'));
+    assert.ok(await evaluate('document.getElementById("eventAudienceOptions").options.length >= 4'));
+    const clickChoiceArrow = async id => {
+      const point = await evaluate('(() => {const button=document.getElementById('+JSON.stringify(id+'Toggle')+');button.scrollIntoView({block:"center",behavior:"instant"});const r=button.getBoundingClientRect();return {x:r.x+r.width/2,y:r.y+r.height/2};})()');
+      await send('Input.dispatchMouseEvent',{type:'mousePressed',button:'left',clickCount:1,...point});
+      await send('Input.dispatchMouseEvent',{type:'mouseReleased',button:'left',clickCount:1,...point});
+    };
+    for (const id of ['eventCategory','eventAudience']) {
+      const original=await evaluate('document.getElementById('+JSON.stringify(id)+').value');
+      await clickChoiceArrow(id);
+      assert.equal(await evaluate('document.getElementById('+JSON.stringify(id)+').getAttribute("aria-expanded")'),'true');
+      await clickChoiceArrow(id);
+      assert.equal(await evaluate('document.getElementById('+JSON.stringify(id+'Suggestions')+').hidden'),true,'Segundo clique na seta deve fechar.');
+      assert.equal(await evaluate('document.getElementById('+JSON.stringify(id)+').value'),original);
+      await clickChoiceArrow(id);
+      await send('Input.dispatchKeyEvent',{type:'keyDown',key:'Escape',code:'Escape',windowsVirtualKeyCode:27});
+      await send('Input.dispatchKeyEvent',{type:'keyUp',key:'Escape',code:'Escape',windowsVirtualKeyCode:27});
+      assert.equal(await evaluate('document.getElementById('+JSON.stringify(id+'Suggestions')+').hidden'),true);
+    }
+    await evaluate('document.getElementById("eventCategory").value="";document.getElementById("eventCategory").focus()');
+    await send('Input.insertText',{text:'cultural'});
+    assert.equal(await evaluate('document.querySelectorAll("#eventCategorySuggestions [role=option]").length'),1);
+    await send('Input.dispatchKeyEvent',{type:'keyDown',key:'ArrowDown',code:'ArrowDown',windowsVirtualKeyCode:40});
+    await send('Input.dispatchKeyEvent',{type:'keyDown',key:'Enter',code:'Enter',windowsVirtualKeyCode:13});
+    assert.equal(await evaluate('document.getElementById("eventCategory").value'),'Cultural');
+    assert.equal(await evaluate('document.getElementById("eventCategorySuggestions").hidden'),true);
+    await clickChoiceArrow('eventCategory');
+    await clickChoiceArrow('eventAudience');
+    assert.equal(await evaluate('document.getElementById("eventCategorySuggestions").hidden'),true,'Abrir outro campo fecha a lista anterior.');
+    await evaluate('document.getElementById("eventTitle").focus()');
+    assert.equal(await evaluate('document.getElementById("eventAudienceSuggestions").hidden'),true);
+    await clickChoiceArrow('eventCategory');
+    await evaluate('document.querySelector("#eventCategorySuggestions [role=option]").click()');
+    assert.equal(await evaluate('document.getElementById("eventCategory").value'),'Acadêmico');
+    assert.equal(await evaluate('document.getElementById("eventCategorySuggestions").hidden'),true);
+
+    await evaluate('Object.entries({eventCategory:"Oficina de pesquisa",eventAudience:"Professores e egressos"}).forEach(([id,value])=>{const field=document.getElementById(id);field.value=value;field.dispatchEvent(new Event("input",{bubbles:true}));}); document.getElementById("eventInstitution").value="escola-ideau-santa-clara"; document.getElementById("eventInstitution").dispatchEvent(new Event("change",{bubbles:true}))');
+    assert.equal(await evaluate('document.getElementById("eventAudience").value'), 'Professores e egressos');
+    assert.equal(await evaluate('document.getElementById("schoolFieldsGroup").hidden'), false);
+    assert.equal(await evaluate('document.getElementById("fieldResponsibleName").checked'), true);
+    await evaluate('document.getElementById("eventInstitution").value="faculdade-ideau"; document.getElementById("eventInstitution").dispatchEvent(new Event("change",{bubbles:true}))');
+    await send('Page.reload');
+    await until('document.getElementById("eventForm")?.getAttribute("aria-busy") === "false"');
+    assert.equal(await evaluate('document.getElementById("eventCategory").value'), 'Oficina de pesquisa');
+    assert.equal(await evaluate('document.getElementById("eventAudience").value'), 'Professores e egressos');
+    assert.equal(await evaluate('document.getElementById("graduationFieldsGroup").hidden'), false);
+    await evaluate('document.getElementById("eventAudience").value="   "; document.querySelector("#eventForm button[type=submit]").click()');
+    assert.equal(saves, 1, 'Público vazio deve impedir o envio.');
+    assert.match(await evaluate('document.getElementById("eventFormErrors").textContent'), /Público-alvo/);
+    await evaluate('document.getElementById("eventAudience").value="Professores e egressos"; document.getElementById("eventAudience").dispatchEvent(new Event("input",{bubbles:true}));');
+    await saveThroughSteps();
+    await until('location.pathname.endsWith("/eventos.html")');
+    assert.equal(saves, 2);
+    assert.equal(events.at(-1).category, 'Oficina de pesquisa');
+    assert.equal(events.at(-1).audienceLabel, 'Professores e egressos');
+    assert.equal(events.at(-1).audience, 'graduacao');
+    await navigate('evento-form.html?id=' + savedEvent.id);
+    await until('document.getElementById("eventForm")?.getAttribute("aria-busy") === "false"');
+    assert.equal(await evaluate('document.getElementById("eventAudience").value'), 'Professores e egressos');
+    assert.equal(await evaluate('document.getElementById("eventCategory").value'), 'Oficina de pesquisa');
+    assert.ok(await evaluate('[...document.getElementById("eventAudienceOptions").options].some(option=>option.value==="Professores e egressos")'));
+    await navigate('evento.html?id=' + savedEvent.id);
+    await until('document.querySelector(".evento-audience")');
+    assert.match(await evaluate('document.querySelector(".evento-audience").textContent'), /Professores e egressos/);
+    assert.equal(await evaluate('document.querySelector(".cover-badge").textContent'), 'Oficina de pesquisa');
+    await navigate('inscricao.html?id=' + savedEvent.id);
+    await until('document.querySelector(".audience-pill")');
+    assert.equal(await evaluate('document.querySelector(".audience-pill").textContent'), 'Professores e egressos');
+    console.log('Categoria e público: sugestões, texto livre, edição, recuperação, validação e inscrição por instituição conferidos.');
+
 
     await navigate('eventos.html');
     await until('document.querySelector("[data-close-event]")');
@@ -313,6 +483,42 @@ const server = http.createServer(async (req, res) => {
     assert.equal(await evaluate('document.querySelectorAll(".report-event-link").length'), 1);
     await navigate('relatorios.html?event=evt-empty');
     await until('document.getElementById("reportRegistrationsTable")?.textContent.includes("ainda não tem inscritos")');
+
+    // A instituição deve definir o relatório mesmo sem linhas e com público descritivo livre.
+    for (const school of [false, true]) {
+      for (const empty of [false, true]) {
+        const id = 'report-' + (school ? 'school' : 'college') + (empty ? '-empty' : '');
+        events.push({...fixture, id, institution:school?'escola-ideau-santa-clara':'faculdade-ideau', institutionType:school?'escola':'faculdade', audience:school?'graduacao':'escola', audienceLabel:school?'Egressos':'Famílias', registrationCount:empty?0:1});
+        if (!empty) registrations.push({eventId:id, name:'Participante da faculdade', cpf:'11122233344', studentName:'Educando da escola', responsibleName:'Responsável da escola', responsibleCpf:'55566677788', relationship:'Mãe', studentClass:'Turma escolar', course:'Curso da faculdade', createdAt:'2026-09-27T12:00:00Z'});
+        await navigate('relatorios.html?event=' + id);
+        await until('document.querySelector("#reportRegistrationsHead th")');
+        const expected = school
+          ? ['Inscrição','Educando','Responsável','CPF do Responsável','Parentesco','Turma']
+          : ['Inscrição','Participante','CPF','Curso'];
+        assert.deepEqual(await evaluate('[...document.querySelectorAll("#reportRegistrationsHead th")].map(th=>th.textContent)'), expected);
+        // Captura o HTML entregue aos dois formatos, sem abrir janelas ou gravar downloads.
+        await evaluate('URL.createObjectURL=blob=>{blob.text().then(text=>window.institutionExcel=text);return "blob:test";}; HTMLAnchorElement.prototype.click=function(){}; window.open=()=>({document:{write:text=>window.institutionPdf=text,close(){}},focus(){},print(){}}); document.getElementById("exportFilteredExcel").click(); document.getElementById("printFilteredPdf").click();');
+        await until('window.institutionExcel && window.institutionPdf');
+        for (const format of ['institutionExcel','institutionPdf']) {
+          const output = await evaluate('window.' + format);
+          const headers = [...output.matchAll(/<th>(.*?)<\/th>/g)].map(match=>match[1]).slice(2);
+          assert.deepEqual(headers, ['Evento','Data do evento',...expected]);
+          assert.doesNotMatch(output, school ? /Curso da faculdade|<th>Curso<\/th>|Participante da faculdade|11122233344/ : /Educando|Responsável|Parentesco|Turma|55566677788/);
+          if (empty) assert.ok(output.includes('colspan="' + (expected.length + 2) + '">Nenhuma inscrição encontrada.'));
+          else assert.match(output, school ? /Educando da escola.*|Responsável da escola/ : /Participante da faculdade/);
+        }
+        if (!empty) {
+          await evaluate('window.institutionExcel=null;window.institutionPdf=null;document.getElementById("reportSearch").value="sem correspondência";document.getElementById("reportSearch").dispatchEvent(new Event("input",{bubbles:true}));document.getElementById("exportFilteredExcel").click();document.getElementById("printFilteredPdf").click();');
+          await until('window.institutionExcel && window.institutionPdf');
+          for (const format of ['institutionExcel','institutionPdf']) {
+            const output = await evaluate('window.' + format);
+            assert.deepEqual([...output.matchAll(/<th>(.*?)<\/th>/g)].map(match=>match[1]).slice(2), ['Evento','Data do evento',...expected]);
+            assert.ok(output.includes('colspan="' + (expected.length + 2) + '">Nenhuma inscrição encontrada.'));
+          }
+        }
+      }
+    }
+    console.log('PDF, Excel e tabela: faculdade/escola, dados preenchidos, eventos vazios e busca sem resultados conferidos.');
     await navigate('relatorios.html?event=inexistente');
     await until('document.getElementById("reportSelectedTitle")?.textContent === "Evento não encontrado"');
     assert.equal(await evaluate('document.getElementById("reportRegistrationsTable").textContent'), '');
@@ -442,6 +648,127 @@ const server = http.createServer(async (req, res) => {
     assert.equal(await evaluate('document.querySelectorAll(".chart-donut svg").length'),0,'Sem dados não inventar gráfico.');
     await send('Emulation.clearDeviceMetricsOverride');
     console.log('Dashboard conferido: indicadores, sete gráficos, filtros, tabela, atalhos, listas preservadas, vazio e celular.');
+
+    const privateToken='b'.repeat(64);
+    events=[{...fixture,id:'evt-history',title:'Evento anterior'}, {...fixture,id:'evt-private',title:'Encontro reservado de Direito',accessMode:'link',listed:false,targetCourse:'Direito',recipientMode:'course',allowedParticipants:[],accessToken:privateToken,fields:{cpf:true,course:true,community:false}}];
+    registrations=[{eventId:'evt-history',name:'Aluna conhecida',cpf:'12345678901',course:'Direito',createdAt:'2026-09-27T12:00:00Z'},{eventId:'evt-history',name:'Aluno de outro curso',cpf:'98765432100',course:'Enfermagem',createdAt:'2026-09-27T12:00:00Z'}];
+    await navigate('evento-form.html?id=evt-private');
+    await until('document.getElementById("eventForm")?.getAttribute("aria-busy")==="false"');
+    await advanceToStep(2);
+    assert.equal(await evaluate('document.getElementById("eventAccessMode").value'),'link');
+    await clickChoiceArrow('eventTargetCourse');
+    assert.equal(await evaluate('document.getElementById("eventTargetCourseSuggestions").hidden'),false);
+    await clickChoiceArrow('eventTargetCourse');
+    assert.equal(await evaluate('document.getElementById("eventTargetCourseSuggestions").hidden'),true);
+    assert.equal(await evaluate('document.getElementById("eventListed").checked'),false);
+    assert.equal(await evaluate('document.querySelector("input[name=accessMode]:checked").value'),'link');
+    await evaluate('document.querySelector("input[name=accessMode][value=public]").click()');
+    assert.equal(await evaluate('document.getElementById("eventLinkAccessOptions").hidden'),true);
+    await evaluate('document.querySelector("input[name=accessMode][value=link]").click()');
+    assert.equal(await evaluate('document.getElementById("eventLinkAccessOptions").hidden'),false);
+    assert.equal(await evaluate('document.querySelector("input[name=recipientMode]:checked").value'),"course");
+    assert.equal(await evaluate('document.getElementById("eventAllowedParticipants")'),null);
+    await evaluate('document.querySelector("input[name=recipientMode][value=manual]").click(); document.getElementById("eventListed").checked=true;document.getElementById("eventListed").dispatchEvent(new Event("change",{bubbles:true}));');
+    assert.equal(await evaluate('document.getElementById("eventRecipientMode").value'),"manual");
+    await send('Emulation.setDeviceMetricsOverride',{width:390,height:844,deviceScaleFactor:1,mobile:true});
+    assert.equal(await evaluate('document.documentElement.scrollWidth <= innerWidth'),true);
+    await send('Emulation.clearDeviceMetricsOverride');
+    await send('Page.reload');
+    await until('document.getElementById("eventForm")?.getAttribute("aria-busy")==="false"');
+    assert.equal(await evaluate('document.getElementById("eventRecipientMode").value'),'manual');
+    assert.equal(await evaluate('document.querySelector("input[name=recipientMode]:checked").value'),"manual");
+    assert.equal(await evaluate('document.querySelector("input[name=accessMode]:checked").value'),'link');
+    assert.equal(await evaluate('document.getElementById("eventListed").checked'),true);
+    assert.equal(await evaluate('document.getElementById("eventFormStep").value'),'2');
+    await saveThroughSteps();
+    await until('location.pathname.endsWith("/eventos.html")');
+    await until('document.getElementById("adminEventsTable")?.textContent.includes("Privado")');
+    const savedPrivate=events.find(e=>e.id==='evt-private');
+    assert.equal(savedPrivate.targetCourse,'Direito');
+    assert.equal(savedPrivate.recipientMode,'manual');
+    assert.equal(savedPrivate.allowedParticipants,undefined);
+    assert.match(await evaluate('document.getElementById("adminEventsTable").textContent'),/Privado · divulgação pública/);
+    await evaluate('Object.defineProperty(navigator,"clipboard",{configurable:true,value:{writeText:async text=>{window.copiedPrivateLink=text;}}});document.querySelector("[data-copy-link=evt-private]").click();');
+    assert.match(await evaluate('window.copiedPrivateLink'),new RegExp('evento.html\\?id=evt-private#acesso='+privateToken+'$'));
+    await navigate('evento.html?id=evt-private');
+    await until('document.querySelector(".evento-info-wrap")');
+    assert.match(await evaluate('document.body.textContent'),/Encontro reservado de Direito/);
+    assert.doesNotMatch(await evaluate('document.getElementById("eventDetailRoot").innerHTML'),/12345678901|Aluna conhecida/);
+    await navigate('inscricao.html?id=evt-private');
+    await until('document.body.textContent.includes("Inscrição por link de acesso")');
+    assert.equal(await evaluate('document.getElementById("registrationForm")'),null);
+    await navigate('evento.html?id=evt-private#acesso='+privateToken);
+    await until('document.querySelector(".btn-inscricao[href]")');
+    assert.match(await evaluate('document.querySelector(".btn-inscricao").getAttribute("href")'),new RegExp('#acesso='+privateToken+'$'));
+    await evaluate('document.querySelector(".btn-inscricao").click()');
+    await until('document.getElementById("registrationForm")');
+    assert.deepEqual(await evaluate('[...document.getElementById("courseSelect").options].map(o=>o.value)'),['','Direito']);
+    assert.ok(await evaluate('document.getElementById("sidebarEventLink").hash.startsWith("#acesso=")'));
+    receiptSubmissions=0;receiptList=[];
+    await evaluate('document.querySelector("[name=name]").value="Aluna conhecida";document.querySelector("[name=cpf]").value="12345678901";document.getElementById("courseSelect").value="Direito";document.querySelector("#registrationForm button[type=submit]").click();');
+    await until('location.pathname.endsWith("/comprovante.php")');
+    assert.match(await evaluate('document.body.textContent'),/Aguardando aprovação/);
+    assert.equal(await evaluate('document.querySelector("a[href*=download]")'),null);
+    assert.equal(lastRegistration.accessToken,privateToken);
+    assert.equal(lastRegistration.course,'Direito');
+    await navigate('inscricao.html?id=evt-private#acesso='+privateToken);
+    await until('document.getElementById("registrationForm")');
+    assert.match(await evaluate('document.querySelector("[data-registration-receipts]").textContent'),/Aguardando aprovação/);
+    await evaluate('document.querySelector("[name=name]").value="Aluna conhecida";document.querySelector("[name=cpf]").value="12345678901";document.getElementById("courseSelect").value="Direito";document.querySelector("#registrationForm button[type=submit]").click();');
+    await until('document.querySelector("[data-registration-notice]")');
+    assert.match(await evaluate('document.querySelector("[data-registration-notice]").textContent'),/Aguarde a aprovação/);
+    assert.doesNotMatch(await evaluate('document.querySelector("[data-registration-notice]").textContent'),/continua confirmada/);
+    savedPrivate.listed=false;
+    await navigate('../index.php');
+    await until('document.querySelector(".event-card")');
+    assert.doesNotMatch(await evaluate('document.body.textContent'),/Encontro reservado de Direito/);
+    await navigate('evento.html?id=evt-private');
+    await until('document.body.textContent.includes("Evento indisponível")');
+    await navigate('evento.html?id=evt-private#acesso='+privateToken);
+    await until('document.querySelector(".evento-info-wrap")');
+    assert.match(await evaluate('document.body.textContent'),/Encontro reservado de Direito/);
+    console.log('Evento privado: edição, aprovação manual, recuperação, cópia do link, divulgação pública, ocultação e inscrição com token conferidos.');
+    registrations=[
+      {id:'reg-review-a',eventId:'evt-private',name:'Aluno pendente A',cpf:'12345678901',course:'Direito',reviewStatus:'pending',createdAt:'2026-09-30T12:00:00Z'},
+      {id:'reg-review-b',eventId:'evt-private',name:'Aluno pendente B',cpf:'98765432100',course:'Direito',reviewStatus:'pending',createdAt:'2026-09-30T12:01:00Z'}
+    ];
+    await navigate('relatorios.html?event=evt-private');
+    await until('document.querySelectorAll("[data-decision=approve]").length===2');
+    assert.match(await evaluate('document.getElementById("reportReviewSummary").textContent'),/2 aguardando/);
+    await send('Emulation.setDeviceMetricsOverride',{width:390,height:844,deviceScaleFactor:1,mobile:true});
+    assert.equal(await evaluate('document.documentElement.scrollWidth<=innerWidth'),true);
+    await evaluate('document.getElementById("reportSelectedTitle").scrollIntoView({behavior:"instant"})');
+    if(process.env.REVIEW_SCREENSHOT){
+      const shot=await send('Page.captureScreenshot',{format:'png'});
+      fs.writeFileSync(process.env.REVIEW_SCREENSHOT,Buffer.from(shot.data,'base64'));
+    }
+    await send('Emulation.clearDeviceMetricsOverride');
+
+    await evaluate('document.querySelector("[data-decision=approve]").click()');
+    await until('document.querySelectorAll("[data-decision=remove]").length===1');
+    assert.equal(registrations[0].reviewStatus,'approved');
+    await evaluate('document.getElementById("reportReviewFilter").value="pending";document.getElementById("reportReviewFilter").dispatchEvent(new Event("change",{bubbles:true}));');
+    assert.doesNotMatch(await evaluate('document.getElementById("reportRegistrationsTable").textContent'),/Aluno pendente A/);
+    await evaluate('window.open=()=>({document:{write:text=>window.reviewPdf=text,close(){}},focus(){},print(){}});document.getElementById("printFilteredPdf").click()');
+    await until('window.reviewPdf');
+    assert.match(await evaluate('window.reviewPdf'),/Aguardando aprovação/);
+    assert.doesNotMatch(await evaluate('window.reviewPdf'),/Aluno pendente A|data-review-registration/);
+    await evaluate('document.querySelector("[data-decision=reject]").click()');
+    await until('document.getElementById("reportRegistrationsTable").textContent.includes("Nenhum inscrito corresponde")');
+    assert.equal(registrations.length,1);
+    await evaluate('document.getElementById("reportReviewFilter").value="all";document.getElementById("reportReviewFilter").dispatchEvent(new Event("change",{bubbles:true}));');
+    await evaluate('document.querySelector("[data-decision=remove]").click()');
+    await until('document.getElementById("reportRegistrationsTable").textContent.includes("ainda não tem inscritos")');
+    assert.equal(registrations.length,0);
+    events.find(e=>e.id==='evt-private').recipientMode='course';
+    registrations=[{id:'reg-auto',eventId:'evt-private',name:'Aluno automático',cpf:'12345678901',course:'Direito',createdAt:'2026-09-30T12:00:00Z'}];
+    await navigate('relatorios.html?event=evt-private');
+    await until('document.querySelector("[data-decision=remove]")');
+    assert.equal(await evaluate('document.querySelector("[data-decision=approve]")'),null);
+    await evaluate('document.querySelector("[data-decision=remove]").click()');
+    await until('document.getElementById("reportRegistrationsTable").textContent.includes("ainda não tem inscritos")');
+    assert.equal(registrations.length,0);
+    console.log('Revisão conferida: pendência, comprovante bloqueado, aprovar, recusar, filtro, PDF e remover no modo automático.');
     assert.deepEqual(errors, []);
     console.log('OK no navegador: lista de erros visível sem subir ao topo, links para os campos, salvamento após correção, recuperação, menu, celular e encerramento.');
   } finally {

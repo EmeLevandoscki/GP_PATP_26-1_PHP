@@ -17,7 +17,6 @@ class UsuarioService
 
     public function cadastrarUsuario(array $params): int
     {   
-        error_log('Cadastrando usuário: ' . print_r($params, true));
         if ($params['cargo'] === 'aluno' && ($params['cpf'] === null || $params['cpf'] === '')) {
             $cpf = '';    
         } elseif ($params['cpf'] === null || $params['cpf'] === '') {

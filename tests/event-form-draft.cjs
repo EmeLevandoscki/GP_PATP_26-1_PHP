@@ -12,7 +12,7 @@ let rejectCover = false;
 function openForm(search = '') {
   const fields = Object.fromEntries([
     ['eventId', 'hidden', 'server-id'], ['eventTitle', 'text', 'Título do servidor'],
-    ['eventInstitution', 'select-one', ''], ['eventAudience', 'select-one', ''],
+    ['eventInstitution', 'select-one', ''], ['eventAudience', 'text', ''], ['eventCategory', 'text', ''],
     ['eventSummary', 'textarea', ''], ['eventDescription', 'textarea', ''],
     ['eventCover', 'hidden', ''], ['eventCoverFile', 'file', ''],
     ['eventPublicationMode', 'hidden', 'published'], ['eventPublishAt', 'datetime-local', ''],
@@ -47,7 +47,6 @@ function openForm(search = '') {
     setValue: (id, value) => { fields[id].value = value; },
     showToast: message => notices.push(message),
     syncEventInstitution: () => {
-      fields.eventAudience.value = fields.eventInstitution.value === 'faculdade-ideau' ? 'graduacao' : '';
       fields.fieldEmail.checked = true;
     },
     toggleAudienceFieldGroups: () => {},
@@ -66,6 +65,8 @@ function openForm(search = '') {
 const form = openForm();
 form.fields.eventTitle.value = '  Evento ainda em edição  ';
 form.fields.eventInstitution.value = 'faculdade-ideau';
+form.fields.eventAudience.value = 'Professores e egressos';
+form.fields.eventCategory.value = 'Encontro de pesquisa';
 form.fields.eventDescription.value = 'Primeira linha\nSegunda linha';
 form.fields.fieldEmail.checked = false;
 form.fields.eventCover.value = 'data:image/png;base64,teste';
@@ -78,7 +79,8 @@ const refreshed = openForm();
 assert.equal(refreshed.fields.eventTitle.value, form.fields.eventTitle.value);
 assert.equal(refreshed.fields.eventDescription.value, form.fields.eventDescription.value);
 assert.equal(refreshed.fields.eventSummary.value, '');
-assert.equal(refreshed.fields.eventAudience.value, 'graduacao');
+assert.equal(refreshed.fields.eventAudience.value, 'Professores e egressos');
+assert.equal(refreshed.fields.eventCategory.value, 'Encontro de pesquisa');
 assert.equal(refreshed.fields.fieldEmail.checked, false, 'Restaurar instituição não deve substituir escolhas pessoais.');
 assert.equal(refreshed.fields.eventId.value, 'server-id');
 assert.equal(refreshed.fields.eventCover.value, form.fields.eventCover.value);

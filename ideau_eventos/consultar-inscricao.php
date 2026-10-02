@@ -3,7 +3,7 @@ require_once __DIR__ . '/../vendor/autoload.php';
 use App\Config\Conexao;
 use App\Service\ConsultaInscricaoService;
 use App\Service\ComprovanteService;
-session_start(['cookie_httponly' => true, 'cookie_samesite' => 'Lax']);
+\App\Service\RequestSecurity::session();
 header('Cache-Control: no-store');
 header('Referrer-Policy: no-referrer');
 header('X-Content-Type-Options: nosniff');
@@ -56,6 +56,8 @@ if ($verified && !isset($_SESSION['consulta_pending'])) {
     try {
         $service = new ConsultaInscricaoService(Conexao::getConexao(), static fn () => false, '');
         foreach ($service->inscricoes($verified['email']) as $receipt) {
+            // A posse do e-mail foi confirmada por token; autoriza apenas seus comprovantes.
+            $_SESSION['registration_receipts'][hash('sha256', $receipt['protocol'])] = $receipt;
             $receipt['url'] = ComprovanteService::resposta($receipt, true)['receiptUrl'];
             $receipts[] = $receipt;
         }
@@ -81,7 +83,7 @@ function consultaEscape(string $value): string { return htmlspecialchars($value,
 <span class="consult-eyebrow">ACESSO CONFIRMADO</span><h2>Sua inscrição</h2><p class="consult-email"><?= consultaEscape($verified['email']) ?></p>
 <?php if (!$error && !$receipts): ?><div class="consult-feedback">Nenhuma inscrição ativa encontrada para este e-mail. Confira se utilizou outro endereço ou se a inscrição foi cancelada.</div><?php endif; ?>
 <?php foreach ($receipts as $receipt): ?>
-<article class="consult-result"><span class="receipt-status">✓ Inscrição ativa</span><h3><?= consultaEscape($receipt['eventTitle']) ?></h3><p><?= consultaEscape($receipt['name']) ?><br><?= consultaEscape($receipt['date']) ?> · <?= consultaEscape($receipt['time']) ?></p><div class="consult-result-actions"><a href="<?= consultaEscape($receipt['url']) ?>">Ver comprovante →</a><a class="consult-cancel" href="<?= consultaEscape($receipt['url']) ?>&amp;cancel=1#cancelar-inscricao">Cancelar inscrição</a></div></article>
+<article class="consult-result"><span class="receipt-status"><?= ($receipt['reviewStatus'] ?? 'approved') === 'pending' ? 'Aguardando aprovação' : '✓ Inscrição confirmada' ?></span><h3><?= consultaEscape($receipt['eventTitle']) ?></h3><p><?= consultaEscape($receipt['name']) ?><br><?= consultaEscape($receipt['date']) ?> · <?= consultaEscape($receipt['time']) ?></p><div class="consult-result-actions"><a href="<?= consultaEscape($receipt['url']) ?>"><?= ($receipt['reviewStatus'] ?? 'approved') === 'pending' ? 'Acompanhar aprovação →' : 'Ver comprovante →' ?></a><a class="consult-cancel" href="<?= consultaEscape($receipt['url']) ?>&amp;cancel=1#cancelar-inscricao">Cancelar inscrição</a></div></article>
 <?php endforeach; ?>
 <form method="post"><input type="hidden" name="csrf" value="<?= consultaEscape($_SESSION['consulta_csrf']) ?>"><button class="consult-reset" name="action" value="reset">Consultar outro e-mail</button></form>
 <?php else: ?>

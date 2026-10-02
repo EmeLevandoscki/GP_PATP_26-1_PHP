@@ -8,9 +8,13 @@ require_once __DIR__ . '/../../vendor/autoload.php';
 
 header('Content-Type: application/json');
 
-$service = new UsuarioService();
+\App\Service\RequestSecurity::session();
+// As operações antigas de usuários são exclusivamente administrativas.
+\App\Service\RequestSecurity::organizer();
+if ($_SERVER['REQUEST_METHOD'] === 'POST') \App\Service\RequestSecurity::csrf();
 
     try {
+        $service = new UsuarioService();
         if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['salvar'])) {
             $service->cadastrarUsuario($_POST);
 
@@ -59,7 +63,7 @@ $service = new UsuarioService();
 
         echo json_encode([
             'success' => false,
-            'message' => $e->getMessage()
+            'message' => 'Não foi possível processar a solicitação.'
         ]);
     }
 ?>
