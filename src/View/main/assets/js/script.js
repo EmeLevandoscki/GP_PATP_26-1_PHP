@@ -341,6 +341,14 @@ function filterEvents() {
 function renderEvents(lista) {
   const grid = document.getElementById('eventsGrid');
   if (!grid) return;
+  const escape = value => String(value ?? '').replace(/[&<>"']/g,
+    char => ({'&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;'}[char]));
+  const imageUrl = value => {
+    try {
+      const url = new URL(String(value || ''), document.baseURI);
+      return ['http:', 'https:'].includes(url.protocol) ? url.href : '';
+    } catch { return ''; }
+  };
 
   if (lista.length === 0) {
     grid.innerHTML = `
@@ -354,28 +362,32 @@ function renderEvents(lista) {
   grid.innerHTML = lista.map(ev => `
     <div class="event-card fade-up">
       <div class="card-img">
-        <img src="${ev.img}" alt="${ev.titulo}" loading="lazy"/>
-        <span class="card-tag">${ev.tag}</span>
+        <img src="${escape(imageUrl(ev.img))}" alt="${escape(ev.titulo)}" loading="lazy"/>
+        <span class="card-tag">${escape(ev.tag)}</span>
         <div class="card-date-badge">
-          <span class="day">${ev.dia}</span>
-          <span class="month">${ev.mes}</span>
+          <span class="day">${escape(ev.dia)}</span>
+          <span class="month">${escape(ev.mes)}</span>
         </div>
       </div>
       <div class="card-body">
         <div class="card-meta">
-          <span>📍 ${ev.cidade}</span>
-          <span>🏛️ ${ev.local}</span>
+          <span>📍 ${escape(ev.cidade)}</span>
+          <span>🏛️ ${escape(ev.local)}</span>
         </div>
-        <h3 class="card-title">${ev.titulo}</h3>
-        <p class="card-desc">${ev.desc}</p>
+        <h3 class="card-title">${escape(ev.titulo)}</h3>
+        <p class="card-desc">${escape(ev.desc)}</p>
         <div class="card-footer">
-          <button class="card-btn" onclick="openModal('${ev.titulo.replace(/'/g, "\\'")}')">
+          <button class="card-btn" data-event-name="${escape(ev.titulo)}">
             Inscrever-se
           </button>
         </div>
       </div>
     </div>
   `).join('');
+
+  grid.querySelectorAll('[data-event-name]').forEach(button => {
+    button.addEventListener('click', () => openModal(button.dataset.eventName));
+  });
 
   // Ativa animações fade-up
   requestAnimationFrame(() => {

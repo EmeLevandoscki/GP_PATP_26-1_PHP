@@ -439,7 +439,7 @@ function getPastaBase() {
   }
 
   async function copyPublicEventsLink() {
-    const link = new URL('../index.php#eventos', window.location.href).href;
+    const link = new URL('../', window.location.href).href;
     const input = document.getElementById('publicEventsLink');
     input.value = link;
     try {
@@ -456,7 +456,7 @@ function getPastaBase() {
   function initAdminEventsPage() {
     if (!requireAuth()) return;
     const publicLink = document.getElementById('publicEventsLink');
-    publicLink.value = new URL('../index.php#eventos', window.location.href).href;
+    publicLink.value = new URL('../', window.location.href).href;
     publicLink.addEventListener('focus', () => publicLink.select());
     publicLink.addEventListener('click', () => publicLink.select());
     document.getElementById('copyPublicEventsLink')?.addEventListener('click', copyPublicEventsLink);

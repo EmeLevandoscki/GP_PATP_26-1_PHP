@@ -8,7 +8,7 @@ $event=$service->salvar(array_replace($fixture,[
     'institution'=>'faculdade-ideau','publicationMode'=>'published','accessMode'=>'link','listed'=>true,
     'targetCourse'=>'Direito','recipientMode'=>'manual','seats'=>1,'fields'=>['email'=>true]
 ]),$owner);
-$reg=['eventId'=>$event['id'],'name'=>'Aluno pendente','cpf'=>'12345678901','course'=>'Direito',
+$reg=['eventId'=>$event['id'],'name'=>'Aluno pendente','cpf'=>'12345678909','course'=>'Direito',
     'participantType'=>'aluno','accessToken'=>$event['accessToken'],'email'=>'aluno@example.test','reviewStatus'=>'approved','reviewedAt'=>'forjado'];
 $result=$service->inscrever($reg);
 check($result['reviewStatus']==='pending','Solicitação manual fica pendente no servidor.');
@@ -54,6 +54,6 @@ check($autoResult['reviewStatus']==='approved','Curso informado confirma automat
 $autoReceipt=$_SESSION['registration_receipts'][substr($autoResult['receiptUrl'],strlen('comprovante.php?id='))];
 $service->revisarInscricao($event['id'],$autoReceipt['protocol'],'remove',$owner);
 check(!ComprovanteService::ativa($db,$autoReceipt),'Organizador também remove no modo automático.');
-$old=$service->salvar(array_replace($event,['recipientMode'=>'selected','allowedParticipants'=>[['name'=>'Antigo','cpf'=>'12345678901']]]),$owner);
+$old=$service->salvar(array_replace($event,['recipientMode'=>'selected','allowedParticipants'=>[['name'=>'Antigo','cpf'=>'12345678909']]]),$owner);
 check($old['recipientMode']==='manual' && !isset($old['allowedParticipants']),'Regra antiga passa a manual sem lista prévia.');
 echo "OK: aprovação manual, curso automático, reenvio, autorização, vagas, consulta, PDF, remoção, recusa e estatísticas.\n";

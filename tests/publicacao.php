@@ -78,7 +78,7 @@ try {
 
 $event = $service->salvar(array_replace($fixture, ['seats' => 1, 'publicationMode' => 'scheduled']), $owner);
 $registration = ['eventId' => $event['id'], 'responsibleName' => 'Responsável de teste',
-    'responsibleCpf' => '12345678901', 'studentName' => 'Educando de teste'];
+    'responsibleCpf' => '12345678909', 'studentName' => 'Educando de teste'];
 invalid(fn () => $service->inscrever($registration));
 $service->salvar(array_replace($event, ['publicationMode' => 'published']), $owner);
 invalid(fn () => $service->inscrever(array_replace($registration, ['responsibleName' => ''])));

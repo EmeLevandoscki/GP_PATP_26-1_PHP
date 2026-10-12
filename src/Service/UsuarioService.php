@@ -16,7 +16,8 @@ class UsuarioService
     }
 
     public function cadastrarUsuario(array $params): int
-    {   
+    {
+        $params = $this->validarIdentificacao($params);
         if ($params['cargo'] === 'aluno' && ($params['cpf'] === null || $params['cpf'] === '')) {
             $cpf = '';    
         } elseif ($params['cpf'] === null || $params['cpf'] === '') {
@@ -108,11 +109,12 @@ class UsuarioService
     }
     public function realizarLogin(string $emailCPF, string $senha): object
     {
-        $sql = 'SELECT * FROM usuarios WHERE email = :emailCPF OR cpf = :emailCPF LIMIT 1';
+        $sql = 'SELECT * FROM usuarios WHERE email = :email OR cpf = :cpf LIMIT 1';
 
         $stmt = $this->con->prepare($sql);
 
-        $stmt->bindValue(':emailCPF', $emailCPF);
+        $stmt->bindValue(':email', $emailCPF);
+        $stmt->bindValue(':cpf', $emailCPF);
 
         $stmt->execute();
 
@@ -190,6 +192,7 @@ class UsuarioService
     }    
     public function editarUsuario(array $params): void
     {
+        $params = $this->validarIdentificacao($params);
         $sql = 'UPDATE
                     usuarios
                 SET
@@ -217,6 +220,13 @@ class UsuarioService
         $stmt->bindValue(':foto_path', $params['foto_path']);
 
         $stmt->execute();
+    }
+
+    private function validarIdentificacao(array $params): array
+    {
+        $params['cpf'] = ValidacaoDados::cpf($params['cpf'] ?? null, ($params['cargo'] ?? '') !== 'aluno');
+        $params['email'] = ValidacaoDados::email($params['email'] ?? null);
+        return $params;
     }
 
     public function excluirUsuario(int $id): void

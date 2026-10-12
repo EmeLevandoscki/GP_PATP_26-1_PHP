@@ -1,0 +1,9 @@
+Options -Indexes -ExecCGI
+# A pasta pública aceita somente imagens estáticas, inclusive sem mod_rewrite.
+<FilesMatch "(?i)^(?!.*\.(?:png|jpe?g|webp|gif)$).*$">
+Require all denied
+</FilesMatch>
+# Impede extensões executáveis também em nomes como arquivo.php.png.
+<FilesMatch "(?i)\.(?:php[0-9]*|phtml|phar|cgi|pl|py|sh|shtml)(?:\.|$)">
+Require all denied
+</FilesMatch>

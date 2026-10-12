@@ -1,7 +1,6 @@
 <?php
     namespace App\Controller;
-    ini_set('display_errors', 0);
-    error_reporting(E_ALL);
+    require_once __DIR__ . '/../Config/runtime.php';
     use App\Service\EventoService;
     require_once __DIR__ . '/../../vendor/autoload.php';
 

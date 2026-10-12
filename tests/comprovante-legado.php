@@ -16,7 +16,7 @@ $db->exec("INSERT INTO eventos (id, titulo, descricao, data_inicio, data_fim, id
 $db->exec("INSERT INTO atividades (id,id_evento,nome,descricao,local_atv,data_ini,data_fim) VALUES (986,987,'Atividade teste','','Auditório','2099-12-31 10:00:00','2099-12-31 18:00:00')");
 $db->exec("INSERT INTO turmas (id,id_curso,nome) VALUES (985,1,'Turma teste')");
 $service = new EventoService();
-$data = ['event_id' => '986', 'audience' => 'escola', 'responsible_cpf' => '12345678901',
+$data = ['event_id' => '986', 'audience' => 'escola', 'responsible_cpf' => '12345678909',
     'responsible_name' => 'Responsável fictício', 'email' => 'teste@example.invalid', 'name' => 'Aluno fictício',
     'phone' => '', 'relationship' => 'Pai', 'student_class' => 'Turma teste'];
 $first = $service->realizarInscricao($data);

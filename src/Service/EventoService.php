@@ -347,6 +347,9 @@ class EventoService
     }
     public function realizarInscricao(array $params): array
     {
+        // Validar antes de consultar pessoas existentes: reutilizar um cadastro não dispensa validação.
+        $params['responsible_cpf'] = ValidacaoDados::cpf($params['responsible_cpf'] ?? null, true);
+        $params['email'] = ValidacaoDados::email($params['email'] ?? null);
         $this->con->beginTransaction();
         try {
             $this->validarInscricaoAberta((int) ($params['event_id'] ?? 0));

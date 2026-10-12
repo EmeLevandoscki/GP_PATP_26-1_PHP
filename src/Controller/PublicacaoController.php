@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/../Config/runtime.php';
 require_once __DIR__ . '/../../vendor/autoload.php';
 
 use App\Config\Conexao;
@@ -64,7 +65,7 @@ try {
         }
         if (!isset($_SESSION['publication_organizer'])) responder(['message' => 'Entre como organizador para salvar.'], 401);
         if ($action === 'logout') {
-            unset($_SESSION['publication_organizer']);
+            \App\Service\RequestSecurity::logout();
             responder(['success' => true]);
         }
         if ($action === 'review-registration') {

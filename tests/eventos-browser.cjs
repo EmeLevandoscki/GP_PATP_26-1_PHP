@@ -178,6 +178,62 @@ const server = http.createServer(async (req, res) => {
       await send('Input.dispatchMouseEvent', {type:'mouseReleased',button:'left',clickCount:1,...point});
       await pause(400);
     };
+    // Menu administrativo: toques reais, foco e mudança entre celular e desktop.
+    for (const page of ['dashboard.html', 'eventos.html', 'evento-form.html', 'relatorios.html', 'inscritos.html', 'configuracoes.html']) {
+      await navigate(page);
+      await until('document.body.classList.contains("admin-nav-ready")');
+      assert.equal(await evaluate('document.querySelector(".admin-sidebar").inert'), true, page);
+      await clickMenuElement('.admin-menu-button');
+      assert.equal(await evaluate('document.querySelector(".admin-menu-button").getAttribute("aria-expanded")'), 'true', page);
+      assert.equal(await evaluate('document.querySelector(".admin-main").inert'), true);
+      assert.equal(await evaluate('document.activeElement.className'), 'admin-menu-close');
+      await clickMenuElement('.admin-menu-close');
+      assert.equal(await evaluate('document.activeElement.className'), 'admin-menu-button');
+      await clickMenuElement('.admin-menu-button');
+      await send('Input.dispatchMouseEvent', {type:'mousePressed',button:'left',clickCount:1,x:380,y:400});
+      await send('Input.dispatchMouseEvent', {type:'mouseReleased',button:'left',clickCount:1,x:380,y:400});
+      await pause(250);
+      assert.equal(await evaluate('document.body.classList.contains("admin-menu-open")'), false);
+      await clickMenuElement('.admin-menu-button');
+      await send('Input.dispatchKeyEvent', {type:'keyDown',key:'Tab',code:'Tab',windowsVirtualKeyCode:9,modifiers:8});
+      assert.equal(await evaluate('document.activeElement.id'), 'logoutButton', 'Shift+Tab deve permanecer no menu');
+      await send('Input.dispatchKeyEvent', {type:'keyDown',key:'Tab',code:'Tab',windowsVirtualKeyCode:9});
+      assert.equal(await evaluate('document.activeElement.className'), 'admin-menu-close');
+      await send('Input.dispatchKeyEvent', {type:'keyDown',key:'Escape',code:'Escape',windowsVirtualKeyCode:27});
+      assert.equal(await evaluate('document.querySelector(".admin-main").inert'), false);
+      assert.equal(await evaluate('document.documentElement.classList.contains("admin-menu-lock")'), false);
+    }
+    await clickMenuElement('.admin-menu-button');
+    assert.equal(await evaluate('(() => { const a=document.querySelector(".admin-nav a[href=\\"eventos.html\\"]"); const r=a.getBoundingClientRect(); return document.elementFromPoint(r.x+r.width/2,r.y+r.height/2)?.closest("a")?.getAttribute("href"); })()'), 'eventos.html', 'O link de eventos deve receber o toque');
+    await clickMenuElement('.admin-nav a[href="eventos.html"]');
+    await until('location.pathname.endsWith("/eventos.html") && document.readyState === "complete"');
+    assert.equal(await evaluate('document.body.classList.contains("admin-menu-open")'), false);
+    await clickMenuElement('.admin-menu-button');
+    await send('Emulation.setDeviceMetricsOverride', {width:1440,height:1000,deviceScaleFactor:1,mobile:false});
+    await pause(300);
+    assert.equal(await evaluate('document.querySelector(".admin-sidebar").inert'), false);
+    assert.equal(await evaluate('getComputedStyle(document.querySelector(".admin-mobile-header")).display'), 'none');
+    assert.equal(await evaluate('document.querySelector(".admin-main").inert'), false);
+    for (const size of [{width:320,height:640}, {width:844,height:390}]) {
+      await send('Emulation.setDeviceMetricsOverride', {...size,deviceScaleFactor:1,mobile:true});
+      await pause(300);
+      await clickMenuElement('.admin-menu-button');
+      assert.equal(await evaluate('document.documentElement.scrollWidth <= innerWidth'), true);
+      await evaluate('document.getElementById("logoutButton").scrollIntoView({block:"end"})');
+      await pause(300);
+      assert.equal(await evaluate('document.getElementById("logoutButton").getBoundingClientRect().bottom <= innerHeight'), true, 'Sair deve ficar acessível com rolagem');
+      await send('Input.dispatchKeyEvent', {type:'keyDown',key:'Escape',code:'Escape',windowsVirtualKeyCode:27});
+    }
+    await send('Emulation.setDeviceMetricsOverride', {width:390,height:844,deviceScaleFactor:1,mobile:true});
+    await pause(300);
+    await clickMenuElement('.admin-menu-button');
+    await evaluate('document.querySelector(".admin-sidebar").scrollTop=0');
+    const menuScreenshot = path.join(os.tmpdir(), 'ideau-admin-sidebar.png');
+    fs.writeFileSync(menuScreenshot, Buffer.from((await send('Page.captureScreenshot', {format:'png'})).data, 'base64'));
+    console.log('Menu administrativo aprovado em seis páginas: abertura, fechamento, teclado, navegação, rolagem e desktop. Imagem: '+menuScreenshot);
+    assert.deepEqual(errors, []);
+    if (process.argv.includes('--admin-sidebar')) return;
+
     for (const page of ['../index.php', 'evento.html?id=evt-browser', 'inscricao.html?id=evt-browser']) {
       await navigate(page);
       await clickMenuElement('#menuToggle');

@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/../src/Config/runtime.php';
 require_once __DIR__ . '/../vendor/autoload.php';
 use App\Config\Conexao;
 use App\Service\ConsultaInscricaoService;
@@ -43,10 +44,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $error = $exception->getMessage();
         if (($_POST['action'] ?? '') === 'confirm') unset($_SESSION['consulta_pending']);
     } catch (RuntimeException $exception) {
+        error_log('Consulta de inscrição: ' . $exception->getMessage());
         // Falhas de infraestrutura não devem exibir consultas SQL nem configurações.
         $error = $exception instanceof PDOException ? 'Não foi possível acessar a consulta. Tente novamente mais tarde.' : $exception->getMessage();
         http_response_code(503);
     } catch (Throwable $exception) {
+        error_log('Consulta de inscrição: ' . $exception->getMessage());
         http_response_code(503); $error = 'Não foi possível acessar a consulta. Tente novamente mais tarde.';
     }
 }
@@ -61,7 +64,10 @@ if ($verified && !isset($_SESSION['consulta_pending'])) {
             $receipt['url'] = ComprovanteService::resposta($receipt, true)['receiptUrl'];
             $receipts[] = $receipt;
         }
-    } catch (Throwable) { http_response_code(503); $error = 'Não foi possível consultar suas inscrições agora. Tente novamente.'; }
+    } catch (Throwable $exception) {
+        error_log('Listagem de inscrições confirmadas: ' . $exception->getMessage());
+        http_response_code(503); $error = 'Não foi possível consultar suas inscrições agora. Tente novamente.';
+    }
 }
 function consultaEscape(string $value): string { return htmlspecialchars($value, ENT_QUOTES, 'UTF-8'); }
 ?>

@@ -1,11 +1,27 @@
 Options -Indexes
+DirectoryIndex index.php index.html
 <IfModule mod_rewrite.c>
 RewriteEngine On
-RewriteRule ^(?:\.git|\.agents|\.codex|db|tests|tools|vendor|src/(?:Config|Service|Model))(?:/|$) - [F,L,NC]
-RewriteRule (?:^|/)(?:\.env(?:\..*)?|composer\.(?:json|lock)|.*\.(?:sql|log|bak|old))$ - [F,L,NC]
+RewriteRule ^(?:db|tests|tools|vendor|config|docs|documentacao|backups?|logs?|src/(?:Config|Service|Model))(?:/|$) - [F,L,NC]
+# Preserva .well-known para a renovação do certificado HTTPS.
+RewriteRule (^|/)\.(?!well-known(?:/|$)) - [F,L,NC]
+RewriteRule (?:^|/)(?:composer\.(?:json|lock)|.*\.(?:sql|sqlite3?|db|log|bak[0-9]*|backup|bkp|old|orig|save|sw[op]|ini|conf|config|ya?ml|toml|md|markdown|rst|zip|tar|tgz|gz|bz2|xz|7z|rar)(?:[.~][^/]*)?|[^/]*~)(?:/|$) - [F,L,NC]
+# Uploads públicos devem conter somente imagens, nunca código executável.
+RewriteRule ^uploads/.*\.(?:php[0-9]*|phtml|phar|cgi|pl|py|sh|shtml)(?:[./]|$) - [F,L,NC]
 </IfModule>
+# Proteção adicional que não depende de mod_rewrite.
+<FilesMatch "(?i)^(?:error_log(?:\..*)?|.*\.log(?:\..*)?)$">
+Require all denied
+</FilesMatch>
+<FilesMatch "(?i)^(?:.*\.env(?:\..*)?|.*\.local\.php(?:[.~].*)?|.*\.(?:pem|key|p12|pfx|jks|keystore))$">
+Require all denied
+</FilesMatch>
+<FilesMatch "(?i)^(?:\..*|composer\.(?:json|lock)|.*\.(?:sql|sqlite3?|db|log|bak[0-9]*|backup|bkp|old|orig|save|sw[op]|ini|conf|config|ya?ml|toml|md|markdown|rst|zip|tar|tgz|gz|bz2|xz|7z|rar)(?:[.~].*)?|.*~)$">
+Require all denied
+</FilesMatch>
 <IfModule mod_headers.c>
 Header always set X-Content-Type-Options "nosniff"
 Header always set Referrer-Policy "same-origin"
 Header always set X-Frame-Options "SAMEORIGIN"
+Header always set Permissions-Policy "camera=(), microphone=(), geolocation=()"
 </IfModule>

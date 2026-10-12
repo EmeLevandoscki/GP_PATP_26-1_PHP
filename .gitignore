@@ -3,3 +3,36 @@
 /src/Config/email.local.php
 
 src/Config/organizer.local.php
+
+/src/Config/database.local.php
+
+# Segredos: aplica-se também a subpastas e variantes como .env.production.
+.env
+.env.*
+*.env
+*.env.*
+# Somente o modelo explicitamente identificado pode ser versionado, sem valores reais.
+!.env.example
+
+# Configurações privadas e suas cópias locais.
+*.local.php
+*.local.php.*
+*.local.php~
+/.vscode/
+
+# Chaves privadas e pacotes de certificados.
+*.pem
+*.key
+*.p12
+*.pfx
+*.jks
+*.keystore
+
+# Logs nunca devem ser enviados ao repositório.
+*.log
+*.log.*
+error_log
+error_log.*
+
+# Pacotes locais de publicação.
+/publicacao/

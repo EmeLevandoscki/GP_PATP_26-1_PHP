@@ -7,11 +7,19 @@ final class RequestSecurity
     {
         ini_set('display_errors', '0');
         if (session_status() !== PHP_SESSION_ACTIVE) {
-            session_start(['use_strict_mode' => true, 'cookie_httponly' => true,
+            session_start(['use_strict_mode' => true, 'use_only_cookies' => true, 'cookie_httponly' => true,
                 'cookie_samesite' => 'Lax', 'cookie_secure' => !empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off']);
         }
         header('Cache-Control: no-store');
         header('X-Content-Type-Options: nosniff');
+    }
+
+    public static function logout(): void
+    {
+        // Remove também autorizações de comprovantes e consultas do navegador compartilhado.
+        $_SESSION = [];
+        if (!session_regenerate_id(true)) throw new \RuntimeException('Não foi possível encerrar a sessão.');
+        $_SESSION['publication_csrf'] = bin2hex(random_bytes(32));
     }
 
     public static function deny(string $message, int $status): never

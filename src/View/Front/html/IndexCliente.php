@@ -1,12 +1,6 @@
 <?php
+    require_once __DIR__ . '/../../../Config/runtime.php';
     session_start();
-    ini_set('display_errors', 1);
-    error_reporting(E_ALL);
-    require_once __DIR__ . '/../vendor/autoload.php';
-    use App\Service\EventoService;
-    $service = new EventoService();
-    $eventos = $service->listarTodosEventos();
-    var_dump($eventos)
 ?>
 
 <html lang="pt-BR" data-theme="dark">

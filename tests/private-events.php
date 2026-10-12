@@ -13,7 +13,7 @@ check($service->eventoPublico($private['id']) === [], 'Saber apenas o ID não ab
 check($service->eventoPublico($private['id'], str_repeat('0',64)) === [], 'Token incorreto não abre evento.');
 $opened = $service->eventoPublico($private['id'], $token)[0];
 check($opened['accessGranted'] && !isset($opened['accessToken'], $opened['allowedParticipants']), 'Acesso válido não deve expor segredos nem lista de alunos.');
-$reg = ['eventId'=>$private['id'], 'name'=>'Aluno de Direito', 'cpf'=>'12345678901', 'course'=>'Direito', 'participantType'=>'aluno'];
+$reg = ['eventId'=>$private['id'], 'name'=>'Aluno de Direito', 'cpf'=>'12345678909', 'course'=>'Direito', 'participantType'=>'aluno'];
 invalid(fn()=>$service->inscrever($reg));
 invalid(fn()=>$service->inscrever($reg + ['accessToken'=>[]]));
 invalid(fn()=>$service->inscrever($reg + ['accessToken'=>str_repeat('f',64)]));

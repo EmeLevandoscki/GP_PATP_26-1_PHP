@@ -1,3 +1,4 @@
+<?php require_once __DIR__ . '/src/Config/runtime.php'; ?>
 <!DOCTYPE html>
 <html lang="pt-BR" data-theme="dark">
 <head>
@@ -38,10 +39,6 @@
         Eventos
       </a>
       <a class="sidebar-link" href="ideau_eventos/consultar-inscricao.php" data-nav-link>Consultar minha inscrição</a>
-      <a href="ideau_eventos/login.html" class="sidebar-link" data-nav-link>
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-        Organizador
-      </a>
       <hr class="sidebar-divider">
       <button class="sidebar-link sidebar-theme-btn" id="sidebarThemeToggle" type="button" aria-label="Alternar tema claro e escuro" title="Trocar entre tema claro e escuro">
         <span class="sidebar-theme-icon" id="sidebarThemeIcon">🌙</span>
@@ -145,7 +142,7 @@
       <div class="footer-col">
         <h4>Acesso</h4>
         <ul>
-          <li><a href="ideau_eventos/login.html">Organizador</a></li>
+          <li><a href="ideau_eventos/consultar-inscricao.php">Consultar minha inscrição</a></li>
           <li><a href="#eventos">Eventos</a></li>
         </ul>
       </div>
@@ -169,7 +166,7 @@
     }
   ?>
   <script>
-    const PASTA_BASE = "<?php echo $pastaBase; ?>";
+    const PASTA_BASE = <?php echo json_encode($pastaBase, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT); ?>;
   </script>
   <script src="ideau_eventos/assets/js/app.js?v=20261001-sidebar-1"></script>
   <script src="ideau_eventos/assets/js/home.js?v=20260930-menu-1"></script>

@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/../src/Config/runtime.php';
 require_once __DIR__ . '/../vendor/autoload.php';
 use App\Service\ComprovanteService;
 use App\Config\Conexao;
@@ -41,6 +42,7 @@ if ($receipt) {
             $cancelled = true;
         }
     } catch (Throwable $exception) {
+        error_log('Consulta de comprovante: ' . $exception->getMessage());
         http_response_code(503);
         exit('Não foi possível consultar a inscrição. Tente novamente em instantes.');
     }

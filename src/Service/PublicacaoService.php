@@ -342,6 +342,9 @@ class PublicacaoService
 
     public function inscrever(array $registration): array
     {
+        if (!is_string($registration['eventId'] ?? null) || $registration['eventId'] === '') {
+            throw new InvalidArgumentException('Informe o evento.');
+        }
         $this->con->beginTransaction();
         try {
             $stmt = $this->con->prepare("SELECT dados, modo, publicar_em FROM eventos_publicacoes WHERE id = ?
@@ -370,13 +373,9 @@ class PublicacaoService
                 }
             }
             foreach (['cpf', 'responsibleCpf'] as $field) {
-                if (in_array($field, $required, true) && !preg_match('/^\d{11}$/D', $registration[$field])) {
-                    throw new InvalidArgumentException('Informe o CPF com 11 números.');
-                }
+                $registration[$field] = ValidacaoDados::cpf($registration[$field] ?? null, in_array($field, $required, true));
             }
-            if (in_array('email', $required, true) && !filter_var($registration['email'], FILTER_VALIDATE_EMAIL)) {
-                throw new InvalidArgumentException('Informe um e-mail válido.');
-            }
+            $registration['email'] = ValidacaoDados::email($registration['email'] ?? null, in_array('email', $required, true));
             // O bloqueio do evento serializa tentativas e evita inscrições duplicadas.
             $stmt = $this->con->prepare('SELECT dados FROM eventos_publicacoes_inscricoes WHERE id_evento = ?');
             $stmt->execute([$event['id']]);

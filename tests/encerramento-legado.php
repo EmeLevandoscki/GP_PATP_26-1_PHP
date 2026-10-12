@@ -35,7 +35,7 @@ checkLegacy($service->retornaQtdAtivos() === '2', 'Contagem pública deve inclui
 checkLegacy($service->retornaDetalhesEvento(2) !== null, 'Evento antigo deve continuar acessível até retirada manual.');
 checkLegacy(!$service->listarEventos(true)[1]->closed && $service->listarEventos(true)[1]->effectiveEndAt === null, 'Evento antigo deve estar em Atuais e sem contagem regressiva.');
 $service->encerrarEvento(2);
-closedRegistration(fn () => $service->realizarInscricao(['event_id' => 20, 'audience' => 'escola']));
+closedRegistration(fn () => $service->realizarInscricao(['event_id' => 20, 'audience' => 'escola', 'responsible_cpf' => '12345678909']));
 $service->encerrarEvento(1);
 $service->encerrarEvento(1);
 checkLegacy($service->listarEventos() === [], 'Encerramento manual deve tirar o evento do ar.');
@@ -46,5 +46,5 @@ checkLegacy($history[1]->closeReason === 'manual', 'Histórico só deve incluir 
 checkLegacy($history[0]->data_fim === '2099-12-31 18:00:00', 'Retirar do ar não deve alterar a data original do evento.');
 checkLegacy((int) $history[0]->inscritos === 1, 'Inscritos devem continuar contabilizados.');
 checkLegacy((int) $db->query('SELECT COUNT(*) FROM inscricoes')->fetchColumn() === 2, 'Nenhuma inscrição pode ser removida.');
-closedRegistration(fn () => $service->realizarInscricao(['event_id' => 10, 'audience' => 'escola']));
+closedRegistration(fn () => $service->realizarInscricao(['event_id' => 10, 'audience' => 'escola', 'responsible_cpf' => '12345678909']));
 echo "OK: histórico legado, retirada manual, bloqueio de links e inscrições, datas originais e inscritos preservados.\n";

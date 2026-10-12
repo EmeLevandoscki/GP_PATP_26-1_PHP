@@ -1,0 +1,2 @@
+# Defesa adicional para instalações que enviem a pasta db por engano.
+Require all denied

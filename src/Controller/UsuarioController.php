@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Service\UsuarioService;
 
+require_once __DIR__ . '/../Config/runtime.php';
 require_once __DIR__ . '/../../vendor/autoload.php';
 
 header('Content-Type: application/json');
@@ -60,6 +61,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') \App\Service\RequestSecurity::csrf();
         ]);
 
     } catch (\Exception $e) {
+        error_log('UsuarioController: ' . $e->getMessage());
 
         echo json_encode([
             'success' => false,
