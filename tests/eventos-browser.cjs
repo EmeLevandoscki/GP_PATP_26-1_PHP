@@ -348,6 +348,15 @@ const server = http.createServer(async (req, res) => {
       file.dispatchEvent(new Event('change', {bubbles:true}));
     })()`);
     await until('document.getElementById("eventCover").value.startsWith("data:image/png")');
+    for (const invalidDate of ['322323-01-01', '10000-01-01', '2099-02-29', '2000-01-01']) {
+      await evaluate(`(() => { const field = document.getElementById('eventDate'); field.value = ${JSON.stringify(invalidDate)}; field.dispatchEvent(new Event('input', {bubbles:true})); document.getElementById('eventStepNext').click(); })()`);
+      assert.equal(await evaluate('document.getElementById("eventDate").validity.valid'), false, invalidDate);
+      assert.equal(await evaluate('document.getElementById("eventFormStep").value'), '0');
+      assert.equal(saves, 0, 'Data inválida não deve chegar ao servidor.');
+    }
+    await evaluate(`(() => { const field = document.getElementById('eventDate'); field.value = '2100-02-28'; field.dispatchEvent(new Event('input', {bubbles:true})); })()`);
+    assert.equal(await evaluate('document.getElementById("eventDate").validity.valid'), true);
+    await evaluate(`(() => { const field = document.getElementById('eventDate'); field.value = '2099-12-31'; field.dispatchEvent(new Event('input', {bubbles:true})); })()`);
     await evaluate('document.getElementById("eventStepNext").click()');
     assert.equal(await evaluate('document.getElementById("eventFormStep").value'),'0');
     assert.equal(await evaluate('document.querySelectorAll("[aria-invalid=true]").length'), 1);

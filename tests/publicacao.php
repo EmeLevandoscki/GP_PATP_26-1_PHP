@@ -185,6 +185,9 @@ $originalTimezone = date_default_timezone_get();
 date_default_timezone_set('Pacific/Auckland');
 $zone = new DateTimeZone('America/Sao_Paulo');
 $now = new DateTimeImmutable('now', $zone);
+foreach (['322323-01-01', '10000-01-01', '0000-01-01', '2099-02-29', '2099-04-31', '2099-13-01', '2099-1-01'] as $invalidDate) {
+    invalid(fn() => $service->salvar(array_replace($fixture, ['date' => $invalidDate]), $owner));
+}
 foreach (['published','draft','scheduled','automatic'] as $mode) {
     invalid(fn()=>$service->salvar(array_replace($fixture,['date'=>'2000-01-01','publicationMode'=>$mode,'publishAt'=>'2099-01-01T12:00:00.000Z']),$owner));
 }

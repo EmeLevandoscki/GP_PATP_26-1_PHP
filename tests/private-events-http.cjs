@@ -5,6 +5,13 @@ const passwordHash=execFileSync('php',['-r', "echo password_hash('test-only-pass
 const root=path.resolve(__dirname,'..'),temp=fs.mkdtempSync(path.join(os.tmpdir(),'ideau-private-'));
 const router=path.join(temp,'router.php');
 fs.writeFileSync(router,"<?php\nrequire getenv('PRIVATE_TEST_ROOT').'/vendor/autoload.php';\n$db=App\\Config\\Conexao::getConexao();\n$db->exec('CREATE TEMPORARY TABLE eventos_publicacoes (id VARCHAR(100) PRIMARY KEY, organizador VARCHAR(255), modo VARCHAR(20), publicar_em DATETIME, dados JSON, criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP)');\n$db->exec('CREATE TEMPORARY TABLE eventos_publicacoes_inscricoes (id VARCHAR(100) PRIMARY KEY,id_evento VARCHAR(100),dados JSON,criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP)');\nforeach(['hidden','listed','open'] as $kind){\n $event=['id'=>'evt-'.$kind,'title'=>'Evento '.$kind,'date'=>'2099-12-31','time'=>'18:00','location'=>'Auditório','institution'=>'faculdade-ideau','audience'=>'graduacao','seats'=>-1,\n 'accessMode'=>$kind==='open'?'public':'link','listed'=>$kind!=='hidden','accessToken'=>str_repeat('a',64),'targetCourse'=>'Direito','recipientMode'=>'manual','allowedParticipants'=>[['name'=>'Aluno confidencial','cpf'=>'12345678909']],\n 'fields'=>['cpf'=>true,'course'=>true]];\n $db->prepare(\"INSERT INTO eventos_publicacoes(id,organizador,modo,dados) VALUES (?,'test','published',?)\")->execute([$event['id'],json_encode($event)]);\n}\n$db->prepare(\"INSERT INTO eventos_publicacoes_inscricoes(id,id_evento,dados) VALUES ('reg-review','evt-listed',?)\")->execute([json_encode(['id'=>'reg-review','eventId'=>'evt-listed','name'=>'Aluno pendente','reviewStatus'=>'pending'])]);\nrequire getenv('PRIVATE_TEST_ROOT').'/src/Controller/PublicacaoController.php';\n");
+// Exclusao e revisao devem alterar apenas tabelas temporarias, inclusive estatisticas.
+fs.writeFileSync(router, fs.readFileSync(router, 'utf8').replace(
+ "require getenv('PRIVATE_TEST_ROOT').'/src/Controller/PublicacaoController.php';",
+ "$db->exec('CREATE TEMPORARY TABLE dashboard_cancelamentos (id INT AUTO_INCREMENT PRIMARY KEY, origem VARCHAR(20), id_evento VARCHAR(100), publico VARCHAR(20), registrado_em DATETIME, cancelado_em DATETIME)');\n"
+ + "$db->prepare(\"INSERT INTO eventos_publicacoes(id,organizador,modo,dados) VALUES ('evt-other-owner','other','draft',?)\")->execute(['{}']);\n"
+ + "require getenv('PRIVATE_TEST_ROOT').'/src/Controller/PublicacaoController.php';"
+));
 (async()=>{
  const probe=net.createServer();await new Promise(r=>probe.listen(0,'127.0.0.1',r));const port=probe.address().port;await new Promise(r=>probe.close(r));
  const origin='http://127.0.0.1:'+port;
@@ -38,6 +45,7 @@ fs.writeFileSync(router,"<?php\nrequire getenv('PRIVATE_TEST_ROOT').'/vendor/aut
   let adminCookie=cookie;
   const actionPost=(action,data,csrf=session.csrf)=>fetch(origin+'/?action='+action,{method:'POST',headers:{Cookie:adminCookie,'Content-Type':'application/json','X-CSRF-Token':csrf},body:JSON.stringify(data)});
   assert.equal((await actionPost('review-registration',decision)).status,401);
+  assert.equal((await actionPost('delete',{id:'evt-hidden'})).status,401);
   const login=await actionPost('login',{email:'test',password:'test-only-password'});assert.equal(login.status,200);
   adminCookie=login.headers.get('set-cookie').split(';')[0];
   assert.equal((await actionPost('review-registration',decision,'invalid')).status,403);
@@ -45,6 +53,16 @@ fs.writeFileSync(router,"<?php\nrequire getenv('PRIVATE_TEST_ROOT').'/vendor/aut
   assert.equal((await actionPost('review-registration',{...decision,eventId:[]})).status,422);
   assert.equal((await actionPost('review-registration',{...decision,decision:'inventada'})).status,422);
   for(const name of ['approve','reject','remove'])assert.equal((await actionPost('review-registration',{...decision,decision:name})).status,200);
+  assert.equal((await actionPost('delete',{id:'evt-hidden'},'invalid')).status,403);
+  assert.equal((await actionPost('delete',{})).status,422);
+  assert.equal((await actionPost('delete',{id:[]})).status,422);
+  assert.equal((await actionPost('delete',{id:'evt-missing'})).status,422);
+  assert.equal((await actionPost('delete',{id:'evt-other-owner'})).status,422);
+  assert.equal((await fetch(origin+'/?action=delete&id=evt-hidden',{headers:{Cookie:adminCookie}})).status,400);
+  const deleted = await actionPost('delete',{id:'evt-hidden'});
+  assert.equal(deleted.status,200);
+  assert.equal((await deleted.json()).success,true);
+  console.log('OK HTTP: exclusao exige POST, sessao, CSRF, identificador valido e dono do evento.');
   console.log('OK HTTP: listagem privada, divulgação, segredo e lista ocultos, sessão administrativa, CSRF, link, curso e CPF.');
  }finally{
   child.kill();await new Promise(r=>child.exitCode!==null?r():child.once('exit',r));

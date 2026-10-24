@@ -120,6 +120,9 @@ class PublicacaoService
                 $event['fields'][$field] = false;
             }
         }
+        if (!preg_match('/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/D', $event['date']) || str_starts_with($event['date'], '0000-')) {
+            throw new InvalidArgumentException('Informe uma data válida, com dia, mês e ano de 4 dígitos.');
+        }
         $date = DateTimeImmutable::createFromFormat('!Y-m-d H:i', $event['date'] . ' ' . $event['time'], new DateTimeZone('America/Sao_Paulo'));
         if (!$date || $date->format('Y-m-d H:i') !== $event['date'] . ' ' . $event['time']) {
             throw new InvalidArgumentException('Informe data e horário válidos para o evento.');
@@ -226,11 +229,16 @@ class PublicacaoService
         if ($event['recipientMode'] === 'selected') $event['recipientMode'] = 'manual';
         unset($event['allowedParticipants']);
         if ($event['accessMode'] === 'link' && $event['institutionType'] === 'faculdade') {
-            if (!is_string($event['targetCourse']) || trim($event['targetCourse']) === '') throw new InvalidArgumentException('Informe o curso permitido para este evento.');
-            $event['targetCourse'] = trim($event['targetCourse']);
-            if (!in_array($event['recipientMode'], ['course', 'manual'], true)) throw new InvalidArgumentException('Escolha como autorizar os alunos.');
-            $event['fields']['cpf'] = $event['fields']['course'] = true;
-            $event['fields']['community'] = false;
+            if (!in_array($event['recipientMode'], ['anyone', 'course', 'manual'], true)) throw new InvalidArgumentException('Escolha quem pode se inscrever pelo link.');
+            if ($event['recipientMode'] === 'anyone') {
+                $event['targetCourse'] = '';
+                $event['fields']['course'] = false;
+            } else {
+                if (!is_string($event['targetCourse']) || trim($event['targetCourse']) === '') throw new InvalidArgumentException('Informe o curso permitido para este evento.');
+                $event['targetCourse'] = trim($event['targetCourse']);
+                $event['fields']['cpf'] = $event['fields']['course'] = true;
+                $event['fields']['community'] = false;
+            }
         } else {
             $event['targetCourse'] = '';
             $event['recipientMode'] = 'course';
@@ -275,6 +283,25 @@ class PublicacaoService
         $event['publicationMode'] = $released ? 'published' : $mode;
         $event['publishAt'] = $publishAt ? (new DateTimeImmutable($publishAt, new DateTimeZone('UTC')))->format('Y-m-d\TH:i:s.v\Z') : null;
         return $event;
+    }
+
+    public function excluir(string $id, string $organizador): void
+    {
+        $this->con->beginTransaction();
+        try {
+            $stmt = $this->con->prepare('SELECT id FROM eventos_publicacoes WHERE id = ? AND organizador = ? FOR UPDATE');
+            $stmt->execute([$id, $organizador]);
+            if (!$stmt->fetchColumn()) throw new InvalidArgumentException('Evento não encontrado para este organizador.');
+            $this->con->prepare('DELETE FROM eventos_publicacoes_inscricoes WHERE id_evento = ?')->execute([$id]);
+            if (CancelamentoEstatistica::disponivel($this->con)) {
+                $this->con->prepare("DELETE FROM dashboard_cancelamentos WHERE origem = 'publicacao' AND id_evento = ?")->execute([$id]);
+            }
+            $this->con->prepare('DELETE FROM eventos_publicacoes WHERE id = ? AND organizador = ?')->execute([$id, $organizador]);
+            $this->con->commit();
+        } catch (\Throwable $error) {
+            $this->con->rollBack();
+            throw $error;
+        }
     }
 
     public function encerrar(string $id, string $organizador): array

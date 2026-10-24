@@ -1043,14 +1043,18 @@ function getPastaBase() {
       option.checked = option.value === (privateEvent ? 'link' : 'public');
     });
     document.getElementById('eventLinkAccessOptions').hidden = !privateEvent;
-    const courseAccess = privateEvent && getFormAudience() === 'graduacao';
-    document.getElementById('eventCourseAccessOptions').hidden = !courseAccess;
+    const recipientOptions = privateEvent && getFormAudience() === 'graduacao';
+    const anyoneWithLink = recipientOptions && getValue('eventRecipientMode') === 'anyone';
+    const courseAccess = recipientOptions && !anyoneWithLink;
+    document.getElementById('eventCourseAccessOptions').hidden = !recipientOptions;
+    document.getElementById('eventTargetCourseGroup').hidden = !courseAccess;
     const course = document.getElementById('eventTargetCourse');
     course.required = courseAccess;
     course.disabled = !courseAccess;
+    if (!courseAccess) course.setCustomValidity('');
     document.querySelectorAll('input[name="recipientMode"]').forEach(option => {
       option.checked = option.value === (getValue('eventRecipientMode') || 'course');
-      option.disabled = !courseAccess;
+      option.disabled = !recipientOptions;
     });
 
     toggleAudienceFieldGroups();
@@ -1058,6 +1062,10 @@ function getPastaBase() {
       const field = document.getElementById(id);
       field.disabled = courseAccess || getFormAudience() !== 'graduacao';
       if (courseAccess) field.checked = id !== 'fieldCommunity';
+      if (anyoneWithLink && id === 'fieldCourse') {
+        field.checked = false;
+        field.disabled = true;
+      }
     }
   }
 
@@ -1396,7 +1404,7 @@ function getPastaBase() {
               ${!history && event.publicationMode !== 'draft' ? `<button class="btn btn-danger small" type="button" data-close-event="${escapeAttr(event.id)}">Tirar do ar</button>` : ''}
               <a class="btn btn-secondary small" href="relatorios.html?event=${encodeURIComponent(event.id)}">Ver inscritos</a>
               <a class="btn btn-secondary small" href="relatorios.html?event=${encodeURIComponent(event.id)}">Relatório</a>
-              <!-- TODO <button class="btn btn-danger small" type="button" data-delete-event="${escapeAttr(event.id)}">Excluir</button> -->
+              <button class="btn btn-danger small" type="button" data-delete-event="${escapeAttr(event.id)}">Excluir evento</button>
             </div>
           </td>
         </tr>`;
@@ -1440,14 +1448,30 @@ function getPastaBase() {
       return;
     }
 
-    const deleteId = event.target.closest('[data-delete-event]')?.dataset.deleteEvent;
-    if (deleteId) {
-      const target = getEvents().find(item => item.id === deleteId);
-      if (!confirm(`Excluir o evento "${target?.title || deleteId}"? As inscrições dele também serão removidas.`)) return;
-      saveEvents(getEvents().filter(item => item.id !== deleteId));
-      saveRegistrations(getRegistrations().filter(item => item.eventId !== deleteId));
-      renderAdminEventsTable();
-      showToast('Evento excluído.');
+    const deleteButton = event.target.closest('[data-delete-event]');
+    if (deleteButton) {
+      if (deleteButton.disabled) return;
+      const target = getEvents().find(item => item.id === deleteButton.dataset.deleteEvent);
+      if (!target) return;
+      if (!confirm(`Excluir definitivamente o evento "${target.title}"? As inscrições e os relatórios deste evento também serão removidos. Esta ação não pode ser desfeita.`)) return;
+      deleteButton.disabled = true;
+      try {
+        await publicationRequest('delete', { id: target.id });
+      } catch (error) {
+        showToast(error.message);
+        deleteButton.disabled = false;
+        return;
+      }
+      serverEvents = serverEvents.filter(item => item.id !== target.id);
+      legacyEvents = legacyEvents.filter(item => item.id !== target.id);
+      await renderAdminEventsTable();
+      try {
+        await loadServerEvents();
+        await renderAdminEventsTable();
+        showToast('Evento excluído definitivamente.');
+      } catch {
+        showToast('Evento excluído. Atualize a página para recarregar os demais dados.');
+      }
     }
   }
 
@@ -1576,7 +1600,12 @@ function getPastaBase() {
     timeInput.min = !keepExisting && dateInput.value === minimumDate ? minimumTime : '';
     dateInput.setCustomValidity('');
     timeInput.setCustomValidity('');
-    if (!keepExisting && dateInput.value && dateInput.value < minimumDate) {
+    const parsedDate = new Date(dateInput.value + 'T00:00:00Z');
+    const validDate = /^\d{4}-\d{2}-\d{2}$/.test(dateInput.value) && !dateInput.value.startsWith('0000-')
+      && Number.isFinite(parsedDate.getTime()) && parsedDate.toISOString().slice(0, 10) === dateInput.value;
+    if (dateInput.validity.badInput || (dateInput.value && !validDate)) {
+      dateInput.setCustomValidity('Informe uma data válida, com dia, mês e ano de 4 dígitos.');
+    } else if (!keepExisting && dateInput.value && dateInput.value < minimumDate) {
       dateInput.setCustomValidity('Escolha uma data a partir de hoje, com horário futuro (Brasília).');
     } else if (!keepExisting && dateInput.value && timeInput.value && past) {
       timeInput.setCustomValidity('Este horário já passou. Escolha um horário futuro (Brasília).');

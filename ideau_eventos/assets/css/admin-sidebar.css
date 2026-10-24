@@ -1,5 +1,10 @@
 .admin-mobile-header, .admin-menu-close, .admin-menu-backdrop { display: none; }
 .admin-sidebar { overflow-y: auto; }
+.admin-sidebar .admin-brand { width: 100%; min-width: 0; flex-shrink: 0; }
+.admin-sidebar .admin-brand img {
+  width: 44px; height: 44px; flex: 0 0 44px; object-fit: contain;
+}
+.admin-sidebar .admin-brand .brand-text { min-width: 0; overflow-wrap: anywhere; }
 
 @media (max-width: 1050px) {
   .admin-page.admin-nav-ready { display: block; }

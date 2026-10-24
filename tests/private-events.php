@@ -53,4 +53,28 @@ check($again['accessToken']!==$token,'Voltar ao privado gera outro segredo.');
 $closed=$service->encerrar($again['id'],$owner);
 check($service->eventoPublico($closed['id'],$again['accessToken'])===[],'Link não reabre evento encerrado.');
 invalid(fn()=>$service->inscrever(array_replace($reg,['accessToken'=>$again['accessToken']])));
+$anyone = $service->salvar(array_replace($fixture, [
+    'institution' => 'faculdade-ideau', 'publicationMode' => 'published', 'accessMode' => 'link',
+    'recipientMode' => 'anyone', 'listed' => false, 'targetCourse' => 'Curso antigo', 'fields' => ['course' => true],
+]), $owner);
+check($anyone['recipientMode'] === 'anyone' && $anyone['targetCourse'] === '' && !$anyone['fields']['course'], 'Qualquer pessoa com link dispensa curso, inclusive configuracao antiga.');
+check(!in_array($anyone['id'], array_column($service->listar(), 'id')), 'Acesso por link continua oculto da listagem publica.');
+check($service->eventoPublico($anyone['id']) === [], 'Qualquer pessoa com link ainda exige o segredo do link.');
+$visitor = ['eventId' => $anyone['id'], 'name' => 'Visitante sem curso', 'participantType' => 'comunidade'];
+invalid(fn() => $service->inscrever($visitor));
+invalid(fn() => $service->inscrever($visitor + ['accessToken' => str_repeat('0', 64)]));
+$enrolled = $service->inscrever($visitor + ['accessToken' => $anyone['accessToken']]);
+check($enrolled['success'] && $enrolled['reviewStatus'] === 'approved', 'Visitante com link pode se inscrever sem curso e sem aprovacao manual.');
+check($service->inscrever(array_replace($visitor, ['name' => 'Aluno sem curso', 'participantType' => 'aluno', 'accessToken' => $anyone['accessToken']]))['success'], 'Aluno com link tambem pode se inscrever sem curso.');
+$oldAnyone = $anyone;
+unset($oldAnyone['recipientMode'], $oldAnyone['targetCourse']);
+$keptAnyone = $service->salvar($oldAnyone, $owner);
+check($keptAnyone['recipientMode'] === 'anyone' && $keptAnyone['accessToken'] === $anyone['accessToken'], 'Edicao sem mudar acesso preserva modo e link.');
+invalid(fn() => $service->salvar(array_replace($anyone, ['recipientMode' => 'inventado']), $owner));
+invalid(fn() => $service->salvar(array_replace($anyone, ['recipientMode' => 'course']), $owner));
+$restrictedAgain = $service->salvar(array_replace($anyone, ['recipientMode' => 'course', 'targetCourse' => 'Direito']), $owner);
+check($restrictedAgain['fields']['course'] && $restrictedAgain['fields']['cpf'], 'Restricao por curso continua disponivel.');
+invalid(fn() => $service->inscrever(array_replace($visitor, ['name' => 'Outro visitante', 'accessToken' => $anyone['accessToken']])));
+
 echo "OK: eventos privados, listagem, tokens, curso declarado, aprovação manual, sigilo, edição, agendamento e encerramento.\n";
+echo "OK: qualquer pessoa com link, curso dispensado, confirmacao automatica e preservacao das restricoes existentes.\n";

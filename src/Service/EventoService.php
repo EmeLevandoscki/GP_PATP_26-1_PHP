@@ -299,11 +299,22 @@ class EventoService
 
     public function excluirEvento(int $id): void
     {
-        $sql = 'DELETE FROM eventos WHERE id = :id';
-
-        $stmt = $this->con->prepare($sql);
-        $stmt->bindValue(':id', $id);
-        $stmt->execute();
+        $this->con->beginTransaction();
+        try {
+            $stmt = $this->con->prepare('SELECT id FROM eventos WHERE id = ? FOR UPDATE');
+            $stmt->execute([$id]);
+            if (!$stmt->fetchColumn()) throw new \InvalidArgumentException('Evento não encontrado.');
+            $this->con->prepare('DELETE i FROM inscricoes i JOIN atividades a ON a.id = i.id_atividade WHERE a.id_evento = ?')->execute([$id]);
+            $this->con->prepare('DELETE FROM atividades WHERE id_evento = ?')->execute([$id]);
+            if (CancelamentoEstatistica::disponivel($this->con)) {
+                $this->con->prepare("DELETE FROM dashboard_cancelamentos WHERE origem = 'legado' AND id_evento = ?")->execute([(string) $id]);
+            }
+            $this->con->prepare('DELETE FROM eventos WHERE id = ?')->execute([$id]);
+            $this->con->commit();
+        } catch (\Throwable $error) {
+            $this->con->rollBack();
+            throw $error;
+        }
     }
     public function realizarReserva(array $params): void
     {

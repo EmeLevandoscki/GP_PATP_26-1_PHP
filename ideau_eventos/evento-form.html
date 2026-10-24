@@ -9,14 +9,14 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,700;1,300&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="assets/css/app.css?v=20260920-validation-2" />
+  <link rel="stylesheet" href="assets/css/app.css?v=20261012-logo-1" />
   <link rel="stylesheet" href="assets/css/editable-choices.css?v=20260930-1" />
   <link rel="stylesheet" href="assets/css/event-form-steps.css?v=20260930-2" />
-  <link rel="stylesheet" href="assets/css/admin-sidebar.css?v=20261012-1" />
+  <link rel="stylesheet" href="assets/css/admin-sidebar.css?v=20261012-logo-1" />
 </head>
 <body data-page="event-form" class="admin-page">
   <aside class="admin-sidebar">
-    <a class="brand admin-brand" href="dashboard.html"><img src="assets/img/logo__ideau.png" alt="IDEAU"><span class="brand-text"><strong>IDEAU Eventos</strong><small>Organizador</small></span></a>
+    <a class="brand admin-brand" href="dashboard.html"><img src="assets/img/logo__ideau.png" alt="IDEAU" width="44" height="44"><span class="brand-text"><strong>IDEAU Eventos</strong><small>Organizador</small></span></a>
     <nav class="admin-nav">
       <a href="dashboard.html">Dashboard</a>
       <a href="eventos.html">Eventos</a>
@@ -53,7 +53,7 @@
           <label class="form-field"><span>Instituição responsável *</span><select id="eventInstitution" required><option value="">Selecione a instituição</option><option value="escola-ideau-santa-clara" data-type="escola">Escola IDEAU Santa Clara</option><option value="faculdade-ideau" data-type="faculdade">Faculdade IDEAU</option></select><small>Define quem organiza e responde pelo evento.</small></label>
           <label class="form-field"><span>Categoria *</span><input id="eventCategory" list="eventCategoryOptions" required placeholder="Escolha ou digite uma categoria"><datalist id="eventCategoryOptions"></datalist><small>Escolha uma sugestão ou escreva outra categoria.</small></label>
           <label class="form-field"><span>Público-alvo *</span><input id="eventAudience" list="eventAudienceOptions" required placeholder="Escolha ou digite o público-alvo" aria-describedby="eventAudienceHint"><datalist id="eventAudienceOptions"></datalist><small>Escolha uma sugestão ou escreva para quem o evento é destinado.</small><small id="eventAudienceHint" aria-live="polite">Os campos de inscrição dependem da instituição selecionada.</small></label>
-          <label class="form-field"><span>Data *</span><input id="eventDate" type="date" required aria-describedby="eventDateHint"><small id="eventDateHint">Escolha uma data futura ou hoje, em um horário que ainda não passou.</small></label>
+          <label class="form-field"><span>Data *</span><input id="eventDate" type="date" max="9999-12-31" required aria-describedby="eventDateHint"><small id="eventDateHint">Use um ano com 4 dígitos. Escolha uma data futura ou hoje, em um horário que ainda não passou.</small></label>
           <label class="form-field"><span>Horário *</span><input id="eventTime" type="time" required aria-describedby="eventTimeHint"><small id="eventTimeHint">Horário de Brasília.</small></label>
           <label class="form-field"><span>Vagas (opcional)</span><input id="eventSeats" type="number" min="1" step="1" placeholder="Ex.: 100"><small>Deixe vazio para vagas ilimitadas.</small></label>
           <label class="form-field"><span>Cidade (opcional)</span><input id="eventCity" placeholder="Ex.: Passo Fundo"></label>
@@ -132,14 +132,17 @@ Necessidade especial"></textarea><small>Use <b>|required</b> no final para torna
           <label class="check-card"><input id="eventListed" type="checkbox"><span>Mostrar a divulgação na página pública</span></label>
           <p class="muted">Marcado: visitantes veem a divulgação, mas precisam do link para se inscrever. Desmarcado: o evento só pode ser acessado pelo link.</p>
           <div id="eventCourseAccessOptions" class="top-gap" hidden>
-            <label class="form-field"><span>Curso permitido *</span><input id="eventTargetCourse" list="eventCourseOptions" placeholder="Escolha ou digite o curso"><datalist id="eventCourseOptions"></datalist></label>
-            <input type="hidden" id="eventRecipientMode" value="course">
+            <input type="hidden" id="eventRecipientMode" value="anyone">
             <div class="top-gap">
               <fieldset class="publication-options">
-                <legend>Como liberar as inscrições deste curso?</legend>
+                <legend>Quem pode se inscrever pelo link?</legend>
                 <div class="publication-grid">
                   <label class="publication-option">
-                    <input type="radio" name="recipientMode" value="course" checked>
+                    <input type="radio" name="recipientMode" value="anyone" checked>
+                    <span class="publication-copy"><strong>Qualquer pessoa com o link</strong><small>Inscrição confirmada automaticamente, sem exigir curso ou aprovação manual.</small></span>
+                  </label>
+                  <label class="publication-option">
+                    <input type="radio" name="recipientMode" value="course">
                     <span class="publication-copy"><strong>Alunos que informarem o curso</strong><small>A inscrição é confirmada automaticamente ao informar o curso. O aluno declara o curso, sem comprovar matrícula.</small></span>
                   </label>
                   <label class="publication-option">
@@ -149,7 +152,7 @@ Necessidade especial"></textarea><small>Use <b>|required</b> no final para torna
                 </div>
               </fieldset>
             </div>
-
+            <label class="form-field top-gap" id="eventTargetCourseGroup" hidden><span>Curso permitido *</span><input id="eventTargetCourse" list="eventCourseOptions" placeholder="Escolha ou digite o curso"><datalist id="eventCourseOptions"></datalist></label>
           </div>
           <p class="muted">Depois de salvar e publicar, use “Copiar link” na lista de eventos para compartilhar com os convidados.</p>
         </div>
@@ -208,6 +211,6 @@ Necessidade especial"></textarea><small>Use <b>|required</b> no final para torna
   <script src="assets/js/editable-choices.js?v=20260930-steps-2"></script>
   <script src="assets/js/event-form-steps.js?v=20260930-1"></script>
   <script src="assets/js/admin-sidebar.js?v=20261012-1"></script>
-  <script src="assets/js/app.js?v=20261001-security-1"></script>
+  <script src="assets/js/app.js?v=20261020-link-1"></script>
 </body>
 </html>

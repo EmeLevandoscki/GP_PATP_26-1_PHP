@@ -78,6 +78,17 @@ try {
             $service = new PublicacaoService(Conexao::getConexao());
             responder($service->salvar($data, $_SESSION['publication_organizer']));
         }
+        if ($action === 'delete') {
+            $id = $data['id'] ?? null;
+            if (!is_string($id) || $id === '' || strlen($id) > 100) throw new InvalidArgumentException('Informe o evento a excluir.');
+            if (ctype_digit($id)) {
+                if (!filter_var($id, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]])) throw new InvalidArgumentException('Informe um evento válido.');
+                (new \App\Service\EventoService())->excluirEvento((int) $id);
+            } else {
+                (new PublicacaoService(Conexao::getConexao()))->excluir($id, $_SESSION['publication_organizer']);
+            }
+            responder(['success' => true]);
+        }
         if ($action === 'close') {
             if (!is_string($data['id'] ?? null)) throw new InvalidArgumentException('Informe o evento.');
             if (ctype_digit($data['id'])) {
