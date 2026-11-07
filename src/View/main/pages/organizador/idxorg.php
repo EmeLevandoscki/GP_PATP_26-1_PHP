@@ -1,3 +1,8 @@
+<?php
+require_once __DIR__ . '/../../../../../src/Config/runtime.php';
+require_once __DIR__ . '/../../../../../vendor/autoload.php';
+\App\Service\RequestSecurity::organizerPage('../../../../../ideau_eventos/login.html');
+?>
 <!DOCTYPE html>
 <html lang="pt-BR" data-theme="dark">
 <head>
@@ -33,10 +38,10 @@
     <button class="theme-toggle" onclick="toggleTheme()" title="Alternar tema">🌙</button>
 
     <!-- Painel do organizador -->
-    <a href="organizador-dashboard.html" class="btn-nav-painel">📊 Painel</a>
+    <a href="organizador-dashboard.php" class="btn-nav-painel">📊 Painel</a>
 
     <!-- Botão criar evento — destaque dourado na nav -->
-    <a href="../../../Front/html/org-criar-evento.html" class="btn-criar-evento">✚ Criar Evento</a>
+    <a href="../../../Front/html/org-criar-evento.php" class="btn-criar-evento">✚ Criar Evento</a>
 
     <!-- Notificações -->
     <button class="nav-notif">🔔<span class="notif-dot"></span></button>
@@ -58,13 +63,13 @@
           <div class="dropdown-badge"><span class="dropdown-badge-dot"></span>Organizador</div>
         </div>
         <div class="dropdown-menu">
-          <a href="../../../Front/html/org-criar-evento.html" class="dropdown-item highlight"><span class="di-icon">✚</span>Criar Evento</a>
+          <a href="../../../Front/html/org-criar-evento.php" class="dropdown-item highlight"><span class="di-icon">✚</span>Criar Evento</a>
           <div class="dropdown-divider"></div>
-          <a href="organizador-dashboard.html" class="dropdown-item"><span class="di-icon">📊</span>Dashboard</a>
-          <a href="organizador-dashboard.html" class="dropdown-item"><span class="di-icon">📅</span>Meus Eventos</a>
-          <a href="organizador-dashboard.html" class="dropdown-item"><span class="di-icon">👥</span>Inscritos</a>
+          <a href="organizador-dashboard.php" class="dropdown-item"><span class="di-icon">📊</span>Dashboard</a>
+          <a href="organizador-dashboard.php" class="dropdown-item"><span class="di-icon">📅</span>Meus Eventos</a>
+          <a href="organizador-dashboard.php" class="dropdown-item"><span class="di-icon">👥</span>Inscritos</a>
           <div class="dropdown-divider"></div>
-          <a href="organizador-dashboard.html" class="dropdown-item"><span class="di-icon">🏛️</span>Perfil da Org.</a>
+          <a href="organizador-dashboard.php" class="dropdown-item"><span class="di-icon">🏛️</span>Perfil da Org.</a>
           <a href="#" class="dropdown-item danger"><span class="di-icon">↩</span>Sair</a>
         </div>
       </div>
@@ -94,7 +99,7 @@
       <span class="hob-stat-val">384</span>
       <span class="hob-stat-label">Inscritos total</span>
     </div>
-    <a href="organizador-dashboard.html" class="hob-link">Ver painel →</a>
+    <a href="organizador-dashboard.php" class="hob-link">Ver painel →</a>
   </div>
 
   <div class="hero-eyebrow">Faculdades IDEAU — Alto Uruguai</div>
@@ -108,8 +113,8 @@
   <div class="hero-actions">
     <button class="btn-primary" onclick="document.getElementById('eventos').scrollIntoView({behavior:'smooth'})">Ver Eventos</button>
     <!-- CTA principal do organizador -->
-    <a href="../../../Front/html/org-criar-evento.html" class="btn-hero-criar">✚ Criar Novo Evento</a>
-    <a href="organizador-dashboard.html" class="btn-ghost">→ Meu painel</a>
+    <a href="../../../Front/html/org-criar-evento.php" class="btn-hero-criar">✚ Criar Novo Evento</a>
+    <a href="organizador-dashboard.php" class="btn-ghost">→ Meu painel</a>
   </div>
 
   <div class="hero-stats">
@@ -201,8 +206,8 @@
         <div class="detail-row"><div class="detail-icon">🎟️</div><div><div class="detail-label">Inscrição</div><div class="detail-val">Gratuita — 8 vagas restantes</div></div></div>
       </div>
       <div class="featured-org-actions">
-        <a href="organizador-dashboard.html" class="btn-manage-lg">✏️ Gerenciar Evento</a>
-        <a href="organizador-dashboard.html" class="btn-inscritos-lg">👥 Ver Inscritos (142)</a>
+        <a href="organizador-dashboard.php" class="btn-manage-lg">✏️ Gerenciar Evento</a>
+        <a href="organizador-dashboard.php" class="btn-inscritos-lg">👥 Ver Inscritos (142)</a>
       </div>
     </div>
   </div>
@@ -238,7 +243,7 @@
     </div>
     <div class="footer-col"><h4>Eventos</h4><ul><li><a href="#">Música</a></li><li><a href="#">Acadêmico</a></li><li><a href="#">Arte</a></li><li><a href="#">Gastronomia</a></li></ul></div>
     <div class="footer-col"><h4>IDEAU</h4><ul><li><a href="https://www.ideau.com.br/?unidade=6" target="_blank">Site Oficial</a></li><li><a href="#">Cursos</a></li><li><a href="#">Campus</a></li><li><a href="#">Contato</a></li></ul></div>
-    <div class="footer-col"><h4>Organizador</h4><ul><li><a href="../../../Front/html/organizador-dashboard.html">Dashboard</a></li><li><a href="../../../Front/html/org-criar-evento.html">Criar Evento</a></li><li><a href="../../../Front/html/org-inscritos.html">Inscritos</a></li><li><a href="../../../Front/html/org-configuracoes.html">Perfil da Org.</a></li></ul></div>
+    <div class="footer-col"><h4>Organizador</h4><ul><li><a href="../../../Front/html/organizador-dashboard.php">Dashboard</a></li><li><a href="../../../Front/html/org-criar-evento.php">Criar Evento</a></li><li><a href="../../../Front/html/org-inscritos.php">Inscritos</a></li><li><a href="../../../Front/html/org-configuracoes.php">Perfil da Org.</a></li></ul></div>
   </div>
   <div class="footer-bottom">
     <p>© 2025 Faculdades IDEAU. Todos os direitos reservados.</p>

@@ -6,7 +6,7 @@
   const mobile = window.matchMedia('(max-width: 1050px)');
   const header = document.createElement('header');
   header.className = 'admin-mobile-header';
-  header.innerHTML = '<a class="admin-mobile-brand" href="dashboard.html">IDEAU Eventos<small>Organizador</small></a><button class="admin-menu-button" type="button" aria-controls="adminSidebar" aria-expanded="false" aria-label="Abrir menu do organizador"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg>Menu</button>';
+  header.innerHTML = '<a class="admin-mobile-brand" href="dashboard.php">IDEAU Eventos<small>Organizador</small></a><button class="admin-menu-button" type="button" aria-controls="adminSidebar" aria-expanded="false" aria-label="Abrir menu do organizador"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg>Menu</button>';
   const toggle = header.querySelector('button');
   const close = document.createElement('button');
   close.type = 'button';

@@ -16,6 +16,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!is_string($_POST['csrf'] ?? null) || !hash_equals($_SESSION['receipt_csrf'], $_POST['csrf'])) {
         http_response_code(403);
         $error = 'Não foi possível confirmar a solicitação. Atualize a página e tente novamente.';
+    } elseif (($_POST['action'] ?? '') === 'cancel_activity' && $receipt) {
+        try {
+            if (($_POST['confirm_activity'] ?? '') !== '1' || !is_string($_POST['activity_id'] ?? null)) throw new InvalidArgumentException('Confirme o cancelamento da atividade.');
+            (new \App\Service\AtividadeService(Conexao::getConexao()))->cancelar($receipt['eventId'], $receipt['protocol'], $_POST['activity_id'], null, $receipt);
+            header('Location: comprovante.php?id=' . urlencode($id), true, 303);
+            exit;
+        } catch (InvalidArgumentException $exception) {
+            http_response_code(422); $error = $exception->getMessage();
+        } catch (Throwable $exception) {
+            error_log('Cancelamento de atividade: ' . $exception->getMessage());
+            http_response_code(500); $error = 'Não foi possível cancelar a atividade agora. Tente novamente.';
+        }
     } elseif (($_POST['confirm_cancel'] ?? '') !== '1' || !$receipt) {
         http_response_code(422);
         $error = 'Confirme que deseja cancelar esta inscrição.';
@@ -67,6 +79,7 @@ function escapeReceipt(string $text): string { return htmlspecialchars($text, EN
   <script src="assets/js/theme.js?v=browser-theme-1"></script><meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Comprovante de inscrição — IDEAU Eventos</title>
   <link rel="stylesheet" href="assets/css/inscricao.css">
+  <link rel="stylesheet" href="assets/css/activities.css?v=1">
   <link rel="stylesheet" href="assets/css/comprovante.css?v=browser-theme-1">
 </head>
 <body><main class="receipt-page"><header class="receipt-nav"><a class="receipt-brand" href="../index.php"><img src="assets/img/logo__ideau.png" alt="Logo IDEAU"><span>IDEAU <b>Eventos</b></span></a><a class="receipt-back" href="../index.php#eventos">← Voltar aos eventos</a></header><section class="receipt">
@@ -83,6 +96,25 @@ function escapeReceipt(string $text): string { return htmlspecialchars($text, EN
     <div class="receipt-field <?= $field === 'name' || $field === 'protocol' ? 'receipt-field-wide' : '' ?>"><dt><?= $label ?></dt><dd><?= escapeReceipt((string) $receipt[$field]) ?></dd></div>
   <?php endforeach; ?>
   </dl>
+  <?php if (isset($receipt['participationMode'])): ?>
+  <p class="receipt-note">Participação: <?= escapeReceipt(['presencial'=>'Presencial','online'=>'Online','hibrido'=>'Híbrida'][$receipt['participationMode']] ?? 'Presencial') ?> · <?= escapeReceipt(['participante'=>'Participante','apresentador'=>'Apresentador','expositor'=>'Expositor','voluntario'=>'Voluntário'][$receipt['eventRole'] ?? 'participante'] ?? 'Participante') ?></p>
+  <?php endif; ?>
+  <?php if (!empty($receipt['onlineAccess'])): $access = $receipt['onlineAccess']; ?>
+  <section class="receipt-activity" aria-label="Acesso online"><h2>Acesso online</h2><p><?= escapeReceipt($access['platform']) ?></p>
+  <?php if ($access['url']): ?><p><a class="btn-primary" href="<?= escapeReceipt($access['url']) ?>" target="_blank" rel="noopener noreferrer">Acessar transmissão / sala online</a></p><?php else: ?><p>O organizador ainda não informou o link. Consulte esta página novamente antes do evento.</p><?php endif; ?>
+  <p><?= nl2br(escapeReceipt($access['instructions'])) ?></p><p class="receipt-note">Acesso destinado à sua inscrição. Evite compartilhar o link.</p></section>
+  <?php endif; ?>
+  <?php if (!empty($receipt['activities'])): ?>
+  <section aria-label="Minhas atividades"><h2>Minhas atividades</h2>
+  <?php foreach ($receipt['activities'] as $activity): ?>
+    <article class="receipt-activity"><h3><?= escapeReceipt($activity['name']) ?></h3>
+    <p><?= escapeReceipt(str_replace('T', ' ', $activity['startAt'])) ?> até <?= escapeReceipt(str_replace('T', ' ', $activity['endAt'])) ?> (Brasília)<br><?= escapeReceipt($activity['location']) ?> · <?= escapeReceipt($activity['speaker']) ?> · <?= escapeReceipt((string) $activity['hours']) ?> h</p>
+    <?php if ($activity['cancelledAt']): ?><p>Atividade cancelada em <?= escapeReceipt($activity['cancelledAt']) ?> UTC.</p>
+    <?php else: ?><details><summary>Cancelar somente esta atividade</summary>
+    <form method="post"><input type="hidden" name="csrf" value="<?= escapeReceipt($_SESSION['receipt_csrf']) ?>"><input type="hidden" name="action" value="cancel_activity"><input type="hidden" name="activity_id" value="<?= escapeReceipt($activity['id']) ?>"><label><input type="checkbox" name="confirm_activity" value="1" required> Confirmo o cancelamento desta atividade. Minha inscrição no evento será mantida.</label><button type="submit">Cancelar atividade</button></form></details><?php endif; ?>
+    </article>
+  <?php endforeach; ?></section>
+  <?php endif; ?>
   <p class="receipt-note"><?= ($receipt['reviewStatus'] ?? 'approved') === 'pending' ? 'A solicitação ainda não confirma sua participação no evento.' : 'Este comprovante confirma a inscrição e não substitui o certificado de presença.' ?></p>
   </div><aside class="receipt-ticket-side" aria-label="Gerenciar inscrição">
   <div class="receipt-document-icon" aria-hidden="true"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M8 13h8M8 17h5"/></svg></div>

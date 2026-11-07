@@ -27,14 +27,23 @@
   .admin-nav-ready .admin-sidebar {
     position: fixed; inset: 0 auto 0 0; z-index: 1002;
     width: min(320px, calc(100vw - 48px)); height: 100vh; height: 100dvh;
-    padding: 76px 20px max(20px, env(safe-area-inset-bottom));
-    padding-top: calc(76px + env(safe-area-inset-top));
+    padding: 20px 18px max(20px, env(safe-area-inset-bottom));
+    padding-top: calc(20px + env(safe-area-inset-top));
     gap: 22px; background: var(--surface); box-shadow: var(--shadow);
     overscroll-behavior: contain; visibility: hidden; transform: translateX(-100%);
     transition: transform .22s ease, visibility .22s;
   }
+  .admin-nav-ready .admin-sidebar .admin-brand { min-height: 48px; padding-right: 52px; }
   .admin-menu-close { position: absolute; right: 16px; top: max(16px, env(safe-area-inset-top)); }
-  .admin-nav-ready .admin-nav a { min-height: 44px; display: flex; align-items: center; }
+  .admin-nav-ready .admin-nav {
+    display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px;
+    min-width: 0; flex-shrink: 0;
+  }
+  .admin-nav-ready .admin-nav a {
+    min-height: 48px; display: flex; align-items: center;
+    border-radius: 12px; white-space: normal; overflow-wrap: anywhere;
+  }
+  .admin-nav-ready .admin-sidebar-actions { flex-shrink: 0; }
   .admin-nav-ready .admin-menu-backdrop {
     display: block; position: fixed; inset: 0; z-index: 1001;
     background: rgb(0 0 0 / .6); opacity: 0; visibility: hidden; pointer-events: none;

@@ -69,6 +69,22 @@ if ($verified && !isset($_SESSION['consulta_pending'])) {
         http_response_code(503); $error = 'Não foi possível consultar suas inscrições agora. Tente novamente.';
     }
 }
+$sessionReceipts = [];
+if (!$verified && !isset($_SESSION['consulta_pending']) && !empty($_SESSION['registration_receipts'])) {
+    try {
+        $db = Conexao::getConexao();
+        foreach ($_SESSION['registration_receipts'] as $id => $receipt) {
+            if (!ComprovanteService::ativa($db, $receipt)) continue;
+            $receipt = ComprovanteService::atualizar($db, $receipt);
+            if (($receipt['reviewStatus'] ?? 'approved') !== 'approved') continue;
+            $receipt['url'] = 'comprovante.php?id=' . rawurlencode($id) . '&download=1';
+            $sessionReceipts[] = $receipt;
+        }
+    } catch (Throwable $exception) {
+        error_log('Consulta de comprovantes da sessão: ' . $exception->getMessage());
+        $sessionReceipts = [];
+    }
+}
 function consultaEscape(string $value): string { return htmlspecialchars($value, ENT_QUOTES, 'UTF-8'); }
 ?>
 <!DOCTYPE html><html lang="pt-BR" data-theme="dark"><head>
@@ -76,7 +92,7 @@ function consultaEscape(string $value): string { return htmlspecialchars($value,
   <script src="assets/js/theme.js?v=browser-theme-1"></script><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Consultar minha inscrição — IDEAU Eventos</title>
 <link rel="icon" href="assets/img/logo__ideau.png"><link rel="stylesheet" href="assets/css/inscricao.css">
-<link rel="stylesheet" href="assets/css/comprovante.css?v=browser-theme-1"><link rel="stylesheet" href="assets/css/consulta-inscricao.css?v=browser-theme-1">
+<link rel="stylesheet" href="assets/css/comprovante.css?v=browser-theme-1"><link rel="stylesheet" href="assets/css/consulta-inscricao.css?v=receipt-download-1">
 </head><body><main class="consult-page">
 <header class="receipt-nav"><a class="receipt-brand" href="../index.php"><img src="assets/img/logo__ideau.png" alt="Logo IDEAU"><span>IDEAU <b>Eventos</b></span></a><a class="receipt-back" href="../index.php#eventos">← Voltar aos eventos</a></header>
 <div class="consult-layout"><section class="consult-intro"><span class="consult-eyebrow">SUA PARTICIPAÇÃO</span><h1>Já se inscreveu?<br>Consulte por aqui.</h1><p>Mesmo em outro navegador ou celular, você pode acessar sua inscrição com o e-mail usado no cadastro.</p><ul><li>Confira se sua inscrição está ativa</li><li>Baixe seu comprovante em PDF</li><li>Cancele sua inscrição, se precisar</li></ul><p class="consult-help">Não informou um e-mail na inscrição? Entre em contato com o organizador do evento.</p></section>
@@ -89,12 +105,18 @@ function consultaEscape(string $value): string { return htmlspecialchars($value,
 <span class="consult-eyebrow">ACESSO CONFIRMADO</span><h2>Sua inscrição</h2><p class="consult-email"><?= consultaEscape($verified['email']) ?></p>
 <?php if (!$error && !$receipts): ?><div class="consult-feedback">Nenhuma inscrição ativa encontrada para este e-mail. Confira se utilizou outro endereço ou se a inscrição foi cancelada.</div><?php endif; ?>
 <?php foreach ($receipts as $receipt): ?>
-<article class="consult-result"><span class="receipt-status"><?= ($receipt['reviewStatus'] ?? 'approved') === 'pending' ? 'Aguardando aprovação' : '✓ Inscrição confirmada' ?></span><h3><?= consultaEscape($receipt['eventTitle']) ?></h3><p><?= consultaEscape($receipt['name']) ?><br><?= consultaEscape($receipt['date']) ?> · <?= consultaEscape($receipt['time']) ?></p><div class="consult-result-actions"><a href="<?= consultaEscape($receipt['url']) ?>"><?= ($receipt['reviewStatus'] ?? 'approved') === 'pending' ? 'Acompanhar aprovação →' : 'Ver comprovante →' ?></a><a class="consult-cancel" href="<?= consultaEscape($receipt['url']) ?>&amp;cancel=1#cancelar-inscricao">Cancelar inscrição</a></div></article>
+<article class="consult-result"><span class="receipt-status"><?= ($receipt['reviewStatus'] ?? 'approved') === 'pending' ? 'Aguardando aprovação' : '✓ Inscrição confirmada' ?></span><h3><?= consultaEscape($receipt['eventTitle']) ?></h3><p><?= consultaEscape($receipt['name']) ?><br><?= consultaEscape($receipt['date']) ?> · <?= consultaEscape($receipt['time']) ?></p><div class="consult-result-actions"><a href="<?= consultaEscape($receipt['url']) ?>"><?= ($receipt['reviewStatus'] ?? 'approved') === 'pending' ? 'Acompanhar aprovação →' : 'Ver comprovante →' ?></a><a class="consult-cancel" href="<?= consultaEscape($receipt['url']) ?>&amp;cancel=1#cancelar-inscricao">Cancelar inscrição</a></div>
+<?php if (($receipt['reviewStatus'] ?? 'approved') === 'approved'): ?><a class="consult-submit consult-download" href="<?= consultaEscape($receipt['url']) ?>&amp;download=1" download>Baixar comprovante em PDF</a><?php endif; ?>
+</article>
 <?php endforeach; ?>
 <form method="post"><input type="hidden" name="csrf" value="<?= consultaEscape($_SESSION['consulta_csrf']) ?>"><button class="consult-reset" name="action" value="reset">Consultar outro e-mail</button></form>
 <?php else: ?>
 <span class="consult-symbol" aria-hidden="true"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="m3 6 9 7 9-7"/></svg></span><h2>Consultar minha inscrição</h2><p>Enviaremos um link pessoal para você acessar os dados da sua inscrição.</p>
 <?php if ($message): ?><div class="consult-feedback" role="status"><?= consultaEscape($message) ?></div><?php endif; ?>
 <form method="post" class="consult-form"><input type="hidden" name="csrf" value="<?= consultaEscape($_SESSION['consulta_csrf']) ?>"><input type="hidden" name="action" value="request"><label for="consultaEmail">E-mail usado na inscrição</label><input id="consultaEmail" name="email" type="email" required maxlength="254" autocomplete="email" placeholder="seuemail@exemplo.com" value="<?= consultaEscape($email) ?>"><button class="consult-submit">Receber link por e-mail <span aria-hidden="true">→</span></button></form><small class="consult-footnote">O link expira em 20 minutos. Não é necessário fazer uma nova inscrição.</small>
+<?php foreach ($sessionReceipts as $receipt): ?>
+<?php if (count($sessionReceipts) > 1): ?><p><?= consultaEscape($receipt['eventTitle']) ?> · <?= consultaEscape($receipt['name']) ?></p><?php endif; ?>
+<a class="consult-submit consult-download" href="<?= consultaEscape($receipt['url']) ?>" download>Baixar comprovante em PDF</a>
+<?php endforeach; ?>
 <?php endif; ?>
 </section></div></main></body></html>

@@ -1,3 +1,8 @@
+<?php
+require_once __DIR__ . '/../../../../src/Config/runtime.php';
+require_once __DIR__ . '/../../../../vendor/autoload.php';
+\App\Service\RequestSecurity::organizerPage('../../../../ideau_eventos/login.html');
+?>
 <!DOCTYPE html>
 <html lang="pt-BR" data-theme="dark">
 <head>
@@ -149,38 +154,38 @@ nav{position:fixed;top:0;left:0;right:0;z-index:500;display:flex;align-items:cen
 <body>
 <div id="cursor"></div><div id="cursor-ring"></div>
 <div class="mob" id="mob">
-  <a href="org-criar-evento.html" class="ma hl">&#x271A; Criar Evento</a>
+  <a href="org-criar-evento.php" class="ma hl">&#x271A; Criar Evento</a>
   <div class="mhr"></div>
-  <a href="organizador-dashboard.html" class="ma on">&#x1F4CA; Dashboard</a>
-  <a href="org-gerenciar.html" class="ma ">&#x1F4C5; Meus Eventos</a>
-  <a href="org-inscritos.html" class="ma ">&#x1F465; Inscritos</a>
+  <a href="organizador-dashboard.php" class="ma on">&#x1F4CA; Dashboard</a>
+  <a href="org-gerenciar.php" class="ma ">&#x1F4C5; Meus Eventos</a>
+  <a href="org-inscritos.php" class="ma ">&#x1F465; Inscritos</a>
   <div class="mhr"></div>
-  <a href="org-configuracoes.html" class="ma ">&#x1F3DB;&#xFE0F; Configura&#xE7;&#xF5;es</a>
-  <a href="org-notificacoes.html" class="ma ">&#x1F514; Notifica&#xE7;&#xF5;es</a>
+  <a href="org-configuracoes.php" class="ma ">&#x1F3DB;&#xFE0F; Configura&#xE7;&#xF5;es</a>
+  <a href="org-notificacoes.php" class="ma ">&#x1F514; Notifica&#xE7;&#xF5;es</a>
   <div class="mhr"></div>
   <a href="index.php" class="ma red">&#x21A9; Sair</a>
 </div>
 <nav>
-  <a href="organizador-dashboard.html" class="nlo">
+  <a href="organizador-dashboard.php" class="nlo">
     <div class="nlo-ic">ID</div>
     <div class="nlo-t"><span class="nlo-ti">IDEAU Eventos</span><span class="nlo-su">Faculdades IDEAU</span></div>
   </a>
   <div class="nav-r">
     <button class="tgl" onclick="toggleTheme()">&#x1F319;</button>
-    <a href="org-criar-evento.html" class="btn-c">&#x271A; Criar Evento</a>
+    <a href="org-criar-evento.php" class="btn-c">&#x271A; Criar Evento</a>
     <button class="ham" id="ham" onclick="toggleMenu()"><span></span><span></span><span></span></button>
   </div>
 </nav>
 <div class="layout">
 <aside class="sb"><div class="sb-u"><div class="sb-av">CL</div><div class="sb-nm">Prof. Carlos Eduardo Lima</div><div class="sb-em">carlos.lima@ideau.edu.br</div><div class="sb-b"><span class="sb-bd"></span>Organizador</div></div><nav class="sbn">
-<a href="org-criar-evento.html" class="sa hl"><span class="sai">&#x271A;</span>Criar Evento</a>
+<a href="org-criar-evento.php" class="sa hl"><span class="sai">&#x271A;</span>Criar Evento</a>
 <div class="sahr"></div>
-<a href="organizador-dashboard.html" class="sa on"><span class="sai">&#x1F4CA;</span>Dashboard</a>
-<a href="org-gerenciar.html" class="sa "><span class="sai">&#x1F4C5;</span>Meus Eventos</a>
-<a href="org-inscritos.html" class="sa "><span class="sai">&#x1F465;</span>Inscritos</a>
+<a href="organizador-dashboard.php" class="sa on"><span class="sai">&#x1F4CA;</span>Dashboard</a>
+<a href="org-gerenciar.php" class="sa "><span class="sai">&#x1F4C5;</span>Meus Eventos</a>
+<a href="org-inscritos.php" class="sa "><span class="sai">&#x1F465;</span>Inscritos</a>
 <div class="sahr"></div>
-<a href="org-configuracoes.html" class="sa "><span class="sai">&#x1F3DB;&#xFE0F;</span>Perfil da Org.</a>
-<a href="org-notificacoes.html" class="sa "><span class="sai">&#x1F514;</span>Notifica&#xE7;&#xF5;es</a>
+<a href="org-configuracoes.php" class="sa "><span class="sai">&#x1F3DB;&#xFE0F;</span>Perfil da Org.</a>
+<a href="org-notificacoes.php" class="sa "><span class="sai">&#x1F514;</span>Notifica&#xE7;&#xF5;es</a>
 <div class="sahr"></div>
 <a href="index.php" class="sa dng"><span class="sai">&#x21A9;</span>Sair</a>
 </nav></aside>
@@ -190,7 +195,7 @@ nav{position:fixed;top:0;left:0;right:0;z-index:500;display:flex;align-items:cen
 <div class="ab">
   <span style="font-size:1.1rem">&#x26A0;&#xFE0F;</span>
   <div class="ab-t"><strong>Semana Acad&#xEA;mica de Direito</strong> com 95% das vagas &mdash; apenas 8 restantes!</div>
-  <a href="org-gerenciar.html" class="ab-l">Gerenciar &rarr;</a>
+  <a href="org-gerenciar.php" class="ab-l">Gerenciar &rarr;</a>
 </div>
 <div class="sg">
   <div class="sc sc-g"><div class="sc-l">Eventos ativos</div><div class="sc-v sv-g">6</div><div class="sc-s">&#x2191; 2 este m&#xEA;s</div><div class="sc-ic">&#x1F4C5;</div></div>
@@ -200,10 +205,10 @@ nav{position:fixed;top:0;left:0;right:0;z-index:500;display:flex;align-items:cen
 </div>
 <div class="g2">
   <div class="blk">
-    <div class="blk-h"><div class="blk-t">MEUS EVENTOS</div><a href="org-gerenciar.html" class="blk-l">Ver todos &rarr;</a></div>
-    <div class="er"><img class="er-img" src="https://images.unsplash.com/photo-1532012197267-da84d127e765?w=120&q=80" alt=""/><div class="er-i"><div class="er-n">Semana Acad&#xEA;mica de Direito 2025</div><div class="er-m"><span>&#x1F4C5; 14 ABR</span><span>&#x1F4CD; Campus GV</span></div><div class="pt"><div class="pf pf-r" style="width:95%"></div></div><div class="pl"><span>142/150</span><span>95%</span></div></div><div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px"><span class="sp">Ativo</span><a href="org-gerenciar.html" class="bsm">&#x270F;&#xFE0F; Gerir</a></div></div>
-    <div class="er"><img class="er-img" src="https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=120&q=80" alt=""/><div class="er-i"><div class="er-n">Festival Gastron&#xF4;mico IDEAU</div><div class="er-m"><span>&#x1F4C5; 19 ABR</span><span>&#x1F4CD; Pra&#xE7;a Central</span></div><div class="pt"><div class="pf pf-g" style="width:49%"></div></div><div class="pl"><span>98/200</span><span>49%</span></div></div><div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px"><span class="sp">Ativo</span><a href="org-gerenciar.html" class="bsm">&#x270F;&#xFE0F; Gerir</a></div></div>
-    <div class="er"><img class="er-img" src="https://images.unsplash.com/photo-1460661419201-fd4cecdf8a8b?w=120&q=80" alt=""/><div class="er-i"><div class="er-n">Mostra de Arte &amp; Design</div><div class="er-m"><span>&#x1F4C5; 02 MAI</span><span>&#x1F4CD; Galeria IDEAU</span></div><div class="pt"><div class="pf" style="width:64%"></div></div><div class="pl"><span>64/100</span><span>64%</span></div></div><div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px"><span class="sp">Ativo</span><a href="org-gerenciar.html" class="bsm">&#x270F;&#xFE0F; Gerir</a></div></div>
+    <div class="blk-h"><div class="blk-t">MEUS EVENTOS</div><a href="org-gerenciar.php" class="blk-l">Ver todos &rarr;</a></div>
+    <div class="er"><img class="er-img" src="https://images.unsplash.com/photo-1532012197267-da84d127e765?w=120&q=80" alt=""/><div class="er-i"><div class="er-n">Semana Acad&#xEA;mica de Direito 2025</div><div class="er-m"><span>&#x1F4C5; 14 ABR</span><span>&#x1F4CD; Campus GV</span></div><div class="pt"><div class="pf pf-r" style="width:95%"></div></div><div class="pl"><span>142/150</span><span>95%</span></div></div><div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px"><span class="sp">Ativo</span><a href="org-gerenciar.php" class="bsm">&#x270F;&#xFE0F; Gerir</a></div></div>
+    <div class="er"><img class="er-img" src="https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=120&q=80" alt=""/><div class="er-i"><div class="er-n">Festival Gastron&#xF4;mico IDEAU</div><div class="er-m"><span>&#x1F4C5; 19 ABR</span><span>&#x1F4CD; Pra&#xE7;a Central</span></div><div class="pt"><div class="pf pf-g" style="width:49%"></div></div><div class="pl"><span>98/200</span><span>49%</span></div></div><div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px"><span class="sp">Ativo</span><a href="org-gerenciar.php" class="bsm">&#x270F;&#xFE0F; Gerir</a></div></div>
+    <div class="er"><img class="er-img" src="https://images.unsplash.com/photo-1460661419201-fd4cecdf8a8b?w=120&q=80" alt=""/><div class="er-i"><div class="er-n">Mostra de Arte &amp; Design</div><div class="er-m"><span>&#x1F4C5; 02 MAI</span><span>&#x1F4CD; Galeria IDEAU</span></div><div class="pt"><div class="pf" style="width:64%"></div></div><div class="pl"><span>64/100</span><span>64%</span></div></div><div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px"><span class="sp">Ativo</span><a href="org-gerenciar.php" class="bsm">&#x270F;&#xFE0F; Gerir</a></div></div>
   </div>
   <div class="blk">
     <div class="blk-h"><div class="blk-t">INSCRI&#xC7;&#xD5;ES (7 DIAS)</div></div>
@@ -222,10 +227,10 @@ nav{position:fixed;top:0;left:0;right:0;z-index:500;display:flex;align-items:cen
   <div class="blk">
     <div class="blk-h"><div class="blk-t">A&#xC7;&#xD5;ES R&#xC1;PIDAS</div></div>
     <div class="qg">
-      <a href="org-criar-evento.html" class="qb"><div class="qi qi-g">&#x271A;</div><div><div class="qt">Criar Evento</div><div class="qs">Publicar novo</div></div></a>
-      <a href="org-inscritos.html" class="qb"><div class="qi qi-gr">&#x1F465;</div><div><div class="qt">Ver Inscritos</div><div class="qs">Gerenciar</div></div></a>
-      <a href="org-gerenciar.html" class="qb"><div class="qi qi-g">&#x270F;&#xFE0F;</div><div><div class="qt">Gerenciar</div><div class="qs">Editar eventos</div></div></a>
-      <a href="org-notificacoes.html" class="qb"><div class="qi qi-gr">&#x1F514;</div><div><div class="qt">Notifica&#xE7;&#xF5;es</div><div class="qs">5 n&#xE3;o lidas</div></div></a>
+      <a href="org-criar-evento.php" class="qb"><div class="qi qi-g">&#x271A;</div><div><div class="qt">Criar Evento</div><div class="qs">Publicar novo</div></div></a>
+      <a href="org-inscritos.php" class="qb"><div class="qi qi-gr">&#x1F465;</div><div><div class="qt">Ver Inscritos</div><div class="qs">Gerenciar</div></div></a>
+      <a href="org-gerenciar.php" class="qb"><div class="qi qi-g">&#x270F;&#xFE0F;</div><div><div class="qt">Gerenciar</div><div class="qs">Editar eventos</div></div></a>
+      <a href="org-notificacoes.php" class="qb"><div class="qi qi-gr">&#x1F514;</div><div><div class="qt">Notifica&#xE7;&#xF5;es</div><div class="qs">5 n&#xE3;o lidas</div></div></a>
     </div>
   </div>
   <div class="blk">

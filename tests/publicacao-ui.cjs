@@ -67,7 +67,7 @@ assert.equal(context.countdownLabel('2000-01-01T12:00:00Z'), 'Prazo encerrado');
 assert.match(context.countdownLabel(new Date(Date.now() + 90061000).toISOString()), /^Encerra em 1d 01:01:0[01]$/);
 console.log('OK: limite futuro, ordem de datas, histórico e contagem regressiva.');
 
-for (const id of ['eventDate','eventTime','eventId']) elements[id]={value:'',min:'',validationMessage:'',setCustomValidity(message){this.validationMessage=message}};
+for (const id of ['eventDate','eventTime','eventId']) elements[id]={value:'',min:'',validity:{badInput:false},validationMessage:'',setCustomValidity(message){this.validationMessage=message}};
 let clock=Date.parse('2026-10-01T15:30:45Z');
 context.Date=class extends Date { static now(){return clock;} };
 context.getEvents=()=>[];

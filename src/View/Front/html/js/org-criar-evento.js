@@ -299,7 +299,7 @@
 
     document.querySelector('#fs5 .step-actions').style.display = 'none';
     document.getElementById('pubSuccess').style.display = 'flex';
-    setTimeout(function() { window.location.href = 'org-gerenciar.html'; }, 1200);
+    setTimeout(function() { window.location.href = 'org-gerenciar.php'; }, 1200);
   }
 
   function formatDateForList(value) {

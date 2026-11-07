@@ -147,8 +147,8 @@ input, select, textarea { font: inherit; }
   position: relative; z-index: 2;
   width: 100%; max-width: var(--max); margin: 0 auto;
   display: grid;
-  grid-template-columns: 5fr 7fr;
-  gap: 56px;
+  grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+  gap: 24px 28px;
   align-items: start;
 }
 
@@ -156,7 +156,7 @@ input, select, textarea { font: inherit; }
 .evento-visual {
   display: flex;
   flex-direction: column;
-  gap: 28px;
+  gap: 16px;
   align-self: start;
 }
 .evento-cover {
@@ -199,8 +199,8 @@ input, select, textarea { font: inherit; }
   flex-direction: column;
   max-height: none;
   overflow-y: visible;
-  padding-right: 8px;
-  padding-bottom: 40px;
+  padding-right: 0;
+  padding-bottom: 0;
   scrollbar-width: thin;
   scrollbar-color: var(--border-strong) transparent;
 }
@@ -209,7 +209,7 @@ input, select, textarea { font: inherit; }
 .evento-info-wrap::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 99px; }
 
 /* Vagas pill */
-.evento-kicker { margin-bottom: 20px; }
+.evento-kicker { margin-bottom: 12px; }
 .vagas-pill {
   display: inline-flex; align-items: center;
   font-size: 0.64rem; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase;
@@ -243,7 +243,7 @@ input, select, textarea { font: inherit; }
   font-size: 0.96rem; font-weight: 300;
   color: var(--muted);
   line-height: 1.78;
-  margin-bottom: 32px;
+  margin-bottom: 18px;
 }
 
 /* Card de metadados */
@@ -252,10 +252,10 @@ input, select, textarea { font: inherit; }
   border: 1px solid var(--border-strong);
   border-left: 3px solid var(--green-mid);
   border-radius: 16px;
-  padding: 24px 28px;
+  padding: 18px 20px;
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 22px 36px;
+  gap: 16px 20px;
 }
 [data-theme="dark"] .evento-meta-card { border-left-color: var(--green-light); }
 .meta-item { display: flex; align-items: flex-start; gap: 12px; }
@@ -304,9 +304,9 @@ input, select, textarea { font: inherit; }
 .btn-outros:hover { border-color: var(--green-mid); color: var(--text); background: rgba(46,168,46,0.05); }
 
 /* Descrição */
-.evento-descricao { border-top: 1px solid var(--border); padding-top: 36px; }
+.evento-descricao { border-top: 1px solid var(--border); padding-top: 18px; }
 .descricao-header {
-  display: flex; align-items: center; gap: 14px; margin-bottom: 20px;
+  display: flex; align-items: center; gap: 12px; margin-bottom: 12px;
 }
 .descricao-line { width: 26px; height: 2px; background: var(--green-mid); flex-shrink: 0; }
 [data-theme="dark"] .descricao-line { background: var(--green-light); }
@@ -322,6 +322,14 @@ input, select, textarea { font: inherit; }
 
 .empty-state { grid-column: 1/-1; text-align: center; padding: 48px 24px; color: var(--muted); }
 
+/* A programação aproveita a largura da página, sem alongar a coluna da capa. */
+.evento-program { grid-column: 1 / -1; min-width: 0; }
+.evento-program .activities { margin: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.evento-program .activities > h2, .evento-program .activities > p { grid-column: 1 / -1; margin: 0; }
+.evento-program .activity-card { margin: 0; padding: 16px; }
+.evento-info-wrap .event-configuration { margin: 18px 0 0; padding-top: 14px; border-top: 1px solid var(--border); }
+.evento-info-wrap .event-specific-details { gap: 10px; }
+
 /* ─── TOAST ─── */
 .toast {
   position: fixed; bottom: 28px; right: 28px;
@@ -336,14 +344,16 @@ input, select, textarea { font: inherit; }
 @media (max-width: 960px) {
   body { overflow: auto; height: auto; }
   .evento-hero { height: auto; min-height: 100vh; overflow: visible; padding: 90px 24px 40px; }
-  .evento-layout { grid-template-columns: 1fr; gap: 28px; }
-  .evento-visual { gap: 20px; }
+  .evento-layout { grid-template-columns: 1fr; gap: 20px; }
+  .evento-visual { gap: 16px; }
+  .evento-program .activities { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .evento-cover { min-height: 290px; max-height: 380px; border-radius: 16px; }
   .evento-meta-card { grid-template-columns: 1fr 1fr; }
   .evento-info-wrap { max-height: none; overflow-y: visible; padding-right: 0; }
 }
 
 @media (max-width: 780px) {
+  .evento-program .activities { grid-template-columns: minmax(0, 1fr); }
   .site-header { padding: 12px 16px; align-items: flex-start; }
   .theme-toggle { display: none; }
   .menu-toggle {

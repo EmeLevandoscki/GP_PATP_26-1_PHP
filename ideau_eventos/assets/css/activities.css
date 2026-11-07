@@ -1,0 +1,12 @@
+.activities { margin: 1.5rem 0; }
+#activityEditorSection { grid-column: 1 / -1; min-width: 0; }
+.activity-card { padding: 1rem; margin: .75rem 0; border: 1px solid var(--border, #7c8b8066); border-radius: 12px; overflow-wrap: anywhere; }
+.activity-card h3, .activity-card p { margin: .5rem 0; }
+.activity-choice { display: flex; align-items: flex-start; gap: .75rem; cursor: pointer; }
+.activity-choice input { width: 20px; height: 20px; flex-shrink: 0; }
+.activity-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr)); gap: .75rem; }
+.activity-participant { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; margin: .5rem 0; }
+#activityConflict { color: var(--danger, #d35b53); }
+.receipt-activity { padding: 1rem 0; border-bottom: 1px solid #7c8b8066; overflow-wrap: anywhere; }
+.receipt-activity form { display: grid; gap: .75rem; margin-top: .75rem; }
+[hidden] { display: none !important; }

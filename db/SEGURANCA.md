@@ -1,5 +1,17 @@
 # Preparação para testes públicos na Hostinger
 
+## Navegação entre site público e painel
+
+A página inicial agora consulta `$_SESSION['publication_organizer']` usando `RequestSecurity::session()`. Somente uma sessão autenticada recebe, no HTML enviado pelo PHP, o link **Painel do Organizador**. O menu público continua sem link para login. O painel possui **Visualizar site**, que abre a página inicial mantendo a sessão.
+
+As seis páginas administrativas atuais foram convertidas de `.html` para `.php`: `dashboard`, `eventos`, `evento-form`, `inscritos`, `relatorios` e `configuracoes`. O layout foi mantido. Cada entrada chama `RequestSecurity::organizerPage()` antes de enviar conteúdo. As oito páginas antigas de organizador em `src/View` receberam a mesma proteção. As APIs mantêm suas verificações de autenticação e CSRF.
+
+O novo `assets/js/organizer-navigation.js` consulta `PublicacaoController.php?action=organizer-status`, sem acessar o banco. Login/logout notificam outras abas por BroadcastChannel e evento de armazenamento; essas mensagens apenas provocam nova verificação no servidor, sem conceder acesso. A página também revalida ao voltar do cache, ganhar foco e a cada 30 segundos quando visível. Links são ocultados após logout, e uma resposta antiga não pode reexibi-los. Rascunhos do formulário continuam usando sua chave anterior para sobreviver à troca de extensão.
+
+Ao publicar esta alteração, envie os novos PHPs, JS/CSS e o `.htaccess` atualizado; **remova as antigas cópias HTML administrativas**, que não validam sessão. O `.htaccess` encaminha os endereços antigos para os novos PHPs, preservando a query string. Em servidores sem Apache/LiteSpeed e `mod_rewrite`, configure aliases equivalentes ou use diretamente as novas URLs `.php`. A proteção dos novos PHPs funciona independentemente desses aliases. Esta mudança de navegação não requer migração de banco de dados.
+
+Testes executados: `tests/organizer-navigation-http.cjs` verifica login PHP real, menus por sessão, acesso anônimo/autenticado às 14 páginas, APIs protegidas, navegação sem novo login, logout, invalidação dos cookies anteriores e instalação em subpasta. `tests/organizer-navigation-ui.cjs` verifica sincronização entre abas, resposta atrasada, mensagens locais sem autoridade e retorno pelo cache com DOM simulado. Também passaram regressões de CSRF, comprovante, consulta por e-mail e recuperação de rascunhos. A confirmação visual em navegador e os redirecionamentos no Apache de produção ainda precisam de homologação; o teste de navegador local não respondeu ao comando `Page.enable`.
+
 Estas correções precisam ser enviadas ao servidor. A revisão local não verifica a configuração atual da Hostinger nem garante ausência de outras falhas.
 
 ## Senha do organizador

@@ -10,6 +10,26 @@ header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-store');
 
 function responder(array $data, int $status = 200): never {
+    if (array_is_list($data)) {
+        // Serializa listas sem montar uma string gigante com todas as capas.
+        // Prepara antes de enviar para ainda poder retornar erro caso o JSON falhe.
+        $output = fopen('php://temp/maxmemory:2097152', 'w+b');
+        if ($output === false) throw new RuntimeException('Não foi possível preparar a resposta.');
+        try {
+            fwrite($output, '[');
+            foreach ($data as $index => $item) {
+                if ($index > 0) fwrite($output, ',');
+                fwrite($output, json_encode($item, JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR));
+            }
+            fwrite($output, ']');
+            rewind($output);
+            http_response_code($status);
+            while (!feof($output)) echo fread($output, 8192);
+        } finally {
+            fclose($output);
+        }
+        exit;
+    }
     http_response_code($status);
     echo json_encode($data, JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR);
     exit;
@@ -18,6 +38,10 @@ function responder(array $data, int $status = 200): never {
 try {
     $action = $_GET['action'] ?? 'events';
     $method = $_SERVER['REQUEST_METHOD'];
+    if ($method === 'GET' && in_array($action, ['events', 'event', 'dashboard', 'registrations'], true)) session_write_close();
+    if ($method === 'GET' && $action === 'organizer-status') {
+        responder(['authenticated' => !empty($_SESSION['publication_organizer'])]);
+    }
     if ($method === 'GET' && $action === 'session') {
         $_SESSION['publication_csrf'] ??= bin2hex(random_bytes(32));
         $receipts = [];
@@ -64,6 +88,9 @@ try {
             responder($service->inscrever($data));
         }
         if (!isset($_SESSION['publication_organizer'])) responder(['message' => 'Entre como organizador para salvar.'], 401);
+        if ($action === 'register-organizer') {
+            responder((new PublicacaoService(Conexao::getConexao()))->inscreverOrganizador($data, $_SESSION['publication_organizer']));
+        }
         if ($action === 'logout') {
             \App\Service\RequestSecurity::logout();
             responder(['success' => true]);
@@ -74,9 +101,16 @@ try {
             }
             responder((new PublicacaoService(Conexao::getConexao()))->revisarInscricao($data['eventId'], $data['id'], $data['decision'], $_SESSION['publication_organizer']));
         }
+        if ($action === 'cancel-activity') {
+            foreach (['eventId', 'id', 'activityId'] as $field) {
+                if (!is_string($data[$field] ?? null) || $data[$field] === '') throw new InvalidArgumentException('Informe a inscrição e a atividade.');
+            }
+            (new \App\Service\AtividadeService(Conexao::getConexao()))->cancelar($data['eventId'], $data['id'], $data['activityId'], $_SESSION['publication_organizer']);
+            responder(['success' => true]);
+        }
         if ($action === 'save') {
             $service = new PublicacaoService(Conexao::getConexao());
-            responder($service->salvar($data, $_SESSION['publication_organizer']));
+            responder(\App\Service\CapaService::resumir($service->salvar($data, $_SESSION['publication_organizer'])));
         }
         if ($action === 'delete') {
             $id = $data['id'] ?? null;
@@ -96,7 +130,7 @@ try {
                 responder(['success' => true]);
             }
             $service = new PublicacaoService(Conexao::getConexao());
-            responder($service->encerrar($data['id'], $_SESSION['publication_organizer']));
+            responder(\App\Service\CapaService::resumir($service->encerrar($data['id'], $_SESSION['publication_organizer'])));
         }
     }
     if ($method === 'GET' && $action === 'dashboard') {

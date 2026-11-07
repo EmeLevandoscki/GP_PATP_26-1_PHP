@@ -1,3 +1,8 @@
+<?php
+require_once __DIR__ . '/../../../../src/Config/runtime.php';
+require_once __DIR__ . '/../../../../vendor/autoload.php';
+\App\Service\RequestSecurity::organizerPage('../../../../ideau_eventos/login.html');
+?>
 <!DOCTYPE html>
 <html lang="pt-BR" data-theme="dark">
 <head>
@@ -144,22 +149,22 @@ nav{position:fixed;top:0;left:0;right:0;z-index:500;display:flex;align-items:cen
 <body>
 <div id="cursor"></div><div id="cursor-ring"></div>
 <div class="mob" id="mob">
-  <a href="org-criar-evento.html" class="ma hl">&#x271A; Criar Evento</a>
+  <a href="org-criar-evento.php" class="ma hl">&#x271A; Criar Evento</a>
   <div class="mhr"></div>
-  <a href="organizador-dashboard.html" class="ma ">&#x1F4CA; Dashboard</a>
-  <a href="org-gerenciar.html" class="ma ">&#x1F4C5; Meus Eventos</a>
-  <a href="org-inscritos.html" class="ma ">&#x1F465; Inscritos</a>
+  <a href="organizador-dashboard.php" class="ma ">&#x1F4CA; Dashboard</a>
+  <a href="org-gerenciar.php" class="ma ">&#x1F4C5; Meus Eventos</a>
+  <a href="org-inscritos.php" class="ma ">&#x1F465; Inscritos</a>
   <div class="mhr"></div>
-  <a href="org-configuracoes.html" class="ma on">&#x1F3DB;&#xFE0F; Configura&#xE7;&#xF5;es</a>
-  <a href="org-notificacoes.html" class="ma ">&#x1F514; Notifica&#xE7;&#xF5;es</a>
+  <a href="org-configuracoes.php" class="ma on">&#x1F3DB;&#xFE0F; Configura&#xE7;&#xF5;es</a>
+  <a href="org-notificacoes.php" class="ma ">&#x1F514; Notifica&#xE7;&#xF5;es</a>
   <div class="mhr"></div>
   <a href="index.html" class="ma red">&#x21A9; Sair</a>
 </div>
 <nav>
-  <a href="organizador-dashboard.html" class="nlo"><div class="nlo-ic">ID</div><div class="nlo-t"><span class="nlo-ti">IDEAU Eventos</span><span class="nlo-su">Faculdades IDEAU</span></div></a>
+  <a href="organizador-dashboard.php" class="nlo"><div class="nlo-ic">ID</div><div class="nlo-t"><span class="nlo-ti">IDEAU Eventos</span><span class="nlo-su">Faculdades IDEAU</span></div></a>
   <div class="nav-r">
     <button class="tgl" onclick="toggleTheme()">&#x1F319;</button>
-    <a href="org-criar-evento.html" class="btn-c">&#x271A; Criar Evento</a>
+    <a href="org-criar-evento.php" class="btn-c">&#x271A; Criar Evento</a>
     <button class="ham" id="ham" onclick="toggleMenu()"><span></span><span></span><span></span></button>
   </div>
 </nav>
@@ -167,14 +172,14 @@ nav{position:fixed;top:0;left:0;right:0;z-index:500;display:flex;align-items:cen
 <aside class="sb">
   <div class="sb-u"><div class="sb-av">CL</div><div class="sb-nm">Prof. Carlos Eduardo Lima</div><div class="sb-em">carlos.lima@ideau.edu.br</div><div class="sb-b"><span class="sb-bd"></span>Organizador</div></div>
   <nav class="sbn">
-    <a href="org-criar-evento.html" class="sa hl"><span class="sai">&#x271A;</span>Criar Evento</a>
+    <a href="org-criar-evento.php" class="sa hl"><span class="sai">&#x271A;</span>Criar Evento</a>
     <div class="sahr"></div>
-    <a href="organizador-dashboard.html" class="sa "><span class="sai">&#x1F4CA;</span>Dashboard</a>
-    <a href="org-gerenciar.html" class="sa "><span class="sai">&#x1F4C5;</span>Meus Eventos</a>
-    <a href="org-inscritos.html" class="sa "><span class="sai">&#x1F465;</span>Inscritos</a>
+    <a href="organizador-dashboard.php" class="sa "><span class="sai">&#x1F4CA;</span>Dashboard</a>
+    <a href="org-gerenciar.php" class="sa "><span class="sai">&#x1F4C5;</span>Meus Eventos</a>
+    <a href="org-inscritos.php" class="sa "><span class="sai">&#x1F465;</span>Inscritos</a>
     <div class="sahr"></div>
-    <a href="org-configuracoes.html" class="sa on"><span class="sai">&#x1F3DB;&#xFE0F;</span>Perfil da Org.</a>
-    <a href="org-notificacoes.html" class="sa "><span class="sai">&#x1F514;</span>Notifica&#xE7;&#xF5;es</a>
+    <a href="org-configuracoes.php" class="sa on"><span class="sai">&#x1F3DB;&#xFE0F;</span>Perfil da Org.</a>
+    <a href="org-notificacoes.php" class="sa "><span class="sai">&#x1F514;</span>Notifica&#xE7;&#xF5;es</a>
     <div class="sahr"></div>
     <a href="index.html" class="sa dng"><span class="sai">&#x21A9;</span>Sair</a>
   </nav>

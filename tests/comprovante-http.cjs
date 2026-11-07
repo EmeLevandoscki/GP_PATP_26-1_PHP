@@ -10,13 +10,30 @@ const router = path.join(temp, 'router.php');
 fs.writeFileSync(router, `<?php
 require getenv('RECEIPT_TEST_ROOT') . '/vendor/autoload.php';
 $db = App\\Config\\Conexao::getConexao();
-$db->exec('CREATE TEMPORARY TABLE eventos_publicacoes (id VARCHAR(100) PRIMARY KEY, dados JSON)');
+$db->exec('CREATE TEMPORARY TABLE eventos_publicacoes (id VARCHAR(100) PRIMARY KEY, organizador VARCHAR(255), dados JSON)');
 require getenv('RECEIPT_TEST_ROOT') . '/tests/dashboard-temporary.php';
 $db->exec('CREATE TEMPORARY TABLE eventos_publicacoes_inscricoes (id VARCHAR(100) PRIMARY KEY, id_evento VARCHAR(100), dados JSON, criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP)');
 $db->exec("INSERT INTO eventos_publicacoes (id,dados) VALUES ('evt-test','{}')");
 $db->exec("INSERT INTO eventos_publicacoes_inscricoes (id,id_evento,dados) VALUES ('reg-test','evt-test','{}')");
+$db->exec('CREATE TEMPORARY TABLE eventos_publicacoes_atividades (id VARCHAR(100) PRIMARY KEY, id_evento VARCHAR(100), dados JSON)');
+$db->exec('CREATE TEMPORARY TABLE eventos_publicacoes_atividade_inscricoes (id INT PRIMARY KEY, id_atividade VARCHAR(100), id_inscricao VARCHAR(100), cancelado_em DATETIME NULL, presente BOOLEAN NULL)');
+$activity=['name'=>'Palestra <teste>', 'startAt'=>'2099-12-31T18:00','endAt'=>'2099-12-31T19:00','location'=>'Sala','speaker'=>'Docente','hours'=>1];
+$db->prepare('INSERT INTO eventos_publicacoes_atividades VALUES (?,?,?)')->execute(['act-test','evt-test',json_encode($activity)]);
+$db->exec("INSERT INTO eventos_publicacoes_atividade_inscricoes VALUES (1,'act-test','reg-test',NULL,NULL)");
+$db->exec("UPDATE eventos_publicacoes SET organizador='test'");
+$db->exec("UPDATE eventos_publicacoes_inscricoes SET dados=JSON_OBJECT('activityIds',JSON_ARRAY('act-test'))");
+$event=['eventKind'=>'webinar','modality'=>'online','delivery'=>['platform'=>'Meet','accessUrl'=>'https://example.test/sala-privada','instructions'=>'Senha <privada>']];
+$db->prepare('UPDATE eventos_publicacoes SET dados=?')->execute([json_encode($event)]);
+$db->exec("UPDATE eventos_publicacoes_inscricoes SET dados=JSON_SET(dados,'$.participationMode','online','$.eventRole','participante')");
+register_shutdown_function(static function() use ($db) {
+    if (($_POST['action']??'')==='cancel_activity' && http_response_code()===303) {
+        $cancelled=$db->query('SELECT cancelado_em FROM eventos_publicacoes_atividade_inscricoes WHERE id=1')->fetchColumn();
+        $exists=$db->query('SELECT COUNT(*) FROM eventos_publicacoes_inscricoes')->fetchColumn();
+        header('X-Test-Activity-Cancelled: '.($cancelled && $exists==1 ? 'yes':'no'));
+    }
+});
 
-if (isset($_GET['pending'])) $db->exec(\"UPDATE eventos_publicacoes_inscricoes SET dados = JSON_OBJECT('reviewStatus','pending')\");
+if (isset($_GET['pending'])) $db->exec(\"UPDATE eventos_publicacoes_inscricoes SET dados = JSON_SET(dados,'$.reviewStatus','pending')\");
 
 if (parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) === '/fixture') {
     session_start();
@@ -52,6 +69,10 @@ require getenv('RECEIPT_TEST_ROOT') . '/ideau_eventos/comprovante.php';
       assert.match(html, /Baixar comprovante em PDF/);
       assert.match(html, /&lt;script&gt;/);
       assert.doesNotMatch(html, /<script>alert/);
+      assert.match(html, /Palestra &lt;teste&gt;/);
+      assert.match(html, /Cancelar somente esta atividade/);
+      assert.match(html, /href="https:\/\/example.test\/sala-privada"/);
+      assert.match(html, /Senha &lt;privada&gt;/);
     }
     const download = await fetch(url + '&download=1', { headers: { Cookie: cookie } });
     assert.equal(download.headers.get('content-type'), 'application/pdf');
@@ -68,6 +89,7 @@ require getenv('RECEIPT_TEST_ROOT') . '/ideau_eventos/comprovante.php';
     const pendingPage=await (await fetch(pendingUrl,{headers:{Cookie:cookie}})).text();
     assert.match(pendingPage,/Aguardando aprovação/);
     assert.doesNotMatch(pendingPage,/Baixar comprovante em PDF|Inscrição confirmada/);
+    assert.doesNotMatch(pendingPage,/sala-privada|Senha &lt;privada&gt;/);
     const pendingPdf=await fetch(pendingUrl+'&download=1',{headers:{Cookie:cookie}});
     assert.equal(pendingPdf.status,409);
     assert.notEqual(pendingPdf.headers.get('content-type'),'application/pdf');
@@ -82,6 +104,13 @@ require getenv('RECEIPT_TEST_ROOT') . '/ideau_eventos/comprovante.php';
     assert.equal((await post({ csrf: 'invalid', confirm_cancel: '1' })).status, 403);
     assert.equal((await post({ csrf })).status, 422, 'Cancelamento exige confirmação.');
     assert.equal((await post({ csrf, confirm_cancel: '1' }, false)).status, 403, 'Outra sessão não pode cancelar.');
+    assert.equal((await post({csrf:'invalid',action:'cancel_activity',confirm_activity:'1',activity_id:'act-test'})).status,403);
+    assert.equal((await post({csrf,action:'cancel_activity',activity_id:'act-test'})).status,422);
+    assert.equal((await post({csrf,action:'cancel_activity',confirm_activity:'1',activity_id:'act-forjada'})).status,422);
+    assert.equal((await post({csrf,action:'cancel_activity',confirm_activity:'1',activity_id:'act-test'},false)).status,403);
+    const individual=await post({csrf,action:'cancel_activity',confirm_activity:'1',activity_id:'act-test',eventId:'forjado',protocol:'forjado'});
+    assert.equal(individual.status,303);
+    assert.equal(individual.headers.get('x-test-activity-cancelled'),'yes','Cancela atividade na sessão autorizada e mantém inscrição principal.');
     assert.equal((await post({ csrf, confirm_cancel: '1' })).status, 303);
     const cancelled = await (await fetch(url, { headers: { Cookie: cookie } })).text();
     assert.match(cancelled, /Inscrição cancelada/);
@@ -91,7 +120,7 @@ require getenv('RECEIPT_TEST_ROOT') . '/ideau_eventos/comprovante.php';
     assert.equal((await fetch(url)).status, 404, 'Outra sessão não pode acessar o comprovante.');
     assert.equal((await fetch(url + '&download=1')).status, 404, 'Outra sessão não pode baixar o PDF.');
     assert.equal((await fetch(origin + '/comprovante.php?id=invalid', { headers: { Cookie: cookie } })).status, 404);
-    console.log('OK: comprovante após atualizar, PDF com download e estrutura válida, escape HTML e isolamento de sessão.');
+    console.log('OK: comprovante, PDF, atividades, cancelamento individual, confirmação, CSRF, escape HTML e isolamento de sessão.');
   } finally {
     child.kill();
     await new Promise(resolve => child.exitCode !== null ? resolve() : child.once('exit', resolve));

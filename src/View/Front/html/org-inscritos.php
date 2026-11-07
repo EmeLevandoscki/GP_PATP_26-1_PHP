@@ -1,8 +1,13 @@
+<?php
+require_once __DIR__ . '/../../../../src/Config/runtime.php';
+require_once __DIR__ . '/../../../../vendor/autoload.php';
+\App\Service\RequestSecurity::organizerPage('../../../../ideau_eventos/login.html');
+?>
 <!DOCTYPE html>
 <html lang="pt-BR" data-theme="dark">
 <head>
 <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-<title>Notificações &mdash; IDEAU</title>
+<title>Inscritos &mdash; IDEAU</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
 <style>
 :root{--bg:#f4f6f0;--surface:#fff;--card:#fff;--card-hover:#f9fbf6;--green-dark:#0d4a0d;--green-mid:#1a6e1a;--gold:#d4a800;--gold-light:#f5c800;--red:#c41a1a;--text:#1a2210;--muted:#6b7a5a;--border:rgba(13,74,13,.12);--border-strong:rgba(13,74,13,.25);--nav-bg:rgba(244,246,240,.96)}
@@ -92,71 +97,59 @@ nav{position:fixed;top:0;left:0;right:0;z-index:500;display:flex;align-items:cen
 @media(max-width:900px){nav{padding:12px 20px}.main{padding:28px 20px}}
 @media(max-width:768px){.ham{display:flex}.btn-c{display:none}.sb{display:none}.layout{grid-template-columns:1fr}.mg{grid-template-columns:1fr}}
 @media(max-width:480px){.ptitle{font-size:2rem}}
-.nb{display:inline-flex;align-items:center;gap:6px;margin-left:10px;padding:4px 12px;background:rgba(224,32,32,.12);border:1px solid rgba(224,32,32,.25);color:var(--red);font-family:'DM Sans',sans-serif;font-size:.68rem;font-weight:700;letter-spacing:.1em;vertical-align:middle}
-.nacts{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 22px}
-.nsg{display:grid;grid-template-columns:repeat(4,1fr);gap:2px;margin-bottom:22px}
-.nc{background:var(--card);border:1px solid var(--border);padding:15px;display:flex;align-items:center;gap:12px}
-.nc-ic{width:34px;height:34px;display:flex;align-items:center;justify-content:center;font-size:1rem;border:1px solid var(--border);flex-shrink:0}
-.nc-v{font-family:'Bebas Neue',sans-serif;font-size:1.5rem;line-height:1}
-.nc-l{font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
-.ftabs{display:flex;border-bottom:1px solid var(--border);margin-bottom:20px}
-.ftab{padding:11px 18px;background:transparent;border:none;border-bottom:2px solid transparent;color:var(--muted);font-family:'DM Sans',sans-serif;font-size:.8rem;font-weight:500;letter-spacing:.07em;text-transform:uppercase;cursor:none;transition:all .2s;margin-bottom:-1px;white-space:nowrap;flex-shrink:0}
-.ftab.on{color:var(--gold);border-bottom-color:var(--gold)}
-.ftab:hover{color:var(--text)}
-.ng{margin-bottom:20px}
-.ng-l{font-size:.62rem;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin-bottom:8px;display:flex;align-items:center;gap:8px}
-.ng-l::before{content:'';width:14px;height:1px;background:var(--muted)}
-.ni{display:flex;align-items:flex-start;gap:14px;padding:16px;background:var(--card);border:1px solid var(--border);margin-bottom:2px;position:relative;transition:all .2s}
-.ni:hover{border-color:var(--border-strong);background:var(--card-hover)}
-.ni.ug{border-left:3px solid var(--gold);background:rgba(245,200,0,.03)}
-.ni.ugr{border-left:3px solid var(--green-light);background:rgba(46,168,46,.04)}
-.ni.ur{border-left:3px solid var(--red);background:rgba(224,32,32,.03)}
-.ni-box{width:38px;height:38px;display:flex;align-items:center;justify-content:center;font-size:1rem;border:1px solid var(--border);flex-shrink:0}
-.nb-g{background:rgba(245,200,0,.08);border-color:rgba(245,200,0,.2)}
-.nb-gr{background:rgba(46,168,46,.1);border-color:rgba(46,168,46,.2)}
-.nb-r{background:rgba(224,32,32,.08);border-color:rgba(224,32,32,.2)}
-.ni-c{flex:1;min-width:0}
-.ni-ti{font-size:.88rem;font-weight:500;margin-bottom:4px;line-height:1.4}
-.ni-de{font-size:.77rem;color:var(--muted);line-height:1.5;margin-bottom:6px}
-.ni-mt{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-.ni-tm{font-size:.68rem;color:var(--muted)}
-.ni-tg{font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;padding:2px 7px}
-.nt-g{background:rgba(245,200,0,.08);color:var(--gold);border:1px solid rgba(245,200,0,.2)}
-.nt-gr{background:rgba(46,168,46,.1);color:var(--green-light);border:1px solid rgba(46,168,46,.25)}
-.nt-r{background:rgba(224,32,32,.08);color:var(--red);border:1px solid rgba(224,32,32,.2)}
-.nt-m{background:var(--card-hover);color:var(--muted);border:1px solid var(--border)}
-.ni-ar{display:flex;gap:6px;margin-top:8px}
-.ni-bt{background:var(--gold);border:none;color:#0a0f08;padding:5px 12px;font-family:'DM Sans',sans-serif;font-size:.7rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;cursor:none;transition:all .2s}
-.ni-bt:hover{background:var(--gold-light)}
-.ni-gh{background:transparent;border:1px solid var(--border-strong);color:var(--muted);padding:5px 12px;font-family:'DM Sans',sans-serif;font-size:.7rem;letter-spacing:.07em;text-transform:uppercase;cursor:none;transition:all .2s}
-.ni-gh:hover{border-color:var(--text);color:var(--text)}
-.ni-dot{position:absolute;top:14px;right:14px;width:7px;height:7px;border-radius:50%}
-.nd-g{background:var(--gold)}.nd-gr{background:var(--green-light)}.nd-r{background:var(--red)}
-.ni-x{position:absolute;top:10px;right:10px;background:transparent;border:none;color:var(--muted);font-size:.8rem;cursor:none;opacity:0;transition:opacity .2s}
-.ni:hover .ni-x{opacity:1}.ni:hover .ni-dot{opacity:0}
-@media(max-width:768px){.nsg{grid-template-columns:1fr 1fr}}
-@media(max-width:480px){.nsg{grid-template-columns:1fr}}
+.etabs{display:flex;gap:2px;margin-bottom:20px;overflow-x:auto}
+.etab{padding:10px 18px;background:var(--card);border:1px solid var(--border);color:var(--muted);font-family:'DM Sans',sans-serif;font-size:.78rem;font-weight:500;letter-spacing:.06em;text-transform:uppercase;cursor:none;transition:all .2s;white-space:nowrap;flex-shrink:0}
+.etab.on,.etab:hover{background:rgba(245,200,0,.08);border-color:rgba(245,200,0,.35);color:var(--gold)}
+.ms{display:grid;grid-template-columns:repeat(4,1fr);gap:2px;margin-bottom:18px}
+.mc{background:var(--card);border:1px solid var(--border);padding:15px;display:flex;align-items:center;gap:12px}
+.mc-ic{width:34px;height:34px;display:flex;align-items:center;justify-content:center;font-size:1rem;border:1px solid var(--border);flex-shrink:0}
+.mc-v{font-family:'Bebas Neue',sans-serif;font-size:1.6rem;line-height:1}
+.mc-l{font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.th{display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+.sr2{background:var(--card);border:1px solid var(--border-strong);display:flex;align-items:center;padding:0 12px;gap:8px;flex:1;max-width:280px}
+.sr2 input{flex:1;background:transparent;border:none;color:var(--text);font-family:'DM Sans',sans-serif;font-size:.84rem;padding:9px 0;outline:none}
+.sr2 input::placeholder{color:var(--muted)}
+.fb2{padding:7px 12px;border:1px solid var(--border-strong);background:transparent;color:var(--muted);font-family:'DM Sans',sans-serif;font-size:.72rem;letter-spacing:.07em;text-transform:uppercase;cursor:none;transition:all .2s}
+.fb2.on,.fb2:hover{border-color:var(--gold);color:var(--gold)}
+.ex{padding:7px 14px;background:var(--gold);border:none;color:#0a0f08;font-family:'DM Sans',sans-serif;font-size:.74rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;cursor:none;transition:all .2s;margin-left:auto}
+.ex:hover{background:var(--gold-light)}
+table{width:100%;border-collapse:collapse;background:var(--card);border:1px solid var(--border)}
+thead tr{border-bottom:2px solid var(--border)}
+th{text-align:left;padding:12px 14px;font-size:.65rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:500;background:var(--surface)}
+td{padding:13px 14px;font-size:.83rem;border-bottom:1px solid var(--border)}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:var(--card-hover)}
+.pc{display:flex;align-items:center;gap:10px}
+.pav{width:32px;height:32px;border-radius:50%;background:rgba(46,168,46,.12);border:1px solid rgba(46,168,46,.25);display:flex;align-items:center;justify-content:center;font-size:.68rem;font-weight:700;color:var(--green-light);flex-shrink:0}
+.pnm{font-weight:500;font-size:.85rem}
+.pem{font-size:.71rem;color:var(--muted);margin-top:1px}
+.bconf{padding:5px 10px;background:transparent;border:1px solid rgba(46,168,46,.3);color:var(--green-light);font-size:.65rem;letter-spacing:.07em;text-transform:uppercase;cursor:none;transition:all .2s}
+.bconf:hover{background:rgba(46,168,46,.1)}
+.bcanc{padding:5px 10px;background:transparent;border:1px solid rgba(224,32,32,.2);color:rgba(224,32,32,.6);font-size:.65rem;letter-spacing:.07em;text-transform:uppercase;cursor:none;transition:all .2s}
+.bcanc:hover{border-color:var(--red);color:var(--red)}
+@media(max-width:768px){.ms{grid-template-columns:1fr 1fr}table{display:block;overflow-x:auto}.th{gap:6px}}
+@media(max-width:480px){.ms{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
 <div id="cursor"></div><div id="cursor-ring"></div>
 <div class="mob" id="mob">
-  <a href="org-criar-evento.html" class="ma hl">&#x271A; Criar Evento</a>
+  <a href="org-criar-evento.php" class="ma hl">&#x271A; Criar Evento</a>
   <div class="mhr"></div>
-  <a href="organizador-dashboard.html" class="ma ">&#x1F4CA; Dashboard</a>
-  <a href="org-gerenciar.html" class="ma ">&#x1F4C5; Meus Eventos</a>
-  <a href="org-inscritos.html" class="ma ">&#x1F465; Inscritos</a>
+  <a href="organizador-dashboard.php" class="ma ">&#x1F4CA; Dashboard</a>
+  <a href="org-gerenciar.php" class="ma ">&#x1F4C5; Meus Eventos</a>
+  <a href="org-inscritos.php" class="ma on">&#x1F465; Inscritos</a>
   <div class="mhr"></div>
-  <a href="org-configuracoes.html" class="ma ">&#x1F3DB;&#xFE0F; Configura&#xE7;&#xF5;es</a>
-  <a href="org-notificacoes.html" class="ma on">&#x1F514; Notifica&#xE7;&#xF5;es</a>
+  <a href="org-configuracoes.php" class="ma ">&#x1F3DB;&#xFE0F; Configura&#xE7;&#xF5;es</a>
+  <a href="org-notificacoes.php" class="ma ">&#x1F514; Notifica&#xE7;&#xF5;es</a>
   <div class="mhr"></div>
   <a href="index.php" class="ma red">&#x21A9; Sair</a>
 </div>
 <nav>
-  <a href="organizador-dashboard.html" class="nlo"><div class="nlo-ic">ID</div><div class="nlo-t"><span class="nlo-ti">IDEAU Eventos</span><span class="nlo-su">Faculdades IDEAU</span></div></a>
+  <a href="organizador-dashboard.php" class="nlo"><div class="nlo-ic">ID</div><div class="nlo-t"><span class="nlo-ti">IDEAU Eventos</span><span class="nlo-su">Faculdades IDEAU</span></div></a>
   <div class="nav-r">
     <button class="tgl" onclick="toggleTheme()">&#x1F319;</button>
-    <a href="org-criar-evento.html" class="btn-c">&#x271A; Criar Evento</a>
+    <a href="org-criar-evento.php" class="btn-c">&#x271A; Criar Evento</a>
     <button class="ham" id="ham" onclick="toggleMenu()"><span></span><span></span><span></span></button>
   </div>
 </nav>
@@ -164,51 +157,37 @@ nav{position:fixed;top:0;left:0;right:0;z-index:500;display:flex;align-items:cen
 <aside class="sb">
   <div class="sb-u"><div class="sb-av">CL</div><div class="sb-nm">Prof. Carlos Eduardo Lima</div><div class="sb-em">carlos.lima@ideau.edu.br</div><div class="sb-b"><span class="sb-bd"></span>Organizador</div></div>
   <nav class="sbn">
-    <a href="org-criar-evento.html" class="sa hl"><span class="sai">&#x271A;</span>Criar Evento</a>
+    <a href="org-criar-evento.php" class="sa hl"><span class="sai">&#x271A;</span>Criar Evento</a>
     <div class="sahr"></div>
-    <a href="organizador-dashboard.html" class="sa "><span class="sai">&#x1F4CA;</span>Dashboard</a>
-    <a href="org-gerenciar.html" class="sa "><span class="sai">&#x1F4C5;</span>Meus Eventos</a>
-    <a href="org-inscritos.html" class="sa "><span class="sai">&#x1F465;</span>Inscritos</a>
+    <a href="organizador-dashboard.php" class="sa "><span class="sai">&#x1F4CA;</span>Dashboard</a>
+    <a href="org-gerenciar.php" class="sa "><span class="sai">&#x1F4C5;</span>Meus Eventos</a>
+    <a href="org-inscritos.php" class="sa on"><span class="sai">&#x1F465;</span>Inscritos</a>
     <div class="sahr"></div>
-    <a href="org-configuracoes.html" class="sa "><span class="sai">&#x1F3DB;&#xFE0F;</span>Perfil da Org.</a>
-    <a href="org-notificacoes.html" class="sa on"><span class="sai">&#x1F514;</span>Notifica&#xE7;&#xF5;es</a>
+    <a href="org-configuracoes.php" class="sa "><span class="sai">&#x1F3DB;&#xFE0F;</span>Perfil da Org.</a>
+    <a href="org-notificacoes.php" class="sa "><span class="sai">&#x1F514;</span>Notifica&#xE7;&#xF5;es</a>
     <div class="sahr"></div>
-    <a href="index.php" class="sa dng"><span class="sai">&#x21A9;</span>Sair</a>
+    <a href="index.html" class="sa dng"><span class="sai">&#x21A9;</span>Sair</a>
   </nav>
 </aside>
 <main class="main">
-<div class="ey">Central de</div>
-<div class="ptitle" style="display:flex;align-items:center;flex-wrap:wrap;gap:10px">NOTIFICA&#xC7;&#xD5;ES <span class="nb">5 novas</span></div>
-<div class="nacts">
-  <button class="btn-o" onclick="markAll()">&#x2713; Marcar todas como lidas</button>
-  <button class="btn-o" onclick="clearAll()">&#x1F5D1;&#xFE0F; Limpar tudo</button>
-  <a href="org-configuracoes.html" class="btn-g" style="text-decoration:none;display:inline-block;padding:9px 18px">&#x2699;&#xFE0F; Prefer&#xEA;ncias</a>
+<div class="ey">Gerenciamento</div>
+<div class="ptitle">INSCRITOS</div>
+<div class="etabs" id="evSel"></div>
+<div class="ms">
+  <div class="mc"><div class="mc-ic" style="background:rgba(245,200,0,.08);border-color:rgba(245,200,0,.2)">&#x1F465;</div><div><div class="mc-v" style="color:var(--gold)" id="stTot">0</div><div class="mc-l">Total</div></div></div>
+  <div class="mc"><div class="mc-ic" style="background:rgba(46,168,46,.08);border-color:rgba(46,168,46,.2)">&#x2705;</div><div><div class="mc-v" style="color:var(--green-light)" id="stCon">0</div><div class="mc-l">Confirmados</div></div></div>
+  <div class="mc"><div class="mc-ic" style="background:rgba(245,200,0,.08);border-color:rgba(245,200,0,.2)">&#x23F3;</div><div><div class="mc-v" style="color:var(--gold)" id="stPen">0</div><div class="mc-l">Pendentes</div></div></div>
+  <div class="mc"><div class="mc-ic" style="background:rgba(224,32,32,.08);border-color:rgba(224,32,32,.2)">&#x274C;</div><div><div class="mc-v" style="color:var(--red)" id="stCan">0</div><div class="mc-l">Cancelados</div></div></div>
 </div>
-<div class="nsg">
-  <div class="nc"><div class="nc-ic" style="background:rgba(245,200,0,.08);border-color:rgba(245,200,0,.2)">&#x1F4EC;</div><div><div class="nc-v">9</div><div class="nc-l">Total</div></div></div>
-  <div class="nc"><div class="nc-ic" style="background:rgba(224,32,32,.08);border-color:rgba(224,32,32,.2)">&#x1F534;</div><div><div class="nc-v" style="color:var(--red)">5</div><div class="nc-l">N&#xE3;o lidas</div></div></div>
-  <div class="nc"><div class="nc-ic" style="background:rgba(46,168,46,.08);border-color:rgba(46,168,46,.2)">&#x1F465;</div><div><div class="nc-v" style="color:var(--green-light)">4</div><div class="nc-l">Inscri&#xE7;&#xF5;es</div></div></div>
-  <div class="nc"><div class="nc-ic" style="background:rgba(224,32,32,.08);border-color:rgba(224,32,32,.2)">&#x26A0;&#xFE0F;</div><div><div class="nc-v" style="color:var(--red)">2</div><div class="nc-l">Alertas</div></div></div>
+<div class="th">
+  <div class="sr2"><span style="color:var(--muted)">&#x1F50D;</span><input type="text" placeholder="Buscar participante..." oninput="pQ=this.value.toLowerCase();renderT()"/></div>
+  <button class="fb2 on" onclick="setPF('todos',this)">Todos</button>
+  <button class="fb2" onclick="setPF('confirmado',this)">Confirmados</button>
+  <button class="fb2" onclick="setPF('pendente',this)">Pendentes</button>
+  <button class="fb2" onclick="setPF('cancelado',this)">Cancelados</button>
+  <button class="ex" onclick="showToast('&#x1F4E5; CSV exportado!')">&#x1F4E5; Exportar CSV</button>
 </div>
-<div class="ftabs">
-  <button class="ftab on" onclick="setTab(this,'todas')">Todas</button>
-  <button class="ftab" onclick="setTab(this,'inscricoes')">Inscri&#xE7;&#xF5;es</button>
-  <button class="ftab" onclick="setTab(this,'alertas')">Alertas</button>
-  <button class="ftab" onclick="setTab(this,'sistema')">Sistema</button>
-</div>
-<div class="ng"><div class="ng-l">Hoje</div>
-  <div class="ni ugr" data-cat="inscricoes"><div class="ni-box nb-gr">&#x1F464;</div><div class="ni-c"><div class="ni-ti"><strong>Nova inscri&#xE7;&#xE3;o:</strong> Jo&#xE3;o Santos &mdash; Semana Acad&#xEA;mica de Direito</div><div class="ni-de">Jo&#xE3;o Santos se inscreveu. Agora s&#xE3;o 142/150 inscritos.</div><div class="ni-mt"><span class="ni-tm">H&#xE1; 12 min</span><span class="ni-tg nt-gr">Inscri&#xE7;&#xE3;o</span></div></div><div class="ni-dot nd-gr"></div><button class="ni-x" onclick="dismiss(this.parentElement)">&#x2715;</button></div>
-  <div class="ni ur" data-cat="alertas"><div class="ni-box nb-r">&#x1F525;</div><div class="ni-c"><div class="ni-ti"><strong>Alerta:</strong> Semana de Direito &mdash; 95% ocupado!</div><div class="ni-de">Restam apenas 8 vagas. Considere aumentar a capacidade.</div><div class="ni-mt"><span class="ni-tm">H&#xE1; 30 min</span><span class="ni-tg nt-r">Alerta de capacidade</span></div><div class="ni-ar"><button class="ni-bt" onclick="location.href='org-gerenciar.html'">&#x270F;&#xFE0F; Gerenciar</button><button class="ni-gh" onclick="location.href='org-inscritos.html'">Ver inscritos</button></div></div><div class="ni-dot nd-r"></div><button class="ni-x" onclick="dismiss(this.parentElement)">&#x2715;</button></div>
-  <div class="ni ugr" data-cat="inscricoes"><div class="ni-box nb-gr">&#x1F464;</div><div class="ni-c"><div class="ni-ti"><strong>Nova inscri&#xE7;&#xE3;o:</strong> Ana Paula Silva &mdash; Festival Gastron&#xF4;mico</div><div class="ni-de">Agora s&#xE3;o 98/200 inscritos.</div><div class="ni-mt"><span class="ni-tm">H&#xE1; 1h</span><span class="ni-tg nt-gr">Inscri&#xE7;&#xE3;o</span></div></div><div class="ni-dot nd-gr"></div><button class="ni-x" onclick="dismiss(this.parentElement)">&#x2715;</button></div>
-</div>
-<div class="ng"><div class="ng-l">Ontem</div>
-  <div class="ni ug" data-cat="sistema"><div class="ni-box nb-g">&#x2705;</div><div class="ni-c"><div class="ni-ti"><strong>Evento aprovado:</strong> Mostra de Arte e Design</div><div class="ni-de">Seu evento foi aprovado e est&#xE1; vis&#xED;vel na plataforma.</div><div class="ni-mt"><span class="ni-tm">Ontem, 14:30</span><span class="ni-tg nt-g">Aprova&#xE7;&#xE3;o</span></div></div><div class="ni-dot nd-g"></div><button class="ni-x" onclick="dismiss(this.parentElement)">&#x2715;</button></div>
-  <div class="ni ur" data-cat="alertas"><div class="ni-box nb-r">&#x274C;</div><div class="ni-c"><div class="ni-ti"><strong>Cancelamento:</strong> Pedro Mendes cancelou inscri&#xE7;&#xE3;o</div><div class="ni-de">Pedro cancelou na Semana Acad&#xEA;mica de Direito 2025.</div><div class="ni-mt"><span class="ni-tm">Ontem, 10:15</span><span class="ni-tg nt-r">Cancelamento</span></div></div><div class="ni-dot nd-r"></div><button class="ni-x" onclick="dismiss(this.parentElement)">&#x2715;</button></div>
-</div>
-<div class="ng"><div class="ng-l">Esta semana</div>
-  <div class="ni" data-cat="inscricoes"><div class="ni-box nb-gr">&#x1F465;</div><div class="ni-c"><div class="ni-ti"><strong>5 novas inscri&#xE7;&#xF5;es</strong> &mdash; Semana Acad&#xEA;mica de Direito</div><div class="ni-de">Carla R., Rafael C., Juliana F., Lucas A., Mariana T. nas &#xFA;ltimas 24h.</div><div class="ni-mt"><span class="ni-tm">28 Mar 2025</span><span class="ni-tg nt-gr">Inscri&#xE7;&#xF5;es</span></div><div class="ni-ar"><button class="ni-gh" onclick="location.href='org-inscritos.html'">Ver todos</button></div></div><button class="ni-x" onclick="dismiss(this.parentElement)">&#x2715;</button></div>
-  <div class="ni" data-cat="sistema"><div class="ni-box" style="background:rgba(255,255,255,.04)">&#x1F4CB;</div><div class="ni-c"><div class="ni-ti"><strong>Relat&#xF3;rio semanal</strong> dispon&#xED;vel</div><div class="ni-de">47 novas inscri&#xE7;&#xF5;es, taxa de ocupa&#xE7;&#xE3;o m&#xE9;dia de 68%.</div><div class="ni-mt"><span class="ni-tm">25 Mar 2025</span><span class="ni-tg nt-m">Relat&#xF3;rio</span></div></div><button class="ni-x" onclick="dismiss(this.parentElement)">&#x2715;</button></div>
-</div>
+<table><thead><tr><th><input type="checkbox" style="accent-color:var(--gold);cursor:none"/></th><th>Participante</th><th>Ingresso</th><th>Data</th><th>Status</th><th>A&#xE7;&#xF5;es</th></tr></thead><tbody id="tbody"></tbody></table>
 </main>
 </div>
 <div class="toast" id="toast"></div>
@@ -251,16 +230,63 @@ nav{position:fixed;top:0;left:0;right:0;z-index:500;display:flex;align-items:cen
   }
 
 
-  var atab='todas';
-  function setTab(btn,tab){
-    atab=tab;
-    document.querySelectorAll('.ftab').forEach(function(b){b.classList.remove('on');});btn.classList.add('on');
-    document.querySelectorAll('.ni').forEach(function(i){var c=i.getAttribute('data-cat')||'';i.style.display=(atab==='todas'||c===atab)?'flex':'none';});
-    document.querySelectorAll('.ng').forEach(function(g){var v=Array.from(g.querySelectorAll('.ni')).some(function(i){return i.style.display!=='none';});g.style.display=v?'block':'none';});
+  var evData=[
+    {id:0,name:'Semana Acad\u00eamica de Direito',ps:[
+      {id:1,n:'Ana Paula Silva',e:'ana.p@aluno.ideau.edu.br',ing:'Entrada Gratuita',d:'28/03/2025',st:'confirmado'},
+      {id:2,n:'Jo\u00e3o Santos',e:'joao.s@aluno.ideau.edu.br',ing:'Entrada Gratuita',d:'29/03/2025',st:'confirmado'},
+      {id:3,n:'Carla Rodrigues',e:'carla.r@aluno.ideau.edu.br',ing:'Entrada Gratuita',d:'30/03/2025',st:'confirmado'},
+      {id:4,n:'Pedro Mendes',e:'pedro.m@aluno.ideau.edu.br',ing:'Entrada Gratuita',d:'31/03/2025',st:'pendente'},
+      {id:5,n:'Beatriz Lima',e:'bea.l@aluno.ideau.edu.br',ing:'Entrada Gratuita',d:'01/04/2025',st:'cancelado'},
+      {id:6,n:'Rafael Costa',e:'rafael.c@aluno.ideau.edu.br',ing:'Entrada Gratuita',d:'01/04/2025',st:'confirmado'}
+    ]},
+    {id:1,name:'Festival Gastron\u00f4mico',ps:[
+      {id:7,n:'Mariana Torres',e:'mari.t@aluno.ideau.edu.br',ing:'Entrada Gratuita',d:'25/03/2025',st:'confirmado'},
+      {id:8,n:'Felipe Souza',e:'felipe.s@aluno.ideau.edu.br',ing:'Entrada Gratuita',d:'26/03/2025',st:'confirmado'},
+      {id:9,n:'Camila Nunes',e:'cam.n@aluno.ideau.edu.br',ing:'Entrada Gratuita',d:'27/03/2025',st:'cancelado'}
+    ]},
+    {id:2,name:'Mostra de Arte e Design',ps:[
+      {id:10,n:'Vin\u00edcius Prado',e:'vini.p@aluno.ideau.edu.br',ing:'Entrada Gratuita',d:'20/03/2025',st:'confirmado'},
+      {id:11,n:'Larissa Melo',e:'lari.m@aluno.ideau.edu.br',ing:'Entrada Gratuita',d:'21/03/2025',st:'confirmado'},
+      {id:12,n:'Diego Carmo',e:'diego.c@aluno.ideau.edu.br',ing:'Entrada Gratuita',d:'22/03/2025',st:'pendente'}
+    ]}
+  ];
+  var curEv=0,pF='todos',pQ='';
+  function buildTabs(){
+    var sel=document.getElementById('evSel');
+    sel.innerHTML=evData.map(function(e,i){
+      return '<button class="etab'+(i===0?' on':'')+'" onclick="selEv('+e.id+',this)">'+e.name+'</button>';
+    }).join('');
   }
-  function dismiss(el){el.style.opacity='0';el.style.transform='translateX(20px)';el.style.transition='all .3s';setTimeout(function(){el.remove();},300);}
-  function markAll(){document.querySelectorAll('.ni').forEach(function(i){i.classList.remove('ug','ugr','ur');var d=i.querySelector('.ni-dot');if(d)d.remove();});document.querySelector('.nb').textContent='0 novas';showToast('\u2705 Todas lidas!');}
-  function clearAll(){Array.from(document.querySelectorAll('.ni')).forEach(function(el){dismiss(el);});showToast('\u1F5D1 Limpas.');}
+  function selEv(id,btn){curEv=id;pF='todos';pQ='';document.querySelectorAll('.etab').forEach(function(b){b.classList.remove('on');});btn.classList.add('on');renderT();}
+  function renderT(){
+    var ev=evData.find(function(e){return e.id===curEv;});
+    var all=ev?ev.ps.slice():[];
+    var ps=all.slice();
+    if(pF!=='todos') ps=ps.filter(function(p){return p.st===pF;});
+    if(pQ) ps=ps.filter(function(p){return p.n.toLowerCase().indexOf(pQ)>=0||p.e.indexOf(pQ)>=0;});
+    document.getElementById('stTot').textContent=all.length;
+    document.getElementById('stCon').textContent=all.filter(function(p){return p.st==='confirmado';}).length;
+    document.getElementById('stPen').textContent=all.filter(function(p){return p.st==='pendente';}).length;
+    document.getElementById('stCan').textContent=all.filter(function(p){return p.st==='cancelado';}).length;
+    function ini(n){return n.split(' ').slice(0,2).map(function(w){return w[0];}).join('').toUpperCase();}
+    document.getElementById('tbody').innerHTML=ps.map(function(p){
+      var sc=p.st==='confirmado'?'p-c':p.st==='pendente'?'p-p':'p-x';
+      var st=p.st==='confirmado'?'Confirmado':p.st==='pendente'?'Pendente':'Cancelado';
+      var acts=p.st==='pendente'?'<button class="bconf" onclick="chSt('+p.id+',\'confirmado\')">\u2713 Confirmar</button>':'' ;
+      acts+=' <button class="bcanc" onclick="chSt('+p.id+',\'cancelado\')">\u2715</button>';
+      return '<tr><td><input type="checkbox" style="accent-color:var(--gold);cursor:none"/></td>'
+        +'<td><div class="pc"><div class="pav">'+ini(p.n)+'</div><div><div class="pnm">'+p.n+'</div><div class="pem">'+p.e+'</div></div></div></td>'
+        +'<td>'+p.ing+'</td><td style="color:var(--muted)">'+p.d+'</td>'
+        +'<td><span class="pill '+sc+'">'+st+'</span></td><td>'+acts+'</td></tr>';
+    }).join('');
+  }
+  function chSt(id,st){
+    var ev=evData.find(function(e){return e.id===curEv;});
+    var p=ev.ps.find(function(x){return x.id===id;});
+    if(p){p.st=st;renderT();showToast(st==='confirmado'?'\u2705 Confirmado!':'\u274C Cancelado.');}
+  }
+  function setPF(f,btn){pF=f;document.querySelectorAll('.fb2').forEach(function(b){b.classList.remove('on');});btn.classList.add('on');renderT();}
+  buildTabs();renderT();
 
 </script>
 </body>

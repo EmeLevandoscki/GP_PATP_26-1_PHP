@@ -35,6 +35,20 @@ final class RequestSecurity
         if (empty($_SESSION['publication_organizer'])) self::deny('Entre como organizador para continuar.', 401);
     }
 
+    /** Páginas administrativas nunca enviam seu HTML antes de validar a sessão. */
+    public static function organizerPage(string $login = 'login.html'): void
+    {
+        self::session();
+        header('Cache-Control: no-store, private');
+        header('X-Robots-Tag: noindex, nofollow');
+        if (empty($_SESSION['publication_organizer'])) {
+            header('Location: ' . $login, true, 302);
+            exit;
+        }
+        // Libera o bloqueio antes dos pedidos paralelos da página.
+        session_write_close();
+    }
+
     public static function csrf(): void
     {
         $token = $_SERVER['HTTP_X_CSRF_TOKEN'] ?? $_POST['csrf'] ?? '';

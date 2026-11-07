@@ -26,6 +26,12 @@ require $root.'/src/Controller/'.(['event'=>'EventoController.php','user'=>'Usua
   let response;for(let i=0;i<50;i++){try{response=await req('/?action=session');break;}catch{await new Promise(r=>setTimeout(r,100));}}
   assert.ok(response);assert.match(response.headers.get('set-cookie'),/HttpOnly/i);assert.match(response.headers.get('set-cookie'),/SameSite=Lax/i);
   let csrf=(await response.json()).csrf;
+  const cancelActivity=(data={},token=csrf)=>req('/?action=cancel-activity',{method:'POST',headers:{'Content-Type':'application/json','X-CSRF-Token':token},body:JSON.stringify(data)});
+  assert.equal((await cancelActivity({},'')).status,403);
+  assert.equal((await cancelActivity()).status,401);
+  const selfRegister=(token=csrf)=>req('/?action=register-organizer',{method:'POST',headers:{'Content-Type':'application/json','X-CSRF-Token':token},body:JSON.stringify({eventId:'evt-test',name:'Organizador',isOrganizer:true})});
+  assert.equal((await selfRegister('')).status,403);
+  assert.equal((await selfRegister()).status,401,'Autoincricao exige sessao do organizador.');
   const form=(url,body,token=csrf)=>req(url,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded','X-CSRF-Token':token},body:new URLSearchParams(body)});
   for(const action of ['salvar','editar','excluir','reservar']) assert.equal((await form('/event',{[action]:'1',id:'1'})).status,401);
   assert.equal((await form('/event',{inscrever:'1',excluir:'1',id:'1'})).status,401);
@@ -38,6 +44,9 @@ require $root.'/src/Controller/'.(['event'=>'EventoController.php','user'=>'Usua
   const oldCookie=cookie;
   assert.equal((await login('wrong')).status,401);
   assert.equal((await login('security-test-only')).status,200);assert.notEqual(cookie,oldCookie);
+  assert.equal((await cancelActivity({},'bad')).status,403);
+  assert.equal((await selfRegister('bad')).status,403,'Autoincricao autenticada tambem exige CSRF.');
+  assert.equal((await cancelActivity({eventId:'evt-test',id:'reg-test'})).status,422);
   assert.equal((await req('/event?action=inscricoes_evento&id=1')).status,200);
   assert.equal((await form('/event',{excluir:'1',id:'1'},'bad')).status,403);
   assert.equal((await form('/user',{excluir:'1',id:'1'},'bad')).status,403);
@@ -45,7 +54,7 @@ require $root.'/src/Controller/'.(['event'=>'EventoController.php','user'=>'Usua
   for(let i=0;i<8;i++){cookie='';csrf=(await (await req('/?action=session')).json()).csrf;assert.equal((await login('wrong')).status,401);}
   assert.equal((await login('security-test-only')).status,429);
   const secure=await fetch(origin+'/?action=session&https=1');assert.match(secure.headers.get('set-cookie'),/secure/i);
-  console.log('OK HTTP: autenticação legada, CSRF, sessão regenerada, cookies e limite persistente por IP.');
+  console.log('OK HTTP: autenticação legada, cancelamento de atividade protegido, CSRF, sessão regenerada, cookies e limite persistente por IP.');
  }finally{
   child.kill();await new Promise(r=>child.exitCode!==null?r():child.once('exit',r));
   if(path.dirname(temp)===os.tmpdir()&&path.basename(temp).startsWith('ideau-security-'))fs.rmSync(temp,{recursive:true,force:true});

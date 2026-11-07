@@ -501,4 +501,25 @@ h3 { font-size: 1rem; margin-bottom: 8px; }
 .public-share-copy input { min-width: 0; width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px; background: var(--surface-2); color: var(--text); font: inherit; font-size: .8rem; user-select: text; }
 .public-share-copy .btn { flex-shrink: 0; }
 #publicEventsLinkHint { margin: 10px 0 0; font-size: .76rem; color: var(--muted); line-height: 1.5; }
+.public-share-qr { display: grid; justify-items: center; gap: 10px; margin: 18px 0; }
+.public-share-qr img { display: block; width: 200px; height: 200px; max-width: 100%; object-fit: contain; background: #fff; border-radius: 8px; }
+.public-share-qr p { margin: 0; color: var(--muted); text-align: center; font-size: .76rem; line-height: 1.5; }
+.public-share-actions { display: grid; gap: 8px; }
+.public-share-actions .btn { width: 100%; min-height: 44px; text-align: center; white-space: normal; }
+.public-share-local-hint { margin: 12px 0 0; color: var(--muted); font-size: .74rem; line-height: 1.5; }
+.public-share-popover [hidden] { display: none !important; }
 @media (max-width: 600px) { .public-share-popover { left: 0; right: auto; } }
+
+.organizer-badge { display: inline-block; vertical-align: middle; margin: 4px 0 4px 6px; padding: 3px 9px; border: 1px solid #729dff; border-radius: 999px; background: #edf3ff; color: #173b7a; font-size: .7rem; font-weight: 700; white-space: nowrap; }
+[data-theme="dark"] .organizer-badge { color: #d9e6ff; background: #142540; }
+.organizer-registration-dialog { margin: auto; width: min(600px, calc(100vw - 32px)); max-height: calc(100dvh - 32px); padding: 24px; overflow-y: auto; color: var(--text); background: var(--surface); border: 1px solid var(--border-strong); border-radius: 18px; box-shadow: var(--shadow); }
+.organizer-registration-dialog::backdrop { background: rgb(0 0 0 / .65); }
+.organizer-registration-heading { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+.organizer-registration-heading h2 { margin-top: 6px; font-size: 1.4rem; }
+.organizer-registration-heading .organizer-badge { margin-left: 0; }
+.organizer-registration-event { margin: 18px 0 8px; font-weight: 700; overflow-wrap: anywhere; }
+.organizer-registration-dialog .form-stack { margin-top: 18px; }
+.organizer-registration-dialog .form-actions { flex-wrap: wrap; }
+.organizer-registration-dialog input[readonly] { opacity: .8; }
+.organizer-registration-feedback { padding: 12px; border: 1px solid var(--red); border-radius: 8px; }
+@media (max-width: 480px) { .organizer-registration-dialog { padding: 18px; } .organizer-registration-dialog .form-actions .btn { width: 100%; } }

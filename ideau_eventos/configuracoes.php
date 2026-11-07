@@ -1,3 +1,8 @@
+<?php
+require_once __DIR__ . '/../src/Config/runtime.php';
+require_once __DIR__ . '/../vendor/autoload.php';
+\App\Service\RequestSecurity::organizerPage('login.html');
+?>
 <!DOCTYPE html>
 <html lang="pt-BR" data-theme="dark">
 <head>
@@ -10,20 +15,22 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,700;1,300&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="assets/css/app.css?v=20261012-logo-1" />
-  <link rel="stylesheet" href="assets/css/admin-sidebar.css?v=20261012-logo-1" />
+  <link rel="stylesheet" href="assets/css/admin-sidebar.css?v=20261104-menu-mobile-1" />
+  <script src="assets/js/activities.js?v=2"></script>
+  <link rel="stylesheet" href="assets/css/event-configuration.css?v=1">
 </head>
 <body data-page="settings" class="admin-page">
   <aside class="admin-sidebar">
-    <a class="brand admin-brand" href="dashboard.html"><img src="assets/img/logo__ideau.png" alt="IDEAU" width="44" height="44"><span class="brand-text"><strong>IDEAU Eventos</strong><small>Organizador</small></span></a>
+    <a class="brand admin-brand" href="dashboard.php"><img src="assets/img/logo__ideau.png" alt="IDEAU" width="44" height="44"><span class="brand-text"><strong>IDEAU Eventos</strong><small>Organizador</small></span></a>
     <nav class="admin-nav">
-      <a href="dashboard.html">Dashboard</a>
-      <a href="eventos.html">Eventos</a>
-      <a href="evento-form.html">Novo evento</a>
-      <a href="relatorios.html">Relatórios/Inscritos</a>
-      <a class="active" href="configuracoes.html">Configurações</a>
+      <a href="dashboard.php">Dashboard</a>
+      <a href="eventos.php">Eventos</a>
+      <a href="evento-form.php">Novo evento</a>
+      <a href="relatorios.php">Relatórios/Inscritos</a>
+      <a class="active" href="configuracoes.php">Configurações</a>
     </nav>
     <div class="admin-sidebar-actions">
-      <a class="btn admin-public-link full" href="../index.php"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 19-7-7 7-7M5 12h14"/></svg>Voltar ao site público</a>
+      <a class="btn admin-public-link full" href="../organizador/index.php"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 19-7-7 7-7M5 12h14"/></svg>Visualizar site</a>
       <button class="btn btn-danger full" id="logoutButton" type="button">Sair</button>
     </div>
   </aside>
@@ -31,7 +38,7 @@
   <main class="admin-main">
     <header class="admin-topbar">
       <div><p class="eyebrow">Padrões do sistema</p><h1>Configurações</h1></div>
-      <div class="dashboard-actions"><a href="evento-form.html" class="btn btn-primary">Criar evento</a></div>
+      <div class="dashboard-actions"><a href="evento-form.php" class="btn btn-primary">Criar evento</a></div>
     </header>
 
     <form id="settingsForm" class="admin-form">
@@ -85,13 +92,15 @@
 
       <section class="panel-card">
         <div class="panel-heading"><h2>Salvar configurações</h2><p class="muted">As alterações afetam os próximos eventos criados. Eventos já existentes continuam com os campos salvos neles até serem editados.</p></div>
-        <div class="form-actions"><button class="btn btn-primary" type="submit">Salvar configurações</button><a href="dashboard.html" class="btn btn-secondary">Voltar ao dashboard</a></div>
+        <div class="form-actions"><button class="btn btn-primary" type="submit">Salvar configurações</button><a href="dashboard.php" class="btn btn-secondary">Voltar ao dashboard</a></div>
       </section>
     </form>
   </main>
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
-  <script src="assets/js/admin-sidebar.js?v=20261012-1"></script>
-  <script src="assets/js/app.js?v=20261001-security-1"></script>
+  <script src="assets/js/admin-sidebar.js?v=20261024-organizer-nav-1"></script>
+  <script src="assets/js/event-configuration.js?v=1"></script>
+  <script src="assets/js/app.js?v=20261104-escola-1"></script>
+  <script src="assets/js/organizer-navigation.js?v=6"></script>
 </body>
 </html>

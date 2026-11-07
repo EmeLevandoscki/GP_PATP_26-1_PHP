@@ -50,8 +50,9 @@ body {
   background: var(--bg);
   color: var(--text);
   transition: background 0.3s, color 0.3s;
-  overflow: hidden;
-  height: 100vh;
+  overflow-x: hidden;
+  overflow-y: auto;
+  min-height: 100vh;
 }
 a { color: inherit; }
 button { cursor: pointer; font: inherit; }
@@ -103,10 +104,9 @@ input, select, textarea { font: inherit; }
 }
 .theme-toggle:hover { border-color: var(--green-mid); color: var(--green-mid); background: rgba(46, 139, 46, 0.08); }
 
-/* ─── HERO FULLSCREEN ─── */
+/* A pagina cresce com o formulario, inclusive em telas de computador. */
 .inscricao-hero {
-  height: 100vh;
-  overflow: hidden;
+  min-height: 100vh;
   display: flex;
   align-items: center;
   padding: 88px clamp(24px, 5vw, 48px) 20px;

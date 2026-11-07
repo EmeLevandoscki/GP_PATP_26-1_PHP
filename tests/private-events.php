@@ -1,6 +1,7 @@
 <?php
 // Reutiliza conexão e tabelas temporárias dos testes de publicação; não altera eventos reais.
 require __DIR__ . '/publicacao.php';
+$fixture['eventKind'] = 'palestra';
 $private = $service->salvar(array_replace($fixture, [
     'institution'=>'faculdade-ideau', 'publicationMode'=>'published', 'accessMode'=>'link', 'listed'=>false,
     'targetCourse'=>'Direito', 'fields'=>[], 'accessToken'=>'token-escolhido-pelo-cliente'

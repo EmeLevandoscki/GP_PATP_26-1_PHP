@@ -63,7 +63,7 @@
           <div class="card-footer">
             <div class="card-price">${ev.price}</div>
             ${own
-              ? `<button class="card-btn-manage" onclick="window.location='organizador-dashboard.html'">✏️ Gerenciar</button>`
+              ? `<button class="card-btn-manage" onclick="window.location='organizador-dashboard.php'">✏️ Gerenciar</button>`
               : `<button class="card-btn" onclick="openModal('${ev.title}')">Inscrever-se</button>`
             }
           </div>

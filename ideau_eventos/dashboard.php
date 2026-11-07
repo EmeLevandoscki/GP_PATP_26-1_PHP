@@ -1,3 +1,8 @@
+<?php
+require_once __DIR__ . '/../src/Config/runtime.php';
+require_once __DIR__ . '/../vendor/autoload.php';
+\App\Service\RequestSecurity::organizerPage('login.html');
+?>
 <!DOCTYPE html>
 <html lang="pt-BR" data-theme="dark">
 <head>
@@ -10,21 +15,23 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,700;1,300&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="assets/css/app.css?v=20261012-logo-1" />
-  <link rel="stylesheet" href="assets/css/dashboard-charts.css?v=2" />
-  <link rel="stylesheet" href="assets/css/admin-sidebar.css?v=20261012-logo-1" />
+  <link rel="stylesheet" href="assets/css/dashboard-charts.css?v=20261104-menu-mobile-1" />
+  <link rel="stylesheet" href="assets/css/admin-sidebar.css?v=20261104-menu-mobile-1" />
+  <script src="assets/js/activities.js?v=2"></script>
+  <link rel="stylesheet" href="assets/css/event-configuration.css?v=1">
 </head>
 <body data-page="dashboard" class="admin-page">
   <aside class="admin-sidebar">
-    <a class="brand admin-brand" href="dashboard.html"><img src="assets/img/logo__ideau.png" alt="IDEAU" width="44" height="44"><span class="brand-text"><strong>IDEAU Eventos</strong><small>Organizador</small></span></a>
+    <a class="brand admin-brand" href="dashboard.php"><img src="assets/img/logo__ideau.png" alt="IDEAU" width="44" height="44"><span class="brand-text"><strong>IDEAU Eventos</strong><small>Organizador</small></span></a>
     <nav class="admin-nav">
-      <a class="active" href="dashboard.html">Dashboard</a>
-      <a href="eventos.html">Eventos</a>
-      <a href="evento-form.html">Novo evento</a>
-      <a href="relatorios.html">Relatórios/Inscritos</a>
-      <a href="configuracoes.html">Configurações</a>
+      <a class="active" href="dashboard.php">Dashboard</a>
+      <a href="eventos.php">Eventos</a>
+      <a href="evento-form.php">Novo evento</a>
+      <a href="relatorios.php">Relatórios/Inscritos</a>
+      <a href="configuracoes.php">Configurações</a>
     </nav>
     <div class="admin-sidebar-actions">
-      <a class="btn admin-public-link full" href="../index.php"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 19-7-7 7-7M5 12h14"/></svg>Voltar ao site público</a>
+      <a class="btn admin-public-link full" href="../organizador/index.php"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 19-7-7 7-7M5 12h14"/></svg>Visualizar site</a>
       <button class="btn btn-danger full" id="logoutButton" type="button">Sair</button>
     </div>
   </aside>
@@ -33,8 +40,8 @@
     <header class="admin-topbar">
       <div><p class="eyebrow">Visão geral</p><h1>Dashboard</h1></div>
       <div class="dashboard-actions">
-        <a href="evento-form.html" class="btn btn-primary">+ Criar evento</a>
-        <a href="relatorios.html" class="btn btn-secondary">Ver inscritos</a>
+        <a href="evento-form.php" class="btn btn-primary">+ Criar evento</a>
+        <a href="relatorios.php" class="btn btn-secondary">Ver inscritos</a>
       </div>
     </header>
 
@@ -64,20 +71,22 @@
           <article class="panel-card dashboard-chart-panel"><h3>Situação dos eventos</h3><p class="chart-hint">Publicação e encerramento dos eventos selecionados.</p><div id="dashboardStatusChart"></div></article>
         </div>
       </section>
-      <section class="panel-card dashboard-summary" aria-labelledby="dashboardSummaryTitle"><div class="panel-heading"><h2 id="dashboardSummaryTitle">Resumo dos eventos</h2><a href="eventos.html">Gerenciar</a></div><p class="chart-hint">Do cadastro mais recente para o mais antigo. Inscrições seguem os filtros; ocupação indica o total atual.</p>
+      <section class="panel-card dashboard-summary" aria-labelledby="dashboardSummaryTitle"><div class="panel-heading"><h2 id="dashboardSummaryTitle">Resumo dos eventos</h2><a href="eventos.php">Gerenciar</a></div><p class="chart-hint">Do cadastro mais recente para o mais antigo. Inscrições seguem os filtros; ocupação indica o total atual.</p>
         <div class="dashboard-table-scroll" role="region" aria-label="Resumo dos eventos, role horizontalmente para ver todas as colunas" tabindex="0"><table class="dashboard-table"><thead><tr><th>Evento / instituição</th><th>Status</th><th>Ativas</th><th>Canceladas</th><th>Vagas</th><th>Ocupação atual</th><th>Data</th><th>Publicação</th><th>Ações</th></tr></thead><tbody id="dashboardEventTable"></tbody></table></div>
       </section>
       <section class="admin-grid two-cols dashboard-recent">
-        <article class="panel-card"><div class="panel-heading"><h2>Eventos recentes</h2><a href="eventos.html">Gerenciar</a></div><div id="dashboardEvents" class="mini-list"></div></article>
-        <article class="panel-card"><div class="panel-heading"><h2>Últimas inscrições</h2><a href="relatorios.html">Ver todas</a></div><div id="dashboardRegistrations" class="mini-list"></div></article>
+        <article class="panel-card"><div class="panel-heading"><h2>Eventos recentes</h2><a href="eventos.php">Gerenciar</a></div><div id="dashboardEvents" class="mini-list"></div></article>
+        <article class="panel-card"><div class="panel-heading"><h2>Últimas inscrições</h2><a href="relatorios.php">Ver todas</a></div><div id="dashboardRegistrations" class="mini-list"></div></article>
       </section>
     </div>
-    <section class="panel-card dashboard-shortcuts"><h2>Atalhos rápidos</h2><nav aria-label="Atalhos do dashboard"><a href="evento-form.html">+ Criar evento</a><a href="eventos.html">Eventos atuais →</a><a href="eventos.html?view=history">Histórico →</a><a href="relatorios.html">Relatórios →</a><a href="relatorios.html">Ver inscrições →</a><a href="../index.php">Site público ↗</a></nav></section>
+    <section class="panel-card dashboard-shortcuts"><h2>Atalhos rápidos</h2><nav aria-label="Atalhos do dashboard"><a href="evento-form.php">+ Criar evento</a><a href="eventos.php">Eventos atuais →</a><a href="eventos.php?view=history">Histórico →</a><a href="relatorios.php">Relatórios →</a><a href="relatorios.php">Ver inscrições →</a><a href="../index.php">Site público ↗</a></nav></section>
   </main>
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
-  <script src="assets/js/dashboard-charts.js?v=2"></script>
-  <script src="assets/js/admin-sidebar.js?v=20261012-1"></script>
-  <script src="assets/js/app.js?v=20261001-security-1"></script>
+  <script src="assets/js/dashboard-charts.js?v=20261024-organizer-nav-1"></script>
+  <script src="assets/js/admin-sidebar.js?v=20261024-organizer-nav-1"></script>
+  <script src="assets/js/event-configuration.js?v=1"></script>
+  <script src="assets/js/app.js?v=20261104-capas-leves-1"></script>
+  <script src="assets/js/organizer-navigation.js?v=6"></script>
 </body>
 </html>

@@ -22,6 +22,16 @@ final class ComprovanteService
         $json = $stmt->fetchColumn();
         // Falha fechada se houver cancelamento entre a consulta de existência e esta leitura.
         $receipt['reviewStatus'] = $json ? (json_decode($json, true, 512, JSON_THROW_ON_ERROR)['reviewStatus'] ?? 'approved') : 'removed';
+        $registration = $json ? json_decode($json, true, 512, JSON_THROW_ON_ERROR) : [];
+        $receipt['activities'] = !empty($registration['activityIds']) ? (new AtividadeService($db))->inscricoes($receipt['protocol']) : [];
+        // Nunca reutiliza um link privado guardado em um comprovante já cancelado ou pendente.
+        unset($receipt['onlineAccess']);
+        if ($json && isset($registration['participationMode'])) {
+            $stmt = $db->prepare('SELECT dados FROM eventos_publicacoes WHERE id = ?');
+            $stmt->execute([$receipt['eventId']]);
+            $eventJson = $stmt->fetchColumn();
+            if ($eventJson) $receipt = EventoConfiguracao::comprovante($receipt, $registration, json_decode($eventJson, true, 512, JSON_THROW_ON_ERROR));
+        }
         return $receipt;
     }
 
@@ -37,6 +47,10 @@ final class ComprovanteService
                 ? 'SELECT e.id FROM eventos e JOIN atividades a ON a.id_evento = e.id WHERE a.id = ? FOR UPDATE'
                 : 'SELECT id FROM eventos_publicacoes WHERE id = ? FOR UPDATE');
             $lock->execute([$receipt['eventId']]);
+            if (!$legacy) {
+                $current = self::atualizar($db, $receipt);
+                if (!empty($current['activities'])) (new AtividadeService($db))->cancelarTodas($receipt['protocol']);
+            }
             CancelamentoEstatistica::registrar($db, $legacy,
                 $legacy ? substr($receipt['protocol'], 6) : $receipt['protocol'], (string) $receipt['eventId']);
             $stmt = $db->prepare($legacy
@@ -120,6 +134,12 @@ final class ComprovanteService
         $pages = []; $stream = $frame(); $y = 553;
         $fields = ['name' => 'PARTICIPANTE', 'eventTitle' => 'EVENTO', 'date' => 'DATA DO EVENTO',
             'time' => 'HORÁRIO', 'location' => 'LOCAL', 'registeredAt' => 'DATA DA INSCRIÇÃO'];
+        foreach ($receipt['activities'] ?? [] as $index => $activity) {
+            $key = 'activity_' . $index;
+            $fields[$key] = $activity['cancelledAt'] ? 'ATIVIDADE CANCELADA' : 'ATIVIDADE SELECIONADA';
+            $receipt[$key] = $activity['name'] . ' | ' . self::data($activity['startAt']) . ' até ' . self::data($activity['endAt'])
+                . ' (Brasília) | ' . $activity['location'] . ' | ' . $activity['hours'] . ' h';
+        }
         foreach ($fields as $field => $label) {
             $lines = $wrap((string) $receipt[$field], 12, 430);
             if ($y < 240) { $pages[] = $stream; $stream = $frame(); $y = 553; }

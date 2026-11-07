@@ -2,6 +2,11 @@ Options -Indexes
 DirectoryIndex index.php index.html
 <IfModule mod_rewrite.c>
 RewriteEngine On
+# As páginas administrativas agora validam a sessão em PHP antes de enviar HTML.
+# Preserva favoritos antigos e parâmetros de edição/relatórios.
+RewriteRule ^ideau_eventos/(dashboard|eventos|evento-form|inscritos|relatorios|configuracoes)\.html$ ideau_eventos/$1.php [R=302,L,NE]
+RewriteRule ^src/View/Front/html/(IndexOrganizador|organizador-dashboard|org-configuracoes|org-criar-evento|org-gerenciar|org-inscritos|org-notificacoes)\.html$ src/View/Front/html/$1.php [R=302,L,NE]
+RewriteRule ^src/View/main/pages/organizador/idxorg\.html$ src/View/main/pages/organizador/idxorg.php [R=302,L,NE]
 RewriteRule ^(?:db|tests|tools|vendor|config|docs|documentacao|backups?|logs?|src/(?:Config|Service|Model))(?:/|$) - [F,L,NC]
 # Preserva .well-known para a renovação do certificado HTTPS.
 RewriteRule (^|/)\.(?!well-known(?:/|$)) - [F,L,NC]

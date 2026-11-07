@@ -1,3 +1,8 @@
+<?php
+require_once __DIR__ . '/../../../../src/Config/runtime.php';
+require_once __DIR__ . '/../../../../vendor/autoload.php';
+\App\Service\RequestSecurity::organizerPage('../../../../ideau_eventos/login.html');
+?>
 <!DOCTYPE html>
 <html lang="pt-BR" data-theme="dark">
 <head>
@@ -323,9 +328,9 @@
   <a href="#eventos">Eventos</a>
   <a href="#categorias">Categorias</a>
   <a href="#destaque">Destaque</a>
-  <a href="organizador-dashboard.html">📊 Painel</a>
-  <a href="org-criar-evento.html">✚ Criar Evento</a>
-  <a href="org-notificacoes.html">🔔 Notificações</a>
+  <a href="organizador-dashboard.php">📊 Painel</a>
+  <a href="org-criar-evento.php">✚ Criar Evento</a>
+  <a href="org-notificacoes.php">🔔 Notificações</a>
 </div>
 
 <nav>
@@ -344,9 +349,9 @@
   <div class="nav-right">
     <button class="nav-hamburger" id="navHamburger" aria-label="Menu"><span></span><span></span><span></span></button>
     <button class="theme-toggle" onclick="toggleTheme()">🌙</button>
-    <a href="organizador-dashboard.html" class="btn-nav-painel">📊 Painel</a>
-    <a href="org-criar-evento.html" class="btn-criar-evento">✚ Criar Evento</a>
-    <button class="nav-notif" onclick="location.href='org-notificacoes.html'">🔔<span class="notif-dot"></span></button>
+    <a href="organizador-dashboard.php" class="btn-nav-painel">📊 Painel</a>
+    <a href="org-criar-evento.php" class="btn-criar-evento">✚ Criar Evento</a>
+    <button class="nav-notif" onclick="location.href='org-notificacoes.php'">🔔<span class="notif-dot"></span></button>
     <div class="nav-user" id="navUser">
       <div class="nav-avatar" onclick="toggleDropdown()">
         <div class="avatar-circle">CL</div>
@@ -363,14 +368,14 @@
           <div class="dropdown-badge"><span class="dropdown-badge-dot"></span>Organizador</div>
         </div>
         <div class="dropdown-menu">
-          <a href="org-criar-evento.html" class="dropdown-item highlight"><span class="di-icon">✚</span>Criar Evento</a>
+          <a href="org-criar-evento.php" class="dropdown-item highlight"><span class="di-icon">✚</span>Criar Evento</a>
           <div class="dropdown-divider"></div>
-          <a href="organizador-dashboard.html" class="dropdown-item"><span class="di-icon">📊</span>Dashboard</a>
-          <a href="org-gerenciar.html" class="dropdown-item"><span class="di-icon">📅</span>Meus Eventos</a>
-          <a href="org-inscritos.html" class="dropdown-item"><span class="di-icon">👥</span>Inscritos</a>
+          <a href="organizador-dashboard.php" class="dropdown-item"><span class="di-icon">📊</span>Dashboard</a>
+          <a href="org-gerenciar.php" class="dropdown-item"><span class="di-icon">📅</span>Meus Eventos</a>
+          <a href="org-inscritos.php" class="dropdown-item"><span class="di-icon">👥</span>Inscritos</a>
           <div class="dropdown-divider"></div>
-          <a href="org-configuracoes.html" class="dropdown-item"><span class="di-icon">🏛️</span>Perfil da Org.</a>
-          <a href="org-notificacoes.html" class="dropdown-item"><span class="di-icon">🔔</span>Notificações</a>
+          <a href="org-configuracoes.php" class="dropdown-item"><span class="di-icon">🏛️</span>Perfil da Org.</a>
+          <a href="org-notificacoes.php" class="dropdown-item"><span class="di-icon">🔔</span>Notificações</a>
           <div class="dropdown-divider"></div>
           <a href="#" class="dropdown-item danger"><span class="di-icon">↩</span>Sair</a>
         </div>
@@ -392,15 +397,15 @@
     <div class="hob-stat"><span class="hob-stat-val">6</span><span class="hob-stat-label">Eventos ativos</span></div>
     <div class="hob-sep"></div>
     <div class="hob-stat"><span class="hob-stat-val">384</span><span class="hob-stat-label">Inscritos total</span></div>
-    <a href="organizador-dashboard.html" class="hob-link">Ver painel →</a>
+    <a href="organizador-dashboard.php" class="hob-link">Ver painel →</a>
   </div>
   <div class="hero-eyebrow">Faculdades IDEAU — Alto Uruguai</div>
   <h1>VIVA<br><span class="line2">CADA</span><br><span class="accent-word">MOMENTO</span></h1>
   <p class="hero-sub">Gerencie e publique eventos para a comunidade IDEAU. Alcance milhares de alunos, professores e colaboradores da região.</p>
   <div class="hero-actions">
     <button class="btn-primary" onclick="document.getElementById('eventos').scrollIntoView({behavior:'smooth'})">Ver Eventos</button>
-    <a href="org-criar-evento.html" class="btn-hero-criar">✚ Criar Novo Evento</a>
-    <a href="organizador-dashboard.html" class="btn-ghost">→ Meu painel</a>
+    <a href="org-criar-evento.php" class="btn-hero-criar">✚ Criar Novo Evento</a>
+    <a href="organizador-dashboard.php" class="btn-ghost">→ Meu painel</a>
   </div>
   <div class="hero-stats">
     <div class="stat"><div class="stat-number">6</div><div class="stat-label">Seus eventos ativos</div></div>
@@ -481,8 +486,8 @@
         <div class="detail-row"><div class="detail-icon">🎟️</div><div><div class="detail-label">Inscrição</div><div class="detail-val">Gratuita — 8 vagas restantes</div></div></div>
       </div>
       <div class="featured-org-actions">
-        <a href="org-gerenciar.html" class="btn-manage-lg">✏️ Gerenciar Evento</a>
-        <a href="org-inscritos.html" class="btn-inscritos-lg">👥 Ver Inscritos (142)</a>
+        <a href="org-gerenciar.php" class="btn-manage-lg">✏️ Gerenciar Evento</a>
+        <a href="org-inscritos.php" class="btn-inscritos-lg">👥 Ver Inscritos (142)</a>
       </div>
     </div>
   </div>
@@ -516,10 +521,10 @@
     <div class="footer-col"><h4>Eventos</h4><ul><li><a href="#">Música</a></li><li><a href="#">Acadêmico</a></li><li><a href="#">Arte</a></li><li><a href="#">Gastronomia</a></li></ul></div>
     <div class="footer-col"><h4>IDEAU</h4><ul><li><a href="https://www.ideau.com.br/?unidade=6" target="_blank">Site Oficial</a></li><li><a href="#">Cursos</a></li><li><a href="#">Campus</a></li><li><a href="#">Contato</a></li></ul></div>
     <div class="footer-col"><h4>Organizador</h4><ul>
-      <li><a href="organizador-dashboard.html">Dashboard</a></li>
-      <li><a href="org-criar-evento.html">Criar Evento</a></li>
-      <li><a href="org-inscritos.html">Inscritos</a></li>
-      <li><a href="org-configuracoes.html">Configurações</a></li>
+      <li><a href="organizador-dashboard.php">Dashboard</a></li>
+      <li><a href="org-criar-evento.php">Criar Evento</a></li>
+      <li><a href="org-inscritos.php">Inscritos</a></li>
+      <li><a href="org-configuracoes.php">Configurações</a></li>
     </ul></div>
   </div>
   <div class="footer-bottom">
@@ -640,7 +645,7 @@
       var vagas = own ? '<div class="card-vagas-pill">' + ev.inscritos + '/' + ev.vagas + ' · ' + pct + '%</div>' : '';
       var meta = '<span>📍 ' + ev.local + '</span>' + (own ? '<span>👥 ' + ev.inscritos + ' inscritos</span>' : '');
       var btn = own
-        ? '<button class="card-btn-manage" onclick="location.href=\'org-gerenciar.html\'">✏️ Gerenciar</button>'
+        ? '<button class="card-btn-manage" onclick="location.href=\'org-gerenciar.php\'">✏️ Gerenciar</button>'
         : '<button class="card-btn" data-title="' + ev.title.replace(/"/g, '&quot;') + '" onclick="openModal(this.getAttribute(\'data-title\'))">Inscrever-se</button>';
       return '<div class="event-card fade-up"><div class="card-img"><img src="' + ev.img + '" alt="' + ev.title + '" loading="lazy"/>' + badge + '<div class="card-date-badge"><span class="day">' + ev.date + '</span><span class="month">' + ev.month + '</span></div>' + vagas + '</div><div class="card-body"><div class="card-meta">' + meta + '</div><div class="card-title">' + ev.title + '</div><div class="card-desc">' + ev.desc + '</div><div class="card-footer"><div class="card-price">' + ev.price + '</div>' + btn + '</div></div></div>';
     }).join('');

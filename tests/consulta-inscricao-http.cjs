@@ -20,6 +20,8 @@ $db->exec('CREATE TEMPORARY TABLE inscricoes (id INT,id_usuario INT,id_responsav
 $db->exec('CREATE TEMPORARY TABLE atividades (id INT,nome TEXT,data_ini DATETIME,local_atv TEXT)');
 $db->prepare('INSERT INTO eventos_publicacoes VALUES (?,?)')->execute(['evt-test',json_encode(['id'=>'evt-test','title'=>'Evento reservado','date'=>'2026-09-20','time'=>'12:00','location'=>'Auditório'])]);
 $db->prepare('INSERT INTO eventos_publicacoes_inscricoes VALUES (?,?,?)')->execute(['reg-test','evt-test',json_encode(['email'=>'verified@example.invalid','name'=>'Participante <script>teste</script>','createdAt'=>'2026-09-20T12:00:00Z'])]);
+if (isset($_GET['pending'])) $db->exec("UPDATE eventos_publicacoes_inscricoes SET dados=JSON_SET(dados,'$.reviewStatus','pending')");
+if (isset($_GET['cancelled'])) $db->exec('DELETE FROM eventos_publicacoes_inscricoes');
 require getenv('LOOKUP_TEST_ROOT').'/ideau_eventos/consultar-inscricao.php';
 `);
 (async()=>{
@@ -31,6 +33,7 @@ require getenv('LOOKUP_TEST_ROOT').'/ideau_eventos/consultar-inscricao.php';
  try{
   let first;for(let i=0;i<50;i++){try{first=await request('/');break;}catch{await new Promise(r=>setTimeout(r,100));}}
   assert.ok(first);let html=await first.text();assert.match(html,/Consultar minha inscrição/);assert.doesNotMatch(html,/Evento reservado/);
+  assert.doesNotMatch(html,/Baixar comprovante em PDF/,'Sem inscrição autorizada, não oferece download.');
   const csrf=html.match(/name="csrf" value="([a-f0-9]+)"/)[1];
   assert.equal((await post({action:'request',email:'verified@example.invalid',csrf:'wrong'})).status,403);
   const unconfigured=await post({action:'request',email:'verified@example.invalid',csrf});assert.equal(unconfigured.status,503);assert.match(await unconfigured.text(),/ainda não está configurado/);
@@ -38,7 +41,13 @@ require getenv('LOOKUP_TEST_ROOT').'/ideau_eventos/consultar-inscricao.php';
   const pending=await request('/');html=await pending.text();assert.match(html,/Abra sua inscrição/);assert.doesNotMatch(html,/Evento reservado/);
   const confirmed=await post({action:'confirm',csrf});assert.equal(confirmed.status,303);
   html=await(await request('/')).text();assert.match(html,/Evento reservado/);assert.match(html,/Inscrição confirmada/);assert.match(html,/&lt;script&gt;/);assert.doesNotMatch(html,/<script>teste/);assert.match(html,/Ver comprovante/);assert.match(html,/Cancelar inscrição/);
+  assert.match(html,/href="comprovante\.php\?id=[a-f0-9]{64}&amp;download=1" download>Baixar comprovante em PDF/,'Consulta confirmada oferece download direto.');
+  html=await(await request('/?pending=1')).text();assert.doesNotMatch(html,/Baixar comprovante em PDF/,'Consulta pendente não oferece download.');
   assert.equal((await post({action:'reset',csrf})).status,303);html=await(await request('/')).text();assert.doesNotMatch(html,/Evento reservado/);
+  assert.match(html,/Receber link por e-mail/);
+  assert.match(html,/href="comprovante\.php\?id=[a-f0-9]{64}&amp;download=1" download>Baixar comprovante em PDF/,'Sessão autorizada permite baixar sem solicitar outro e-mail.');
+  html=await(await request('/?pending=1')).text();assert.doesNotMatch(html,/Baixar comprovante em PDF/,'Revalida aprovação no banco antes de mostrar o botão.');
+  html=await(await request('/?cancelled=1')).text();assert.doesNotMatch(html,/Baixar comprovante em PDF/,'Inscrição cancelada não oferece download.');
   console.log('OK: consulta HTTP, CSRF, configuração ausente, link limpo, confirmação, isolamento antes do acesso e escape HTML.');
  }finally{child.kill();await new Promise(r=>child.exitCode!==null?r():child.once('exit',r));assert.ok(temp.startsWith(path.join(os.tmpdir(),'ideau-lookup-')));fs.rmSync(temp,{recursive:true,force:true});}
 })().catch(e=>{console.error(e);process.exitCode=1;});

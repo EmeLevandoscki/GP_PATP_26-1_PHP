@@ -1,0 +1,32 @@
+{
+  "categories": [
+    {"id":"academicos","label":"Acadêmicos e educacionais","types":[
+      ["palestra","Palestra","talk"],["conferencia","Conferência","talk"],["seminario","Seminário","program"],["simposio","Simpósio","program"],["congresso","Congresso","program"],["jornada-academica","Jornada acadêmica","program"],["semana-academica","Semana acadêmica","program"],["mesa-redonda","Mesa-redonda","talk"],["debate","Debate","talk"],["minicurso","Minicurso","course"],["curso","Curso","course"],["oficina","Oficina","course"],["workshop","Workshop","course"],["treinamento","Treinamento","course"],["capacitacao","Capacitação","course"],["aula-inaugural","Aula inaugural","talk"],["aula-aberta","Aula aberta","talk"],["webinar","Webinar","talk"]
+    ]},
+    {"id":"cientificos","label":"Científicos","types":[
+      ["mostra-cientifica","Mostra científica","scientific"],["apresentacao-trabalhos","Apresentação de trabalhos","scientific"],["sessao-posteres","Sessão de pôsteres","scientific"],["encontro-pesquisa","Encontro de pesquisa","scientific"],["banca-tcc","Banca de TCC","meeting"],["defesa-academica","Defesa acadêmica","meeting"],["forum-cientifico","Fórum científico","scientific"]
+    ]},
+    {"id":"profissionais","label":"Profissionais","types":[
+      ["feira-profissoes","Feira de profissões","fair"],["feira-estagios","Feira de estágios","fair"],["feira-negocios","Feira de negócios","fair"],["encontro-empresarial","Encontro empresarial","program"],["networking","Networking","meeting"],["visita-tecnica","Visita técnica","visit"],["mentoria","Mentoria","meeting"],["rodada-negocios","Rodada de negócios","meeting"]
+    ]},
+    {"id":"institucionais","label":"Institucionais","types":[
+      ["formatura","Formatura","ceremony"],["colacao-grau","Colação de grau","ceremony"],["cerimonia","Cerimônia","ceremony"],["recepcao-calouros","Recepção de calouros","ceremony"],["reuniao","Reunião","meeting"],["assembleia","Assembleia","meeting"],["encontro-institucional","Encontro institucional","ceremony"],["homenagem","Homenagem","ceremony"],["premiacao","Premiação","ceremony"]
+    ]},
+    {"id":"culturais-comunitarios","label":"Culturais, esportivos e comunitários","types":[
+      ["exposicao","Exposição","fair"],["mostra-projetos","Mostra de projetos","fair"],["evento-artistico","Evento artístico","program"],["apresentacao-cultural","Apresentação cultural","program"],["festival","Festival","program"],["competicao","Competição","competition"],["hackathon","Hackathon","competition"],["concurso","Concurso","competition"],["olimpiada-academica","Olimpíada acadêmica","competition"],["torneio-esportivo","Torneio esportivo","competition"],["acao-social","Ação social","community"],["campanha","Campanha","community"],["mutirao","Mutirão","community"],["projeto-extensao","Projeto de extensão","community"]
+    ]}
+  ],
+  "profiles": {
+    "general":{"label":"Informações complementares","fields":[["responsible","Responsável","text"],["guidance","Orientações aos participantes","textarea"]]},
+    "talk":{"label":"Palestra e apresentação","fields":[["speaker","Palestrante / responsável","text"],["topic","Tema","text"],["hours","Carga horária (h)","number"]]},
+    "course":{"label":"Curso e formação","fields":[["instructor","Instrutor","text"],["prerequisites","Pré-requisitos","textarea"],["materials","Materiais necessários","textarea"],["hours","Carga horária total (h)","number"],["schedule","Cronograma e orientações","textarea"]]},
+    "program":{"label":"Programação","fields":[["responsible","Responsável","text"],["program","Programação geral","textarea"]]},
+    "visit":{"label":"Visita técnica","fields":[["organization","Empresa ou instituição visitada","text"],["departureLocation","Local de saída","text"],["destination","Destino","text"],["departureAt","Data e horário de saída (Brasília)","datetime-local"],["returnAt","Data e horário de retorno (Brasília)","datetime-local"],["responsible","Responsável","text"],["guidance","Orientações","textarea"],["documents","Documentos exigidos","textarea"],["transport","Transporte (quando aplicável)","textarea"]]},
+    "competition":{"label":"Competição","fields":[["rules","Regras","textarea"],["categories","Categorias da competição","textarea"],["stages","Etapas","textarea"],["responsible","Responsável","text"]]},
+    "scientific":{"label":"Evento científico","fields":[["program","Programação","textarea"],["areas","Áreas temáticas","textarea"],["guidance","Orientações a participantes e apresentadores","textarea"]]},
+    "fair":{"label":"Feira e exposição","fields":[["exhibitors","Expositores (divulgação autorizada)","textarea"],["booths","Localização dos estandes","textarea"],["schedule","Horários de funcionamento","textarea"]]},
+    "ceremony":{"label":"Cerimônia e evento institucional","fields":[["invitations","Orientações sobre convites","textarea"],["responsible","Responsável","text"],["guidance","Orientações para confirmação de participação","textarea"]]},
+    "meeting":{"label":"Reunião, mentoria e banca","fields":[["agenda","Agenda / pauta","textarea"],["responsible","Responsável","text"],["schedule","Horários e orientações","textarea"]]},
+    "community":{"label":"Atividade comunitária","fields":[["responsible","Responsável","text"],["guidance","Orientações de participação","textarea"],["materials","Materiais necessários","textarea"],["volunteers","Organização dos voluntários","textarea"]]}
+  }
+}

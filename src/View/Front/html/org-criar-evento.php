@@ -1,3 +1,8 @@
+<?php
+require_once __DIR__ . '/../../../../src/Config/runtime.php';
+require_once __DIR__ . '/../../../../vendor/autoload.php';
+\App\Service\RequestSecurity::organizerPage('../../../../ideau_eventos/login.html');
+?>
 <!DOCTYPE html>
 <html lang="pt-BR" data-theme="dark">
 <head>
@@ -227,13 +232,13 @@ nav{position:fixed;top:0;left:0;right:0;z-index:500;display:flex;align-items:cen
 <div id="cursor"></div><div id="cursor-ring"></div>
 
 <nav>
-  <a href="organizador-dashboard.html" class="nav-logo">
+  <a href="organizador-dashboard.php" class="nav-logo">
     <div class="nav-logo-icon">ID</div>
     <div class="nav-logo-text"><span class="nav-logo-title">IDEAU Eventos</span><span class="nav-logo-sub">Faculdades IDEAU</span></div>
   </a>
   <div class="nav-right">
     <button class="theme-toggle" id="themeToggle" type="button" title="Alternar tema">🌙</button>
-    <a href="organizador-dashboard.html" class="nav-back">← Painel</a>
+    <a href="organizador-dashboard.php" class="nav-back">← Painel</a>
     <button class="hamburger" id="hamburger" type="button" aria-label="Menu">
       <span></span><span></span><span></span>
     </button>
@@ -241,14 +246,14 @@ nav{position:fixed;top:0;left:0;right:0;z-index:500;display:flex;align-items:cen
 </nav>
 
 <div class="mob-menu" id="mobMenu">
-  <a href="org-criar-evento.html" class="mob-item highlight">✚ Criar Evento</a>
+  <a href="org-criar-evento.php" class="mob-item highlight">✚ Criar Evento</a>
   <div class="mob-divider"></div>
-  <a href="organizador-dashboard.html" class="mob-item">📊 Dashboard</a>
-  <a href="org-gerenciar.html" class="mob-item">📅 Meus Eventos</a>
-  <a href="org-inscritos.html" class="mob-item">👥 Inscritos</a>
+  <a href="organizador-dashboard.php" class="mob-item">📊 Dashboard</a>
+  <a href="org-gerenciar.php" class="mob-item">📅 Meus Eventos</a>
+  <a href="org-inscritos.php" class="mob-item">👥 Inscritos</a>
   <div class="mob-divider"></div>
-  <a href="org-configuracoes.html" class="mob-item">🏛️ Configurações</a>
-  <a href="org-notificacoes.html" class="mob-item">🔔 Notificações</a>
+  <a href="org-configuracoes.php" class="mob-item">🏛️ Configurações</a>
+  <a href="org-notificacoes.php" class="mob-item">🔔 Notificações</a>
   <div class="mob-divider"></div>
   <a href="HomeOrg.html" class="mob-item" style="color:rgba(224,32,32,.6)">↩ Sair</a>
 </div>

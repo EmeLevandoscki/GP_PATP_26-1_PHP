@@ -1,3 +1,8 @@
+<?php
+require_once __DIR__ . '/../src/Config/runtime.php';
+require_once __DIR__ . '/../vendor/autoload.php';
+\App\Service\RequestSecurity::organizerPage('login.html');
+?>
 <!DOCTYPE html>
 <html lang="pt-BR" data-theme="dark">
 <head>
@@ -12,20 +17,24 @@
   <link rel="stylesheet" href="assets/css/app.css?v=20261012-logo-1" />
   <link rel="stylesheet" href="assets/css/editable-choices.css?v=20260930-1" />
   <link rel="stylesheet" href="assets/css/event-form-steps.css?v=20260930-2" />
-  <link rel="stylesheet" href="assets/css/admin-sidebar.css?v=20261012-logo-1" />
+  <link rel="stylesheet" href="assets/css/admin-sidebar.css?v=20261104-menu-mobile-1" />
+  <link rel="stylesheet" href="assets/css/activities.css?v=1">
+  <script src="assets/js/activities.js?v=20261104-escola-1"></script>
+  <link rel="stylesheet" href="assets/css/event-configuration.css?v=1">
+  <link rel="stylesheet" href="assets/css/event-form-help.css?v=20261104-1">
 </head>
 <body data-page="event-form" class="admin-page">
   <aside class="admin-sidebar">
-    <a class="brand admin-brand" href="dashboard.html"><img src="assets/img/logo__ideau.png" alt="IDEAU" width="44" height="44"><span class="brand-text"><strong>IDEAU Eventos</strong><small>Organizador</small></span></a>
+    <a class="brand admin-brand" href="dashboard.php"><img src="assets/img/logo__ideau.png" alt="IDEAU" width="44" height="44"><span class="brand-text"><strong>IDEAU Eventos</strong><small>Organizador</small></span></a>
     <nav class="admin-nav">
-      <a href="dashboard.html">Dashboard</a>
-      <a href="eventos.html">Eventos</a>
-      <a class="active" href="evento-form.html">Novo evento</a>
-      <a href="relatorios.html">Relatórios/Inscritos</a>
-      <a href="configuracoes.html">Configurações</a>
+      <a href="dashboard.php">Dashboard</a>
+      <a href="eventos.php">Eventos</a>
+      <a class="active" href="evento-form.php">Novo evento</a>
+      <a href="relatorios.php">Relatórios/Inscritos</a>
+      <a href="configuracoes.php">Configurações</a>
     </nav>
     <div class="admin-sidebar-actions">
-      <a class="btn admin-public-link full" href="../index.php"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 19-7-7 7-7M5 12h14"/></svg>Voltar ao site público</a>
+      <a class="btn admin-public-link full" href="../organizador/index.php"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 19-7-7 7-7M5 12h14"/></svg>Visualizar site</a>
       <button class="btn btn-danger full" id="logoutButton" type="button">Sair</button>
     </div>
   </aside>
@@ -33,7 +42,7 @@
   <main class="admin-main">
     <header class="admin-topbar">
       <div><p class="eyebrow">Cadastro</p><h1 id="formPageTitle">Novo evento</h1></div>
-      <div class="dashboard-actions"><a href="eventos.html" class="btn btn-secondary">Voltar para eventos</a></div>
+      <div class="dashboard-actions"><a href="eventos.php" class="btn btn-secondary">Voltar para eventos</a></div>
     </header>
 
     <form id="eventForm" class="admin-form" novalidate aria-busy="true">
@@ -41,23 +50,36 @@
       <input type="hidden" id="eventFormStep" value="0">
       <ol class="event-wizard-progress" id="eventFormProgress" aria-label="Etapas do cadastro">
         <li aria-current="step"><span class="event-step-number" aria-hidden="true">1</span><span>Informações principais</span></li>
-        <li><span class="event-step-number" aria-hidden="true">2</span><span>Campos da inscrição</span></li>
-        <li><span class="event-step-number" aria-hidden="true">3</span><span>Acesso ao evento</span></li>
-        <li><span class="event-step-number" aria-hidden="true">4</span><span>Publicação</span></li>
+        <li><span class="event-step-number" aria-hidden="true">2</span><span>Programação e atividades</span></li>
+        <li><span class="event-step-number" aria-hidden="true">3</span><span>Inscrições</span></li>
+        <li><span class="event-step-number" aria-hidden="true">4</span><span>Acesso e publicação</span></li>
       </ol>
       <p class="event-wizard-status" id="eventStepStatus" role="status">Etapa 1 de 4 · Informações principais</p>
       <section class="panel-card" data-event-step="0" aria-labelledby="eventStepHeading0">
         <div class="panel-heading"><h2 id="eventStepHeading0" tabindex="-1">Informações principais</h2><p class="muted">Dados que aparecem na página pública do evento.</p></div>
         <div class="form-grid">
           <label class="form-field wide"><span>Título do evento *</span><input id="eventTitle" required placeholder="Ex.: Semana Acadêmica de Direito"></label>
-          <label class="form-field"><span>Instituição responsável *</span><select id="eventInstitution" required><option value="">Selecione a instituição</option><option value="escola-ideau-santa-clara" data-type="escola">Escola IDEAU Santa Clara</option><option value="faculdade-ideau" data-type="faculdade">Faculdade IDEAU</option></select><small>Define quem organiza e responde pelo evento.</small></label>
-          <label class="form-field"><span>Categoria *</span><input id="eventCategory" list="eventCategoryOptions" required placeholder="Escolha ou digite uma categoria"><datalist id="eventCategoryOptions"></datalist><small>Escolha uma sugestão ou escreva outra categoria.</small></label>
+          <label class="form-field wide"><span>Instituição responsável *</span><select id="eventInstitution" required><option value="">Selecione a instituição</option><option value="escola-ideau-santa-clara" data-type="escola">Escola IDEAU Santa Clara</option><option value="faculdade-ideau" data-type="faculdade">Faculdade IDEAU</option></select><small>Escolha primeiro a instituição para ver as opções do evento e da inscrição.</small></label>
+          <label class="form-field"><span>Tipo de evento *</span><select id="eventKind" required></select></label>
+          <label class="form-field" id="eventCustomKindField" hidden><span>Tipo personalizado *</span><input id="eventCustomKind" maxlength="100"></label>
+          <label class="form-field"><span>Modalidade *</span><select id="eventModality" required><option value="presencial">Presencial</option><option value="online">Online</option><option value="hibrido">Híbrido</option></select></label>
+          <label class="form-field wide"><span>Estrutura do evento</span><select id="eventType"><option value="simple">Evento simples</option><option value="multiple">Evento com múltiplas atividades</option></select></label>
+
+          <label class="form-field"><span>Categoria de divulgação *</span><input id="eventCategory" list="eventCategoryOptions" required placeholder="Escolha ou digite uma categoria"><datalist id="eventCategoryOptions"></datalist><small>Escolha uma sugestão ou escreva outra categoria.</small></label>
           <label class="form-field"><span>Público-alvo *</span><input id="eventAudience" list="eventAudienceOptions" required placeholder="Escolha ou digite o público-alvo" aria-describedby="eventAudienceHint"><datalist id="eventAudienceOptions"></datalist><small>Escolha uma sugestão ou escreva para quem o evento é destinado.</small><small id="eventAudienceHint" aria-live="polite">Os campos de inscrição dependem da instituição selecionada.</small></label>
           <label class="form-field"><span>Data *</span><input id="eventDate" type="date" max="9999-12-31" required aria-describedby="eventDateHint"><small id="eventDateHint">Use um ano com 4 dígitos. Escolha uma data futura ou hoje, em um horário que ainda não passou.</small></label>
           <label class="form-field"><span>Horário *</span><input id="eventTime" type="time" required aria-describedby="eventTimeHint"><small id="eventTimeHint">Horário de Brasília.</small></label>
-          <label class="form-field"><span>Vagas (opcional)</span><input id="eventSeats" type="number" min="1" step="1" placeholder="Ex.: 100"><small>Deixe vazio para vagas ilimitadas.</small></label>
+
           <label class="form-field"><span>Cidade (opcional)</span><input id="eventCity" placeholder="Ex.: Passo Fundo"></label>
           <label class="form-field wide"><span>Local *</span><input id="eventLocation" required placeholder="Auditório principal"></label>
+          <label class="form-field"><span>Sala / auditório (opcional)</span><input id="eventRoom" maxlength="255"></label>
+          <label class="form-field"><span>Endereço (opcional)</span><input id="eventAddress" maxlength="1000"></label>
+          <div id="eventOnlineFields" class="wide form-grid" hidden>
+            <label class="form-field"><span>Plataforma *</span><input id="eventPlatform" maxlength="150" placeholder="Ex.: Google Meet"></label>
+            <label class="form-field"><span>Link de acesso online (opcional)</span><input id="eventOnlineUrl" type="url" maxlength="2048" placeholder="https://..."><small>Exibido apenas no comprovante de inscritos aprovados que participam online.</small></label>
+            <label class="form-field wide"><span>Orientações de acesso (opcional)</span><textarea id="eventOnlineInstructions" rows="3" maxlength="8000"></textarea><small>Estas orientações também são privadas. Não coloque links privados na descrição ou programação pública.</small></label>
+          </div>
+          <label class="check-card wide" id="eventParticipationChoiceField" hidden><input id="eventParticipationChoice" type="checkbox"><span>Permitir escolher participação presencial ou online na inscrição</span></label>
           <label class="form-field wide">
             <span>Imagem de capa — arquivo do computador *</span>
             <input id="eventCoverFile" type="file" accept="image/png,image/jpeg,image/webp" required>
@@ -71,15 +93,34 @@
       </section>
 
       <section class="panel-card" data-event-step="1" aria-labelledby="eventStepHeading1" hidden>
+        <div class="panel-heading"><h2 id="eventStepHeading1" tabindex="-1">Programação e atividades</h2></div>
+        <h3 id="eventSpecificTitle">Informações complementares</h3><p class="muted" id="eventProfileHint"></p>
+        <input type="hidden" id="eventSpecific" value="{}"><input type="hidden" id="eventMeetings" value="[]">
+        <div class="form-grid" id="eventSpecificFields"></div>
+        <div class="top-gap"><h3>Cronograma de encontros (opcional)</h3><p class="muted">Uma inscrição abrange todos os encontros. Use atividades para escolhas e vagas separadas. Horários de Brasília.</p><div id="meetingEditor"></div><button class="btn btn-secondary" id="addMeeting" type="button">Adicionar encontro</button></div>
+          <input type="hidden" id="eventActivities" value="[]">
+          <section class="wide" id="activityEditorSection" hidden><h2>Atividades do evento</h2><p class="muted">Cadastre a programação, vagas e carga horária. Horários de Brasília. Para excluir ou mudar o horário de uma atividade com inscritos, cancele suas inscrições primeiro.</p><div id="activityEditor"></div><button class="btn btn-secondary" id="addActivity" type="button">Adicionar atividade</button></section>
+      </section>
+
+      <section class="panel-card" data-event-step="2" aria-labelledby="eventStepHeading2" hidden>
         <div class="panel-heading">
           <div>
-            <h2 id="eventStepHeading1" tabindex="-1">Campos da inscrição</h2>
-            <p class="muted">Os campos abaixo acompanham a instituição selecionada. Na escola, os pais ou responsáveis fazem a inscrição do educando.</p>
+            <h2 id="eventStepHeading2" tabindex="-1">Campos da inscrição</h2>
+            <p class="muted" id="eventRegistrationFieldsHint">Os campos abaixo acompanham a instituição selecionada.</p>
           </div>
           <button class="btn btn-light small" id="applyAudienceDefaults" type="button">Aplicar padrão</button>
         </div>
 
-        <div class="field-group-title"><span>Dados gerais de contato</span><small>Podem ser usados em eventos de graduação e de escola.</small></div>
+        <div class="form-grid">          <label class="form-field"><span>Vagas (opcional)</span><input id="eventSeats" type="number" min="1" step="1" placeholder="Ex.: 100"><small>Deixe vazio para vagas ilimitadas.</small></label>        <label class="form-field publication-schedule"><span>Encerrar inscrições em (opcional)</span>
+          <input id="eventRegistrationEndAt" type="datetime-local">
+          <small>Use o horário local do seu dispositivo. Após esse prazo, novas inscrições serão bloqueadas e o evento continuará no site. Deixe vazio para não definir prazo. Uma data passada encerra as inscrições imediatamente.</small>
+        </label></div>
+        <div class="checks-grid top-gap">
+          <label class="check-card" hidden><input id="eventAllowPresenter" type="checkbox"><span>Permitir inscrição como apresentador</span></label>
+          <label class="check-card" hidden><input id="eventAllowExhibitor" type="checkbox"><span>Permitir inscrição como expositor</span></label>
+          <label class="check-card" hidden><input id="eventAllowVolunteer" type="checkbox"><span>Permitir inscrição como voluntário</span></label>
+        </div>
+        <div class="field-group-title"><span>Dados de contato</span><small id="eventContactHint">Selecione a instituição para definir os dados de contato.</small></div>
         <div class="checks-grid">
           <label class="check-card"><input id="fieldCpf" type="checkbox" checked><span>Solicitar CPF</span></label>
           <label class="check-card"><input id="fieldEmail" type="checkbox" checked><span>Solicitar e-mail</span></label>
@@ -112,8 +153,8 @@ Empresa
 Necessidade especial"></textarea><small>Use <b>|required</b> no final para tornar o campo obrigatório.</small></label>
       </section>
 
-      <section class="panel-card" data-event-step="2" aria-labelledby="eventStepHeading2" hidden>
-        <div class="panel-heading"><h2 id="eventStepHeading2" tabindex="-1">Acesso ao evento</h2><p class="muted">Defina quem pode se inscrever e se a divulgação aparece na página inicial.</p></div>
+      <section class="panel-card" data-event-step="3" aria-labelledby="eventStepHeading3" hidden>
+        <div class="panel-heading"><h2 id="eventStepHeading3" tabindex="-1">Acesso, publicação e configurações</h2><p class="muted">Defina quem pode se inscrever e se a divulgação aparece na página inicial.</p></div>
         <input type="hidden" id="eventAccessMode" value="public">
         <fieldset class="publication-options">
           <legend>Quem pode se inscrever? *</legend>
@@ -156,10 +197,7 @@ Necessidade especial"></textarea><small>Use <b>|required</b> no final para torna
           </div>
           <p class="muted">Depois de salvar e publicar, use “Copiar link” na lista de eventos para compartilhar com os convidados.</p>
         </div>
-      </section>
-
-      <section class="panel-card" data-event-step="3" aria-labelledby="eventStepHeading3" hidden>
-        <div class="panel-heading"><h2 id="eventStepHeading3" tabindex="-1">Publicação</h2><p class="muted">Escolha quando o evento ficará disponível, respeitando o acesso definido acima.</p></div>
+        <div class="panel-heading top-gap"><h2>Publicação</h2><p class="muted">Escolha quando o evento ficará disponível, respeitando o acesso definido acima.</p></div>
         <input type="hidden" id="eventPublicationMode" value="published">
         <fieldset class="publication-options" aria-describedby="eventPublicationHint">
           <legend>Como deseja publicar? *</legend>
@@ -187,10 +225,7 @@ Necessidade especial"></textarea><small>Use <b>|required</b> no final para torna
           <small>Use o horário local do seu dispositivo. O evento ficará disponível a partir desse momento.</small>
         </label>
         <p class="muted publication-hint" id="eventPublicationHint" aria-live="polite"></p>
-        <label class="form-field publication-schedule"><span>Encerrar inscrições em (opcional)</span>
-          <input id="eventRegistrationEndAt" type="datetime-local">
-          <small>Use o horário local do seu dispositivo. Após esse prazo, novas inscrições serão bloqueadas e o evento continuará no site. Deixe vazio para não definir prazo. Uma data passada encerra as inscrições imediatamente.</small>
-        </label>
+
         <label class="form-field publication-schedule"><span>Tirar o evento do ar em (opcional)</span>
           <input id="eventEndAt" type="datetime-local">
           <small>Preencha apenas se quiser tirar o evento do ar automaticamente neste horário. Deixe vazio para manter em Atuais até você clicar em Tirar do ar.</small>
@@ -198,9 +233,10 @@ Necessidade especial"></textarea><small>Use <b>|required</b> no final para torna
 
 
       </section>
+      <details class="event-future-features"><summary>Recursos para etapas futuras</summary><p>Lista de espera, equipes, acompanhantes, submissão e avaliação de trabalhos, reservas de horários, confirmação automática por e-mail, controle de presença, certificados, pesquisa de satisfação e classificação de competições ainda não possuem módulos de gerenciamento. O envio existente do link pessoal de consulta por e-mail permanece disponível.</p></details>
       <div class="form-error-summary" id="eventFormErrors" role="alert" tabindex="-1" hidden></div>
       <div class="event-wizard-actions">
-        <div class="event-wizard-secondary"><button class="btn btn-secondary" id="eventStepBack" type="button" disabled>← Voltar</button><a href="eventos.html" class="event-wizard-cancel">Cancelar</a></div>
+        <div class="event-wizard-secondary"><button class="btn btn-secondary" id="eventStepBack" type="button" disabled>← Voltar</button><a href="eventos.php" class="event-wizard-cancel">Cancelar</a></div>
         <button class="btn btn-primary" id="eventStepNext" type="button" disabled>Próximo →</button>
         <button class="btn btn-primary" type="submit" disabled hidden>Salvar evento</button>
       </div>
@@ -210,7 +246,10 @@ Necessidade especial"></textarea><small>Use <b>|required</b> no final para torna
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
   <script src="assets/js/editable-choices.js?v=20260930-steps-2"></script>
   <script src="assets/js/event-form-steps.js?v=20260930-1"></script>
-  <script src="assets/js/admin-sidebar.js?v=20261012-1"></script>
-  <script src="assets/js/app.js?v=20261020-link-1"></script>
+  <script src="assets/js/admin-sidebar.js?v=20261024-organizer-nav-1"></script>
+  <script src="assets/js/event-configuration.js?v=20261104-escola-1"></script>
+  <script src="assets/js/event-form-help.js?v=20261104-1"></script>
+  <script src="assets/js/app.js?v=20261104-escola-1"></script>
+  <script src="assets/js/organizer-navigation.js?v=6"></script>
 </body>
 </html>

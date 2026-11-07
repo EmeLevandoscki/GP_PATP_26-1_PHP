@@ -36,3 +36,6 @@ error_log.*
 
 # Pacotes locais de publicação.
 /publicacao/
+
+# Miniaturas regeneráveis; o acesso HTTP direto é bloqueado por src/Cache/.htaccess.
+/src/Cache/capas/

@@ -84,6 +84,8 @@ function getPastaBase() {
   let eventFormDraft = null;
   let eventFormWizard = null;
   let adminEventView = 'current';
+  let homeRenderSequence = 0;
+  let homeGuideEvents = new Map();
 
   async function publicationRequest(action, data) {
     const response = await fetch(`${PUBLICATION_ENDPOINT}?action=${action}`, {
@@ -183,7 +185,13 @@ function getPastaBase() {
     'Pré-Escola II',
     '1º Ano',
     '2º Ano',
-    '3º Ano'
+    '3º Ano',
+    '4º Ano',
+    '5º Ano',
+    '6º Ano',
+    '7º Ano',
+    '8º Ano',
+    '9º Ano'
   ];
 
   const DEFAULT_SETTINGS = {
@@ -309,13 +317,22 @@ function getPastaBase() {
     initMenu();
     initLogout();
     const page = document.body.dataset.page;
+    try { await window.EventConfiguration?.ready; }
+    catch (error) {
+      showToast(error.message);
+      if (page === 'event-form') {
+        const summary = document.getElementById('eventFormErrors');
+        summary.textContent = error.message; summary.hidden = false;
+        return;
+      }
+    }
     try {
       serverSession = await publicationRequest('session');
-      if (page !== 'dashboard') await loadServerEvents();
+      if (!['dashboard', 'login'].includes(page)) await loadServerEvents();
     } catch (error) {
       showToast(error.message);
     }
-    if (page !== 'dashboard') {
+    if (!['dashboard', 'login'].includes(page)) {
       try { legacyRegistrationCount = Number(await fetchRegistrationsCount()) || 0; }
       catch (error) { console.error(error); }
     }
@@ -396,16 +413,30 @@ function getPastaBase() {
     document.getElementById('logoutButton')?.addEventListener('click', async () => {
       try { await publicationRequest('logout', {}); }
       catch (error) { showToast(error.message); return; }
+      window.dispatchEvent(new Event('organizer-session-changed'));
       sessionStorage.removeItem(KEYS.session);
       window.location.href = 'login.html';
     });
   }
 
   function initHomePage() {
+    const guideDialog = document.getElementById('eventGuideDialog');
+    document.getElementById('closeEventGuide')?.addEventListener('click', () => guideDialog.close());
+    document.addEventListener('click', event => {
+      const button = event.target.closest('[data-event-guide]');
+      if (!button || !guideDialog) return;
+      const selected = homeGuideEvents.get(button.dataset.eventGuide);
+      if (!selected) return;
+      document.getElementById('eventGuideTitle').textContent = selected.titulo || selected.title;
+      document.getElementById('eventGuideContent').innerHTML = window.EventConfiguration?.cardGuide(selected) || '';
+      guideDialog.showModal();
+      guideDialog.scrollTop = 0;
+    });
     renderPublicStats();
     renderHomeEvents();
     document.getElementById('searchInput')?.addEventListener('input', renderHomeEvents);
     document.getElementById('categoryFilter')?.addEventListener('change', renderHomeEvents);
+    window.EventConfiguration?.initFilters(renderHomeEvents);
   }
 
   function initEventDetailPage() {
@@ -413,8 +444,11 @@ function getPastaBase() {
   }
 
   function initLoginPage() {
+    // Destinos fixos: nunca redirecionar para uma URL fornecida pelo visitante.
+    const destination = new URLSearchParams(window.location.search).get('retorno') === 'organizador'
+      ? '../organizador/index.php' : 'dashboard.php';
     if (isLogged()) {
-      window.location.href = 'dashboard.html';
+      window.location.href = destination;
       return;
     }
     document.getElementById('loginForm')?.addEventListener('submit', async event => {
@@ -424,12 +458,13 @@ function getPastaBase() {
       try {
         serverSession = await publicationRequest('session');
         await publicationRequest('login', { email, password });
+        window.dispatchEvent(new Event('organizer-session-changed'));
       } catch (error) {
         showToast(error.message);
         return;
       }
       sessionStorage.setItem(KEYS.session, JSON.stringify({ email, name: ORGANIZER.name, loggedAt: new Date().toISOString() }));
-      window.location.href = 'dashboard.html';
+      window.location.href = destination;
     });
   }
 
@@ -439,7 +474,7 @@ function getPastaBase() {
   }
 
   async function copyPublicEventsLink() {
-    const link = new URL('../', window.location.href).href;
+    const link = new URL('../participantes/index.php', window.location.href).href;
     const input = document.getElementById('publicEventsLink');
     input.value = link;
     try {
@@ -453,10 +488,47 @@ function getPastaBase() {
     }
   }
 
+  function initPublicEventsShare(link) {
+    document.getElementById('openParticipantsPage').href = link;
+    const hostname = new URL(link).hostname;
+    document.getElementById('publicEventsLocalHint').hidden = !(
+      hostname === 'localhost' || hostname.endsWith('.localhost') || hostname === '[::1]' || /^127\./.test(hostname)
+    );
+    const status = document.getElementById('publicEventsQrStatus');
+    try {
+      // Geracao local: o QR codifica exatamente o mesmo endereco do campo Copiar.
+      const qr = qrcode(0, 'M');
+      qr.addData(link);
+      qr.make();
+      const cell = 8, margin = 4, modules = qr.getModuleCount();
+      const canvas = document.createElement('canvas');
+      canvas.width = canvas.height = (modules + margin * 2) * cell;
+      const context = canvas.getContext('2d');
+      context.fillStyle = '#fff';
+      context.fillRect(0, 0, canvas.width, canvas.height);
+      context.fillStyle = '#000';
+      for (let row = 0; row < modules; row++) {
+        for (let col = 0; col < modules; col++) {
+          if (qr.isDark(row, col)) context.fillRect((col + margin) * cell, (row + margin) * cell, cell, cell);
+        }
+      }
+      const image = document.getElementById('publicEventsQr');
+      image.src = canvas.toDataURL('image/png');
+      image.hidden = false;
+      const download = document.getElementById('downloadPublicEventsQr');
+      download.href = image.src;
+      download.hidden = false;
+      status.textContent = 'Aponte a câmera do celular para abrir os eventos.';
+    } catch {
+      status.textContent = 'Não foi possível gerar o QR Code. Você pode copiar ou abrir o link acima.';
+    }
+  }
+
   function initAdminEventsPage() {
     if (!requireAuth()) return;
     const publicLink = document.getElementById('publicEventsLink');
-    publicLink.value = new URL('../', window.location.href).href;
+    publicLink.value = new URL('../participantes/index.php', window.location.href).href;
+    initPublicEventsShare(publicLink.value);
     publicLink.addEventListener('focus', () => publicLink.select());
     publicLink.addEventListener('click', () => publicLink.select());
     document.getElementById('copyPublicEventsLink')?.addEventListener('click', copyPublicEventsLink);
@@ -501,7 +573,7 @@ function getPastaBase() {
     if (!requireAuth()) return;
     const editing = getEvents().find(event => event.id === new URLSearchParams(window.location.search).get('id'));
     if (editing && eventIsClosed(editing)) {
-      document.getElementById('eventForm').innerHTML = '<section class="panel-card"><h2>Evento encerrado</h2><p class="muted">Este evento está no histórico. Os dados e as inscrições foram preservados.</p><a class="btn btn-secondary" href="eventos.html">Voltar para eventos</a></section>';
+      document.getElementById('eventForm').innerHTML = '<section class="panel-card"><h2>Evento encerrado</h2><p class="muted">Este evento está no histórico. Os dados e as inscrições foram preservados.</p><a class="btn btn-secondary" href="eventos.php">Voltar para eventos</a></section>';
       return;
     }
     initEventAudienceControls();
@@ -531,7 +603,12 @@ function getPastaBase() {
     });
     togglePublicationFields();
     populateEventForm();
+    setValue('eventType', editing?.eventType || 'simple');
+    setValue('eventActivities', JSON.stringify(editing?.activities || []));
+    window.EventConfiguration?.prepareForm(editing || {});
     eventFormDraft = initEventFormDraft();
+    window.EventConfiguration?.initForm();
+    window.ActivityUI.editor(editing);
     updateEventScheduleConstraints();
     toggleEventAccess();
     window.initEditableChoices(document.getElementById('eventForm'));
@@ -570,7 +647,9 @@ function getPastaBase() {
   function initEventFormDraft() {
     const form = document.getElementById('eventForm');
     const eventId = new URLSearchParams(window.location.search).get('id') || 'new';
-    const key = `ideauEventos.eventForm.v1:${window.location.pathname}:${eventId}`;
+    // Mantém rascunhos iniciados antes da proteção das páginas em PHP.
+    const draftPath = window.location.pathname.replace(/\/evento-form\.php$/, '/evento-form.html');
+    const key = `ideauEventos.eventForm.v1:${draftPath}:${eventId}`;
     const coverKey = `${key}:cover`;
     const fields = [...form.querySelectorAll('input[id], select[id], textarea[id]')]
       .filter(field => !['eventId', 'eventCover', 'eventCoverFile'].includes(field.id));
@@ -705,6 +784,7 @@ function getPastaBase() {
   }
 
   async function initReportsPage() {
+    document.addEventListener('change', event => { if (event.target.id === 'reportActivityFilter') renderReportsPage(); });
     if (!requireAuth()) return;
 
     apiRegistrations = await fetchRegistrationsFromApi();
@@ -744,6 +824,19 @@ function getPastaBase() {
   }
 
   async function handleRegistrationReview(event) {
+    const activityButton = event.target.closest('[data-cancel-activity]');
+    if (activityButton) {
+      if (activityButton.disabled || !confirm('Cancelar somente esta atividade e liberar a vaga? A inscrição no evento será mantida.')) return;
+      activityButton.disabled = true;
+      try {
+        await publicationRequest('cancel-activity', {id: activityButton.dataset.registration, eventId: activityButton.dataset.event, activityId: activityButton.dataset.cancelActivity});
+        await loadServerEvents();
+        renderRegistrationsTable();
+        if (document.getElementById('reportRegistrationsTable')) renderReportsPage();
+        showToast('Atividade cancelada. Vaga liberada.');
+      } catch (error) { showToast(error.message); activityButton.disabled = false; }
+      return;
+    }
     const button = event.target.closest('[data-review-registration]');
     if (!button || button.disabled) return;
     const {reviewRegistration: id, eventId, decision} = button.dataset;
@@ -766,14 +859,6 @@ function getPastaBase() {
 
   function initEventAudienceControls() {
     if (!document.getElementById('eventAudience')) return;
-    const events = getEvents();
-    const suggestions = {
-      eventCategoryOptions: [...Object.values(CATEGORIES), ...events.map(event => CATEGORIES[event.category] || event.category)],
-      eventAudienceOptions: ['Escola / Educação Infantil', 'Faculdade / Graduação', 'Todos os públicos', 'Comunidade externa', ...events.map(event => event.audienceLabel)]
-    };
-    Object.entries(suggestions).forEach(([id, values]) => {
-      document.getElementById(id).replaceChildren(...[...new Set(values.filter(Boolean))].map(value => new Option(value, value)));
-    });
     document.getElementById('eventInstitution')?.addEventListener('change', () => syncEventInstitution(true));
     document.getElementById('applyAudienceDefaults')?.addEventListener('click', () => {
       const audience = getFormAudience();
@@ -791,20 +876,48 @@ function getPastaBase() {
     return type === 'escola' ? 'escola' : type === 'faculdade' ? 'graduacao' : '';
   }
 
+  function updateInstitutionSuggestions(audience) {
+    const school = audience === 'escola';
+    const events = getEvents().filter(event => getEventAudience(event) === audience);
+    const categories = school
+      ? ['Pedagógico', 'Cultural', 'Esportivo', 'Recreativo', 'Família e escola', 'Passeio educativo', 'Institucional']
+      : Object.values(CATEGORIES);
+    const audiences = school
+      ? ['Escola / Educação Infantil e Ensino Fundamental', 'Educação Infantil', 'Ensino Fundamental — anos iniciais (1º ao 5º ano)', 'Ensino Fundamental — anos finais (6º ao 9º ano)', 'Pais e responsáveis', 'Alunos e famílias', 'Comunidade escolar']
+      : ['Faculdade / Graduação', 'Alunos da graduação', 'Professores e egressos', 'Comunidade externa'];
+    const suggestions = {
+      eventCategoryOptions: audience ? [...categories, ...events.map(event => CATEGORIES[event.category] || event.category)] : [],
+      eventAudienceOptions: audience ? [...audiences, ...events.map(event => event.audienceLabel)] : []
+    };
+    for (const [id, values] of Object.entries(suggestions)) {
+      document.getElementById(id).replaceChildren(...[...new Set(values.filter(Boolean))].map(value => new Option(value, value)));
+    }
+  }
+
   function syncEventInstitution(updateAudience = false) {
     const institution = document.getElementById('eventInstitution');
     const select = document.getElementById('eventAudience');
     if (!institution || !select) return;
     const audience = getFormAudience();
     const changed = select.dataset.registrationAudience !== audience;
-    const label = audience === 'escola' ? 'Escola / Educação Infantil'
+    const previousAudiences = [...document.getElementById('eventAudienceOptions').options].map(option => option.value);
+    const previousCategories = [...document.getElementById('eventCategoryOptions').options].map(option => option.value);
+    const label = audience === 'escola' ? 'Escola / Educação Infantil e Ensino Fundamental'
       : audience === 'graduacao' ? 'Faculdade / Graduação' : '';
-    if (updateAudience && (!select.value.trim() || select.value === select.dataset.defaultLabel)) select.value = label;
+    if (updateAudience && (!select.value.trim() || select.value === select.dataset.defaultLabel
+      || (changed && previousAudiences.includes(select.value))
+      || ['Escola / Educação Infantil', 'Faculdade / Graduação'].includes(select.value))) select.value = label;
     select.dataset.defaultLabel = label;
     select.dataset.registrationAudience = audience;
+    updateInstitutionSuggestions(audience);
+    const category = document.getElementById('eventCategory');
+    if (updateAudience && changed && previousCategories.includes(category.value)
+      && ![...document.getElementById('eventCategoryOptions').options].some(option => option.value === category.value)) category.value = '';
+    setText('eventContactHint', audience === 'escola' ? 'Dados de contato do responsável pela inscrição do educando.' : 'Dados de contato de quem participa do evento.');
+    setText('eventRegistrationFieldsHint', audience === 'escola' ? 'Os pais ou responsáveis fazem a inscrição. Solicite os dados do responsável, do educando e da turma.' : 'Escolha os dados que o participante deverá informar na inscrição.');
     document.getElementById('applyAudienceDefaults').disabled = !audience;
     setText('eventAudienceHint', audience === 'escola'
-      ? 'Na instituição escolar, a inscrição solicita os dados do responsável e do educando.'
+      ? 'Para Educação Infantil e Ensino Fundamental, a inscrição identifica o responsável, o educando e sua turma.'
       : audience === 'graduacao' ? 'Na faculdade, o participante faz a própria inscrição. Os campos abaixo acompanham a instituição.'
       : 'Selecione a instituição para definir os campos de inscrição.');
     if (changed && audience) applyDefaultFields(audience);
@@ -848,13 +961,16 @@ function getPastaBase() {
   async function renderHomeEvents() {
     const grid = document.getElementById('eventsGrid');
     if (!grid) return;
+    const sequence = ++homeRenderSequence;
     const query = getValue('searchInput').toLowerCase();
     const category = (getValue('categoryFilter') || 'todos').toLowerCase();
+    const filters = window.EventConfiguration?.filters();
 
     let eventos;
     try {
       eventos = await listarEventosApi();
     } catch (error) {
+      if (sequence !== homeRenderSequence) return;
       console.error(error);
       if (!serverEvents.some(event => event.published && !eventIsClosed(event))) {
         renderFeaturedEvent([]);
@@ -863,18 +979,31 @@ function getPastaBase() {
       }
       eventos = [];
     }
+    if (sequence !== homeRenderSequence) return;
 
     eventos = eventos.concat(serverEvents.filter(event => event.published && !eventIsClosed(event)).map(event => ({
+      ...event,
       id: event.id, titulo: event.title, descricao: event.summary, categoria: CATEGORIES[event.category] || event.category,
       data_inicio: `${event.date} ${event.time}`, foto_path: event.cover, nome_local: event.location, cidade: event.city, valor: 0
     })));
 
-    renderFeaturedEvent(eventos);
+    const categorySelect = document.getElementById('categoryFilter');
+    const categories = [...new Set(eventos.map(event => event.categoria).filter(Boolean))].sort();
+    if (categorySelect) {
+      categorySelect.innerHTML = '<option value="todos">Todas as categorias</option>' + categories.map(label => `<option value="${escapeAttr(label.toLowerCase())}">${escapeHtml(label)}</option>`).join('');
+      categorySelect.value = category;
+    }
 
     const events = eventos
       .filter(evento => category === 'todos' || (evento.categoria || '').toLowerCase() === category)
       .filter(evento => !query || [evento.titulo, evento.descricao, evento.nome_local, evento.cidade, evento.categoria].join(' ').toLowerCase().includes(query))
+      .filter(evento => !window.EventConfiguration || window.EventConfiguration.matches(evento, filters))
       .sort((a, b) => String(a.data_inicio || '').localeCompare(String(b.data_inicio || '')));
+
+    homeGuideEvents = new Map(events.map(event => [String(event.id), event]));
+    renderFeaturedEvent(events);
+    const count = document.getElementById('eventFilterCount');
+    if (count) count.textContent = `${events.length} ${events.length === 1 ? 'evento encontrado' : 'eventos encontrados'}`;
 
     if (!events.length) {
       grid.innerHTML = '<div class="empty-state">Nenhum evento publicado encontrado.</div>';
@@ -895,12 +1024,12 @@ function getPastaBase() {
     const end = String(event.data_fim || '').slice(0, 10);
     const price = Number(event.valor) > 0 ? `R$ ${Number(event.valor).toFixed(2).replace('.', ',')}` : 'Gratuita';
     section.innerHTML = `<div class="section-label">Em destaque</div><h2 class="section-title">${escapeHtml(event.titulo)}</h2>
-      <div class="featured-wrap"><div class="featured-img"><div class="featured-badge">Destaque</div><img src="${escapeAttr(event.foto_path || `${getPastaBase()}/uploads/foto_generica_1.png`)}" alt="${escapeAttr(event.titulo)}" loading="lazy"></div>
+      <div class="featured-wrap"><div class="featured-img"><div class="featured-badge">Destaque</div><img src="${escapeAttr(event.foto_path || `${getPastaBase()}/uploads/foto_generica_1.png`)}" alt="${escapeAttr(event.titulo)}" loading="lazy" decoding="async"></div>
       <div class="featured-content"><div class="section-label">${escapeHtml(event.categoria || 'Evento')}</div><h2>${escapeHtml(event.titulo)}</h2><p>${escapeHtml(event.descricao || '')}</p>
       <div class="featured-details"><div class="detail-row"><div><div class="detail-label">Data</div><div class="detail-val">${escapeHtml(formatDate(date))}${end && end !== date ? ` — ${escapeHtml(formatDate(end))}` : ''}</div></div></div>
       <div class="detail-row"><div><div class="detail-label">Local</div><div class="detail-val">${escapeHtml([event.nome_local, event.cidade].filter(Boolean).join(' — '))}</div></div></div>
       <div class="detail-row"><div><div class="detail-label">Inscrição</div><div class="detail-val">${price}</div></div></div></div>
-      <a class="btn-primary" href="ideau_eventos/evento.html?id=${encodeURIComponent(event.id)}">Ver detalhes</a></div></div>`;
+      <a class="btn-primary" href="${getPastaBase()}/ideau_eventos/evento.html?id=${encodeURIComponent(event.id)}">Ver detalhes</a></div></div>`;
   }
 
   function eventCardTemplate(evento) {
@@ -910,8 +1039,8 @@ function getPastaBase() {
       : 'Gratuito';
     return `
       <article class="event-card">
-        <a class="card-img" href="ideau_eventos/evento.html?id=${encodeURIComponent(evento.id)}" aria-label="Abrir ${escapeAttr(evento.titulo)}">
-          <img src="${escapeAttr(evento.foto_path || capaPadrao)}" alt="${escapeAttr(evento.titulo)}" loading="lazy" onerror="this.onerror=null; this.src='${capaPadrao}'" />
+        <a class="card-img" href="${getPastaBase()}/ideau_eventos/evento.html?id=${encodeURIComponent(evento.id)}" aria-label="Abrir ${escapeAttr(evento.titulo)}">
+          <img src="${escapeAttr(evento.foto_path || capaPadrao)}" alt="${escapeAttr(evento.titulo)}" loading="lazy" decoding="async" onerror="this.onerror=null; this.src='${capaPadrao}'" />
           <span class="card-tag">${escapeHtml(evento.categoria || 'Evento')}</span>
           <div class="card-date-badge">
             <span class="day">${retornaDiaEvento(evento.data_inicio)}</span>
@@ -924,10 +1053,11 @@ function getPastaBase() {
             <span>${evento.nome_local ? escapeHtml(evento.nome_local) : ''}</span>
           </div>
           <h3 class="card-title">${escapeHtml(evento.titulo)}</h3>
+          <p class="card-desc">${escapeHtml(evento.eventKindLabel || 'Tipo não informado')} · ${escapeHtml(evento.modalityLabel || 'Presencial')}</p>
           <p class="card-desc">${escapeHtml(evento.descricao || '')}</p>
           <div class="card-footer">
             <span style="font-size:0.75rem;color:var(--muted);margin-right:auto">${preco}</span>
-            <a class="card-btn" href="ideau_eventos/evento.html?id=${encodeURIComponent(evento.id)}">Ver evento</a>
+            <a class="card-btn" href="${getPastaBase()}/ideau_eventos/evento.html?id=${encodeURIComponent(evento.id)}">Ver evento</a>
           </div>
         </div>
       </article>`;
@@ -963,7 +1093,7 @@ function getPastaBase() {
     const remaining = event.seats != -1 ? Math.max(Number(event.seats || 0) - countRegistrations(event.id), 0) : -1;
     const seatsLabel = event.seats == -1 ? 'Livre' : `${remaining} de ${Number(event.seats || 0)}`;
     const isSoldOut = event.seats != -1 && remaining <= 0;
-    const cover = event.cover ? `<img src="${escapeAttr(event.cover)}" alt="${escapeAttr(event.title)}">` : '';
+    const cover = event.cover ? `<img src="${escapeAttr(event.cover)}" alt="${escapeAttr(event.title)}" decoding="async">` : '';
     const ICO_CAL = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>';
     const ICO_CLK = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>';
     const ICO_PIN = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>';
@@ -1032,7 +1162,9 @@ function getPastaBase() {
             </div>
             <div class="descricao-text">${escapeHtml(event.description)}</div>
           </div>` : ''}
+          ${window.EventConfiguration?.details(event) || ''}
         </div>
+        ${event.eventType === 'multiple' ? `<div class="evento-program">${window.ActivityUI.program(event)}</div>` : ''}
       </div>`;
   }
 
@@ -1158,6 +1290,7 @@ function getPastaBase() {
         </div>
       </div>`;
 
+    window.ActivityUI.selection(event);
     document.getElementById('registrationForm')?.addEventListener('submit', submitRegistration);
     document.getElementById('participantType')?.addEventListener('change', updateCourseVisibility);
     updateCourseVisibility();
@@ -1209,6 +1342,9 @@ function getPastaBase() {
     return `
       <form class="form-stack" id="registrationForm" data-event-id="${escapeAttr(event.id)}">
         ${event.accessMode === 'link' && event.targetCourse ? '<p class="muted">Inscrição destinada ao curso de ' + escapeHtml(event.targetCourse) + '. Ao selecionar o curso, você declara que faz parte dele.</p>' : ''}
+        ${window.EventConfiguration?.details(event) || ''}
+        ${window.EventConfiguration?.registration(event) || ''}
+        ${window.ActivityUI.program(event, true)}
         ${graduationFields}
         ${schoolFields}
         ${fields.cpf ? '<label class="form-field"><span>CPF *</span><input name="cpf" required inputmode="numeric" pattern="[0-9]{11}" maxlength="11" minlength="11" placeholder="000.000.000-00"></label>' : ''}
@@ -1286,6 +1422,9 @@ function getPastaBase() {
     const registration = {
       id: `reg-${Date.now()}-${Math.random().toString(16).slice(2, 8)}`,
       eventId,
+      activityIds: new FormData(form).getAll('activityIds'),
+      participationMode: new FormData(form).get('participationMode') || '',
+      eventRole: new FormData(form).get('eventRole') || 'participante',
       accessToken: currentAccessToken(),
       createdAt: new Date().toISOString(),
       audience,
@@ -1398,12 +1537,13 @@ function getPastaBase() {
               : `${event.publicationMode === 'automatic' ? `<br><small>Publicação: ${escapeHtml(formatDateTime(event.publishAt))}</small>` : ''}${event.publicationMode !== 'draft' && event.effectiveEndAt ? `<br><small>Limite: ${escapeHtml(formatDateTime(event.effectiveEndAt))}</small><span class="event-countdown" data-countdown="${escapeAttr(event.effectiveEndAt)}">${countdownLabel(event.effectiveEndAt)}</span>` : ''}`}</td>
           <td>
             <div class="row-actions">
+              ${organizerRegistrationAction(event)}
               ${event.published && !history ? `<a class="btn btn-light small" href="${eventPageUrl(event.id)}" target="_blank">Divulgação</a><a class="btn btn-light small" href="${eventRegistrationUrl(event.id)}" target="_blank">Inscrição</a><button class="btn btn-light small" type="button" data-copy-link="${escapeAttr(event.id)}">Copiar link</button>` : ''}
-              ${String(event.id).startsWith('evt-') && !history ? `<a class="btn btn-secondary small" href="evento-form.html?id=${encodeURIComponent(event.id)}">Editar</a>` : ''}
+              ${String(event.id).startsWith('evt-') && !history ? `<a class="btn btn-secondary small" href="evento-form.php?id=${encodeURIComponent(event.id)}">Editar</a>` : ''}
               ${String(event.id).startsWith('evt-') && !event.published && !history ? `<button class="btn btn-primary small" type="button" data-publish-event="${escapeAttr(event.id)}">Publicar agora</button>` : ''}
               ${!history && event.publicationMode !== 'draft' ? `<button class="btn btn-danger small" type="button" data-close-event="${escapeAttr(event.id)}">Tirar do ar</button>` : ''}
-              <a class="btn btn-secondary small" href="relatorios.html?event=${encodeURIComponent(event.id)}">Ver inscritos</a>
-              <a class="btn btn-secondary small" href="relatorios.html?event=${encodeURIComponent(event.id)}">Relatório</a>
+              <a class="btn btn-secondary small" href="relatorios.php?event=${encodeURIComponent(event.id)}">Ver inscritos</a>
+              <a class="btn btn-secondary small" href="relatorios.php?event=${encodeURIComponent(event.id)}">Relatório</a>
               <button class="btn btn-danger small" type="button" data-delete-event="${escapeAttr(event.id)}">Excluir evento</button>
             </div>
           </td>
@@ -1411,7 +1551,67 @@ function getPastaBase() {
     }).join('');
   }
 
+  function organizerRegistrationAction(event) {
+    if (!String(event.id).startsWith('evt-') || !event.published || eventIsClosed(event)) return '';
+    const registered = getRegistrations().some(reg => reg.eventId === event.id && reg.isOrganizer === true);
+    if (registered) return `<a class="btn btn-secondary small" href="relatorios.php?event=${encodeURIComponent(event.id)}">Inscrito como organizador</a>`;
+    return `<button class="btn btn-primary small" type="button" data-register-organizer="${escapeAttr(event.id)}" ${registrationIsClosed(event) ? 'disabled title="Prazo de inscrição encerrado"' : ''}>Inscrever-me</button>`;
+  }
+
+  function openOrganizerRegistration(eventId) {
+    const selected = getEvents().find(item => item.id === eventId);
+    const dialog = document.getElementById('organizerRegistrationDialog');
+    if (!selected || !dialog || !requireAuth()) return;
+    const fields = selected.fields || {};
+    dialog.innerHTML = `<div class="organizer-registration-heading"><div><span class="organizer-badge">Organizador</span><h2 id="organizerRegistrationTitle">Inscrever-me no evento</h2></div><button type="button" class="btn btn-secondary small" data-close-organizer-registration aria-label="Fechar inscrição">Fechar</button></div>
+      <p class="organizer-registration-event">${escapeHtml(selected.title)}</p>
+      <p class="muted">Você aparecerá na lista com o selo Organizador. A inscrição ocupa uma vaga e respeita o prazo do evento.</p>
+      <form id="organizerRegistrationForm" class="form-stack">
+        <label class="form-field"><span>Seu nome completo *</span><input name="name" required maxlength="255" autocomplete="name"></label>
+        <label class="form-field"><span>E-mail da conta</span><input type="email" value="${escapeAttr(dialog.dataset.organizerEmail || '')}" readonly aria-readonly="true"></label>
+        <label class="form-field"><span>CPF${fields.cpf ? ' *' : ' (opcional)'}</span><input name="cpf" inputmode="numeric" maxlength="14" placeholder="000.000.000-00" ${fields.cpf ? 'required' : ''}></label>
+        <label class="form-field"><span>Telefone${fields.phone ? ' *' : ' (opcional)'}</span><input name="phone" type="tel" maxlength="40" autocomplete="tel" ${fields.phone ? 'required' : ''}></label>
+        ${selected.modality === 'hibrido' && selected.delivery?.allowChoice ? '<label class="form-field"><span>Forma de participação *</span><select name="participationMode" required><option value="">Selecione</option><option value="presencial">Presencial</option><option value="online">Online</option></select></label>' : ''}
+        ${window.ActivityUI.program(selected, true)}
+        <p id="organizerRegistrationFeedback" class="organizer-registration-feedback" role="alert" hidden></p>
+        <div class="form-actions"><button class="btn btn-primary" type="submit">Confirmar minha inscrição</button><button class="btn btn-secondary" type="button" data-close-organizer-registration>Cancelar</button></div>
+      </form>`;
+    dialog.querySelectorAll('[data-close-organizer-registration]').forEach(button => button.addEventListener('click', () => dialog.close()));
+    const form = document.getElementById('organizerRegistrationForm');
+    window.ActivityUI.selection(selected, form);
+    form.addEventListener('submit', async submitEvent => {
+      submitEvent.preventDefault();
+      if (form.dataset.submitting === 'true') return;
+      form.dataset.submitting = 'true';
+      const button = form.querySelector('[type="submit"]');
+      const feedback = document.getElementById('organizerRegistrationFeedback');
+      button.disabled = true;
+      feedback.hidden = true;
+      const data = new FormData(form);
+      try {
+        const result = await publicationRequest('register-organizer', {
+          eventId, name: data.get('name'), cpf: data.get('cpf'), phone: data.get('phone'),
+          activityIds: data.getAll('activityIds'), participationMode: data.get('participationMode') || ''
+        });
+        dialog.close();
+        showToast(result.message || 'Inscrição confirmada como organizador.');
+        try { await loadServerEvents(); renderAdminEventsTable(); }
+        catch { showToast('Inscrição confirmada. Atualize a página para conferir a lista.'); }
+      } catch (error) {
+        feedback.textContent = error.message;
+        feedback.hidden = false;
+      } finally {
+        form.dataset.submitting = 'false';
+        button.disabled = false;
+      }
+    });
+    dialog.showModal();
+    form.elements.name.focus();
+  }
+
   async function handleAdminEventActions(event) {
+    const selfRegistration = event.target.closest('[data-register-organizer]');
+    if (selfRegistration) { openOrganizerRegistration(selfRegistration.dataset.registerOrganizer); return; }
     const closeButton = event.target.closest('[data-close-event]');
     if (closeButton) {
       if (closeButton.disabled) return;
@@ -1702,8 +1902,11 @@ function getPastaBase() {
     const title = clean(getValue('eventTitle'));
     const id = existingId || `evt-${slugify(title)}-${Date.now().toString(36)}`;
     const nextEvent = {
+      ...window.EventConfiguration?.formData(),
       id,
       title,
+      eventType: getValue('eventType') || 'simple',
+      activities: getValue('eventType') === 'multiple' ? JSON.parse(getValue('eventActivities') || '[]') : [],
       institution: getValue('eventInstitution'),
       accessMode: getValue('eventAccessMode') || 'public',
       targetCourse: getValue('eventTargetCourse').trim(),
@@ -1748,7 +1951,7 @@ function getPastaBase() {
       await saveServerEvent(nextEvent);
       eventFormDraft?.clear();
       showToast(['scheduled', 'automatic'].includes(nextEvent.publicationMode) ? 'Evento agendado com sucesso.' : 'Evento salvo com sucesso.');
-      setTimeout(() => window.location.href = 'eventos.html', 500);
+      setTimeout(() => window.location.href = 'eventos.php', 500);
     } catch (error) {
       showToast(error.message);
       button.disabled = false;
@@ -1788,12 +1991,12 @@ function getPastaBase() {
       const link = event ? `evento.html?id=${encodeURIComponent(event.id)}` : '#';
       return `
         <tr>
-          <td><strong>${escapeHtml(registrationPrimaryName(reg))}</strong><br><span class="muted">${escapeHtml(registrationSecondaryLine(reg))}</span></td>
+          <td><strong>${escapeHtml(registrationPrimaryName(reg))}</strong>${organizerBadge(reg)}<br><span class="muted">${escapeHtml(registrationSecondaryLine(reg))}</span></td>
           <td><a href="${link}" target="_blank">${escapeHtml(event?.title || 'Evento removido')}</a></td>
           <!-- <td>${escapeHtml(reg.email || '—')}<br><span class="muted">${escapeHtml(reg.phone || '—')}</span></td> -->
           <td>${escapeHtml(labelParticipant(reg.course))}<br><span class="muted">${escapeHtml(registrationAudienceLine(reg))}</span></td>
           <td>${formatDateTime(reg.createdAt)}</td>
-          <td>${escapeHtml(registrationStatusLabel(reg))}${registrationActionButtons(reg)}</td>
+          <td>${escapeHtml(registrationStatusLabel(reg))}${registrationActionButtons(reg)}${window.ActivityUI.participant(reg)}</td>
         </tr>`;
     }).join('');
   }
@@ -1807,6 +2010,7 @@ function getPastaBase() {
         data_evento: formatDate(event.date_begin),
         data_inscricao: formatDateTime(reg.createdAt),
         educando: registrationPrimaryName(reg),
+        perfil: reg.isOrganizer === true ? 'Organizador' : 'Participante',
         responsavel: reg.responsibleName || '',
         cpf_responsavel: reg.responsiblecpf || '',
         parentesco: reg.relationship || '',
@@ -1863,21 +2067,22 @@ function getPastaBase() {
     document.title = `Relatório — ${selected.title}`;
     setText('reportSelectedTitle', selected.title);
     setText('reportSelectedMeta', `${formatDate(selected.date_begin || selected.date)} · ${selected.location || ''} · ${publicationLabel(selected)}`);
+    window.ActivityUI.report(selected);
     const allRows = getReportRows(selectedId);
     const query = getValue('reportSearch').trim().toLowerCase();
     const reviewFilter = getValue('reportReviewFilter') || 'all';
-    const rows = getReportRows(selectedId, query).filter(row => reviewFilter === 'all' || row.reviewStatus === reviewFilter);
+    const rows = filteredReportRows(selectedId);
     const pending = allRows.filter(row => row.reviewStatus === 'pending').length;
     setText('reportReviewSummary', pending + ' aguardando aprovação · ' + (allRows.length - pending) + ' confirmadas. Pedidos pendentes reservam vaga até você aprovar ou recusar.');
-    setText('reportSelectedCount', query || reviewFilter !== 'all'
+    setText('reportSelectedCount', query || reviewFilter !== 'all' || getValue('reportActivityFilter')
       ? `Exibindo ${rows.length} de ${allRows.length} inscritos neste evento.`
       : `${allRows.length} ${allRows.length === 1 ? 'inscrito neste evento' : 'inscritos neste evento'}`);
     const columns = getReportColumns(selectedId);
-    if (String(selected.id).startsWith('evt-')) columns.push({label: 'Ações', html: registrationActionButtons});
+    if (String(selected.id).startsWith('evt-')) columns.push({label: 'Ações', html: row => registrationActionButtons(row) + window.ActivityUI.participant(row)});
     document.getElementById('reportRegistrationsHead').innerHTML = reportHeaders(columns);
     document.getElementById('reportSearch').placeholder = getEventAudience(selected) === 'escola'
       ? 'Buscar educando, responsável ou turma' : 'Buscar participante, CPF ou curso';
-    tbody.innerHTML = reportTableRows(rows, columns, query || reviewFilter !== 'all'
+    tbody.innerHTML = reportTableRows(rows, columns, query || reviewFilter !== 'all' || getValue('reportActivityFilter')
       ? 'Nenhum inscrito corresponde à busca neste evento.' : 'Este evento ainda não tem inscritos.');
   }
 
@@ -1885,7 +2090,7 @@ function getPastaBase() {
     const used = countRegistrations(event.id);
     return `
       <article class="report-card">
-      <a class="report-event-link" href="relatorios.html?event=${encodeURIComponent(event.id)}">
+      <a class="report-event-link" href="relatorios.php?event=${encodeURIComponent(event.id)}">
         <div>
           <span class="event-tag">${escapeHtml(CATEGORIES[event.category] || event.category)}</span>
           <h3>${escapeHtml(event.title)}</h3>
@@ -1899,7 +2104,7 @@ function getPastaBase() {
       <div class="report-actions">
         <button class="btn btn-primary small" type="button" data-report-export="pdf" data-event-id="${escapeAttr(event.id)}">Gerar PDF</button>
         <button class="btn btn-secondary small" type="button" data-report-export="excel" data-event-id="${escapeAttr(event.id)}">Exportar Excel</button>
-        <a class="btn btn-light small" href="relatorios.html?event=${encodeURIComponent(event.id)}">Ver inscritos →</a>
+        <a class="btn btn-light small" href="relatorios.php?event=${encodeURIComponent(event.id)}">Ver inscritos →</a>
       </div>
       </article>`;
   }
@@ -1912,6 +2117,10 @@ function getPastaBase() {
         const event = events.find(item => item.id == reg.eventId);
         return {
           id: reg.id,
+          isOrganizer: reg.isOrganizer === true,
+          activities: reg.activities || [],
+          participationMode: reg.participationMode || event?.modality || 'presencial',
+          eventRole: reg.eventRole || 'participante',
           reviewStatus: reg.reviewStatus || 'approved',
           eventId: reg.eventId,
           eventTitle: event?.title || 'Evento removido',
@@ -1930,7 +2139,7 @@ function getPastaBase() {
           studentName: reg.studentName || '',
           studentClass: reg.studentClass || '',
           responsiblecpf: reg.responsiblecpf || reg.responsibleCpf || '',
-          relationship: reg.relationship || 'Responsável',
+          relationship: reg.isOrganizer === true ? '' : (reg.relationship || 'Responsável'),
           email: reg.email || '',
           phone: reg.phone || '',
           participantType: reg.participantType || '',
@@ -1945,7 +2154,7 @@ function getPastaBase() {
 
   function filteredReportRows(eventId) {
     const filter = getValue('reportReviewFilter') || 'all';
-    return getReportRows(eventId, getValue('reportSearch').trim().toLowerCase()).filter(row => filter === 'all' || row.reviewStatus === filter);
+    return getReportRows(eventId, getValue('reportSearch').trim().toLowerCase()).filter(row => filter === 'all' || row.reviewStatus === filter).filter(row => !getValue('reportActivityFilter') || window.ActivityUI.active(row).some(a => a.id === getValue('reportActivityFilter')));
   }
 
   function exportEventExcel(eventId = 'todos') {
@@ -1982,7 +2191,8 @@ function getPastaBase() {
   function reportTitle(eventId = 'todos') {
     if (eventId === 'todos') return 'Relatório geral de eventos';
     const event = getEvents().find(item => item.id === eventId);
-    return event ? `Relatório - ${event.title}` : 'Relatório de evento';
+    const activity = event?.activities?.find(a => a.id === getValue('reportActivityFilter'));
+    return event ? `Relatório - ${event.title}${activity ? ' - ' + activity.name : ''}` : 'Relatório de evento';
   }
 
   function getReportColumns(eventId, includeEvent = false) {
@@ -1996,7 +2206,8 @@ function getPastaBase() {
     ] : [];
     columns.push(
       { label: 'Inscrição', value: row => formatDateTime(row.createdAt) },
-      { label: school ? (college ? 'Participante / educando' : 'Educando') : 'Participante', value: row => row.displayName }
+      { label: school ? (college ? 'Participante / educando' : 'Educando') : 'Participante', value: row => row.displayName,
+        html: row => escapeHtml(row.displayName || '—') + organizerBadge(row) }
     );
     if (school) columns.push(
       { label: 'Responsável', value: row => row.audience === 'escola' ? row.responsibleName : '' },
@@ -2010,6 +2221,15 @@ function getPastaBase() {
     );
     if (events.some(event => ['manual', 'selected'].includes(event.recipientMode)) || getReportRows(eventId).some(row => row.reviewStatus === 'pending')) {
       columns.push({label: 'Situação', value: registrationStatusLabel});
+    }
+    if (events.some(event => event.eventType === 'multiple')) {
+      columns.push({label: 'Atividades', value: row => (row.activities || []).map(a => a.name + (a.cancelledAt ? ' (cancelada)' : '')).join('; ')});
+    }
+    if (events.some(event => event.modality && event.modality !== 'presencial')) {
+      columns.push({label: 'Forma de participação', value: row => ({presencial:'Presencial', online:'Online', hibrido:'Híbrido'}[row.participationMode] || '')});
+    }
+    if (events.some(event => Object.values(event.registrationOptions || {}).some(Boolean)) || getReportRows(eventId).some(row => row.isOrganizer || row.eventRole !== 'participante')) {
+      columns.push({label: 'Participação no evento', value: row => row.isOrganizer ? 'Organizador' : ({participante:'Participante', apresentador:'Apresentador', expositor:'Expositor', voluntario:'Voluntário'}[row.eventRole] || '')});
     }
     return columns;
   }
@@ -2048,6 +2268,7 @@ function getPastaBase() {
   table{width:100%;border-collapse:collapse;margin-top:10px;}
   th,td{border:1px solid #d9e3d1;padding:8px;text-align:left;font-size:12px;vertical-align:top;}
   th{background:#eef3e7;text-transform:uppercase;font-size:11px;}
+  .organizer-badge{display:inline-block;margin-left:8px;padding:3px 7px;border:1px solid #729dff;border-radius:20px;color:#173b7a;background:#edf3ff;font-size:10px;font-weight:bold;}
   .meta{display:flex;gap:18px;margin:16px 0 24px;}
   .box{border:1px solid #d9e3d1;padding:12px;background:#f7faf3;}
   @media print{body{margin:16mm}.no-print{display:none}}
@@ -2217,6 +2438,10 @@ function getPastaBase() {
         escola: { ...DEFAULT_SETTINGS.defaults.escola, ...(settings.defaults?.escola || {}) }
       }
     };
+  }
+
+  function organizerBadge(reg = {}) {
+    return reg.isOrganizer === true ? ' <span class="organizer-badge">Organizador</span>' : '';
   }
 
   function registrationPrimaryName(reg = {}) {

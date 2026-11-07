@@ -31,7 +31,7 @@ function openForm(search = '') {
   const context = {
     URLSearchParams,
     window: {
-      location: { pathname: '/ideau_eventos/evento-form.html', search },
+      location: { pathname: '/ideau_eventos/evento-form.php', search },
       addEventListener: (name, handler) => { lifecycle[name] = handler; }
     },
     document: { getElementById: id => id === 'eventForm' ? form : fields[id] },
